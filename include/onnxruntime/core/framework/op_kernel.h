@@ -187,6 +187,13 @@ KernelCreateInfo BuildKernelCreateInfo();
 }  // namespace contrib
 
 namespace contrib {
+namespace musa {
+template <typename T>
+KernelCreateInfo BuildKernelCreateInfo();
+}  // namespace musa
+}  // namespace contrib
+
+namespace contrib {
 namespace js {
 template <typename T>
 KernelCreateInfo BuildKernelCreateInfo();

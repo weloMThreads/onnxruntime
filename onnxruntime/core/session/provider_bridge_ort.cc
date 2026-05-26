@@ -97,6 +97,7 @@ using EtwRegistrationManager_EtwInternalCallback = EtwRegistrationManager::EtwIn
 #include "core/providers/partitioning_utils.h"
 #include "core/providers/cuda/cuda_provider_factory_creator.h"
 #include "core/providers/cann/cann_provider_factory_creator.h"
+#include "core/providers/musa/musa_provider_factory_creator.h"
 #include "core/providers/dnnl/dnnl_provider_factory_creator.h"
 #include "core/providers/migraphx/migraphx_provider_factory_creator.h"
 #include "core/providers/openvino/openvino_provider_factory_creator.h"
@@ -107,6 +108,7 @@ using EtwRegistrationManager_EtwInternalCallback = EtwRegistrationManager::EtwIn
 
 #include "core/providers/cuda/cuda_provider_factory.h"
 #include "core/providers/cann/cann_provider_factory.h"
+#include "core/providers/musa/musa_provider_factory.h"
 #include "core/providers/dnnl/dnnl_provider_factory.h"
 #include "core/providers/migraphx/migraphx_provider_factory.h"
 #include "core/providers/openvino/openvino_provider_factory.h"
@@ -114,6 +116,7 @@ using EtwRegistrationManager_EtwInternalCallback = EtwRegistrationManager::EtwIn
 #include "core/providers/tensorrt/tensorrt_provider_options.h"
 #include "core/providers/cuda/cuda_provider_options.h"
 #include "core/providers/cann/cann_provider_options.h"
+#include "core/providers/musa/musa_provider_options.h"
 #include "core/providers/dnnl/dnnl_provider_options.h"
 #include "core/providers/nv_tensorrt_rtx/nv_provider_factory.h"
 #include "core/providers/nv_tensorrt_rtx/nv_provider_options.h"
@@ -2033,6 +2036,12 @@ static ProviderLibrary s_library_cann(LIBRARY_PREFIX ORT_TSTR("onnxruntime_provi
                                       false /* unload - On Linux if we unload the cann shared provider we crash */
 #endif
 );
+static ProviderLibrary s_library_musa(LIBRARY_PREFIX ORT_TSTR("onnxruntime_providers_musa") LIBRARY_EXTENSION
+#ifndef _WIN32
+                                      ,
+                                      false /* unload - On Linux if we unload the musa shared provider we crash */
+#endif
+);
 
 static ProviderLibrary s_library_dnnl(LIBRARY_PREFIX ORT_TSTR("onnxruntime_providers_dnnl") LIBRARY_EXTENSION);
 static ProviderLibrary s_library_vitisai(LIBRARY_PREFIX ORT_TSTR("onnxruntime_providers_vitisai") LIBRARY_EXTENSION
@@ -2079,6 +2088,7 @@ void UnloadSharedProviders() {
   s_library_cuda.Unload();
   s_library_cuda_test.Unload();
   s_library_cann.Unload();
+  s_library_musa.Unload();
   s_library_shared.Unload();
   s_library_migraphx.Unload();
   s_library_qnn.Unload();
@@ -2140,6 +2150,11 @@ std::shared_ptr<IExecutionProviderFactory> CudaProviderFactoryCreator::Create(
 std::shared_ptr<IExecutionProviderFactory>
 CannProviderFactoryCreator::Create(const OrtCANNProviderOptions* provider_options) {
   return s_library_cann.Get().CreateExecutionProviderFactory(provider_options);
+}
+
+std::shared_ptr<IExecutionProviderFactory>
+MusaProviderFactoryCreator::Create(const OrtMUSAProviderOptions* provider_options) {
+  return s_library_musa.Get().CreateExecutionProviderFactory(provider_options);
 }
 
 std::shared_ptr<IExecutionProviderFactory> DnnlProviderFactoryCreator::Create(int use_arena) {

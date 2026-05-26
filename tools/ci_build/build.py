@@ -504,6 +504,9 @@ def generate_build_tree(
         "-Donnxruntime_USE_XNNPACK=" + ("ON" if args.use_xnnpack else "OFF"),
         "-Donnxruntime_USE_WEBNN=" + ("ON" if args.use_webnn else "OFF"),
         "-Donnxruntime_USE_CANN=" + ("ON" if args.use_cann else "OFF"),
+        "-Donnxruntime_USE_MUSA=" + ("ON" if args.use_musa else "OFF"),
+        "-Donnxruntime_USE_MUSA_NHWC_OPS="
+        + ("ON" if args.use_musa and not args.disable_musa_nhwc_ops else "OFF"),
         "-Donnxruntime_DISABLE_FLOAT8_TYPES=" + ("ON" if disable_float8_types else "OFF"),
         "-Donnxruntime_DISABLE_FLOAT4_TYPES=" + ("ON" if disable_float4_types else "OFF"),
         "-Donnxruntime_DISABLE_SPARSE_TENSORS=" + ("ON" if disable_sparse_tensors else "OFF"),
@@ -770,6 +773,14 @@ def generate_build_tree(
 
     if cann_home and os.path.exists(cann_home):
         cmake_args += ["-Donnxruntime_CANN_HOME=" + cann_home]
+
+    musa_home = args.musa_home if args.musa_home else os.getenv("MUSA_HOME")
+    if args.use_musa:
+        if not musa_home:
+            musa_home = "/usr/local/musa"
+        if not os.path.exists(musa_home):
+            raise BuildError("musa_home paths must be specified and valid.", f"musa_home='{musa_home}' valid=False.")
+        cmake_args += ["-Donnxruntime_MUSA_HOME=" + musa_home]
 
     if args.use_openvino:
         cmake_args += [

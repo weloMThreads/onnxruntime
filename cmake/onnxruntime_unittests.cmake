@@ -529,6 +529,17 @@ if (onnxruntime_USE_CUDA AND NOT onnxruntime_MINIMAL_BUILD AND NOT onnxruntime_R
   endif()
 endif()
 
+if (onnxruntime_USE_MUSA AND NOT onnxruntime_MINIMAL_BUILD AND NOT onnxruntime_REDUCED_OPS_BUILD)
+  file(GLOB onnxruntime_test_providers_musa_src CONFIGURE_DEPENDS
+    "${TEST_SRC_DIR}/providers/musa/musa_basic_test.cc"
+    )
+  list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_providers_musa_src})
+  list(APPEND onnxruntime_test_providers_dependencies
+    onnxruntime_providers_musa
+    onnxruntime_providers_shared
+    )
+endif()
+
 if (onnxruntime_USE_CANN)
   file(GLOB_RECURSE onnxruntime_test_providers_cann_src CONFIGURE_DEPENDS
     "${TEST_SRC_DIR}/providers/cann/*"

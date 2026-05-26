@@ -17,6 +17,7 @@
 #include "core/common/logging/severity.h"
 #include "core/common/narrow.h"
 #include "core/common/optional.h"
+#include "core/common/parse_string.h"
 #include "core/common/path_string.h"
 #include "core/framework/arena_extend_strategy.h"
 #include "core/framework/data_transfer_utils.h"
@@ -63,6 +64,11 @@
 #include "core/providers/coreml/coreml_provider_factory.h"
 #endif
 
+#if defined(USE_MUSA)
+#include "core/providers/musa/musa_provider_factory_creator.h"
+#include "core/providers/musa/musa_provider_options.h"
+#endif
+
 #include <pybind11/functional.h>
 
 // Explicitly provide a definition for the static const var 'GPU' in the OrtDevice struct,
@@ -85,6 +91,17 @@ namespace python {
 namespace py = pybind11;
 using namespace onnxruntime;
 using namespace onnxruntime::logging;
+
+void ParseMusaBoolOption(const onnxruntime::ProviderOptions& options, const char* key, int& output) {
+  const auto it = options.find(key);
+  if (it == options.end()) {
+    return;
+  }
+
+  bool parsed_value = false;
+  ORT_THROW_IF_ERROR(ParseStringWithClassicLocale(it->second, parsed_value));
+  output = parsed_value ? 1 : 0;
+}
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(push)
@@ -1303,6 +1320,25 @@ static std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory
                           << ". Please reference "
                           << "https://onnxruntime.ai/docs/execution-providers/QNN-ExecutionProvider.html"
                           << " to ensure all dependencies are met.";
+#endif
+  } else if (type == kMusaExecutionProvider) {
+#ifdef USE_MUSA
+    auto cit = provider_options_map.find(type);
+    ProviderOptions options = cit == provider_options_map.end() ? ProviderOptions{} : cit->second;
+
+    OrtMUSAProviderOptions musa_options{};
+    auto device_id_it = options.find("device_id");
+    if (device_id_it != options.end()) {
+      musa_options.device_id = std::stoi(device_id_it->second);
+    }
+    ParseMusaBoolOption(options, "prefer_nhwc", musa_options.prefer_nhwc);
+    ParseMusaBoolOption(options, "enable_musa_graph", musa_options.enable_musa_graph);
+
+    auto musa_factory = onnxruntime::MusaProviderFactoryCreator::Create(&musa_options);
+    if (musa_factory) {
+      return musa_factory;
+    }
+    LOGS_DEFAULT(WARNING) << "Failed to create " << type << ". Please ensure MUSA libraries are properly installed.";
 #endif
   } else {
 #if !defined(ORT_MINIMAL_BUILD)

@@ -787,6 +787,12 @@ def add_execution_provider_args(parser: argparse.ArgumentParser) -> None:
     cann_group.add_argument("--use_cann", action="store_true", help="Enable CANN EP.")
     cann_group.add_argument("--cann_home", help="Path to CANN installation directory.")
 
+    # --- MUSA ---
+    musa_group = parser.add_argument_group("MUSA Execution Provider")
+    musa_group.add_argument("--use_musa", action="store_true", help="Enable MUSA EP.")
+    musa_group.add_argument("--musa_home", help="Path to MUSA installation directory.")
+    musa_group.add_argument("--disable_musa_nhwc_ops", action="store_true", help="Disable MUSA NHWC op support.")
+
     # --- MIGraphX (AMD) ---
     migx_group = parser.add_argument_group("MIGraphX Execution Provider")
     migx_group.add_argument("--use_migraphx", action="store_true", help="Enable MIGraphX EP.")

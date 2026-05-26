@@ -14,6 +14,9 @@
 #ifdef USE_CUDA
 #include "core/providers/cuda/cuda_provider_options.h"
 #endif
+#ifdef USE_MUSA
+#include "core/providers/musa/musa_provider_options.h"
+#endif
 #if defined(USE_WEBGPU)
 #include "core/graph/constants.h"
 #include "core/session/abi_session_options_impl.h"
@@ -148,6 +151,17 @@ std::unique_ptr<IExecutionProvider> DefaultCudaNHWCExecutionProvider() {
   return nullptr;
 }
 #endif
+
+std::unique_ptr<IExecutionProvider> DefaultMusaExecutionProvider() {
+#ifdef USE_MUSA
+  OrtMUSAProviderOptions provider_options{};
+  provider_options.device_id = 0;
+  if (auto factory = MusaProviderFactoryCreator::Create(&provider_options)) {
+    return factory->CreateProvider();
+  }
+#endif
+  return nullptr;
+}
 
 std::unique_ptr<IExecutionProvider> CudaExecutionProviderWithOptions(const OrtCUDAProviderOptionsV2* provider_options) {
 #ifdef USE_CUDA

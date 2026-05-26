@@ -52,6 +52,7 @@ constexpr const char* kXnnpackExecutionProvider = "XnnpackExecutionProvider";
 constexpr const char* kWebNNExecutionProvider = "WebNNExecutionProvider";
 constexpr const char* kWebGpuExecutionProvider = "WebGpuExecutionProvider";
 constexpr const char* kCannExecutionProvider = "CANNExecutionProvider";
+constexpr const char* kMusaExecutionProvider = "MUSAExecutionProvider";
 constexpr const char* kAzureExecutionProvider = "AzureExecutionProvider";
 constexpr const char* kVSINPUExecutionProvider = "VSINPUExecutionProvider";
 

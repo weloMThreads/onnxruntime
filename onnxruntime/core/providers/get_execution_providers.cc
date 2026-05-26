@@ -173,6 +173,14 @@ constexpr ProviderInfo kProvidersInPriorityOrder[] =
 #endif
         },
         {
+            kMusaExecutionProvider,
+#ifdef USE_MUSA
+            true,
+#else
+            false,
+#endif
+        },
+        {
             kAzureExecutionProvider,
 #ifdef USE_AZURE
             true,

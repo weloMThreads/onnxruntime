@@ -7,6 +7,7 @@
 #include <string>
 
 #include "core/common/common.h"
+#include "core/common/parse_string.h"
 #include "core/common/logging/logging.h"
 #include "core/framework/error_code_helper.h"
 #include "core/framework/provider_options.h"
@@ -29,6 +30,10 @@
 #if defined(USE_NV) || defined(USE_NV_PROVIDER_INTERFACE)
 #include "core/providers/nv_tensorrt_rtx/nv_provider_options.h"
 #endif
+
+#if defined(USE_MUSA)
+#include "core/providers/musa/musa_provider_options.h"
+#endif
 using namespace onnxruntime;
 
 namespace onnxruntime {
@@ -40,6 +45,17 @@ static constexpr size_t kMaxProviderOptionValueLength = ConfigOptions::kMaxValue
 }  // namespace onnxruntime
 
 namespace {
+
+void ParseMusaBoolOption(const ProviderOptions& provider_options, const char* key, int& output) {
+  const auto it = provider_options.find(key);
+  if (it == provider_options.end()) {
+    return;
+  }
+
+  bool parsed_value = false;
+  ORT_THROW_IF_ERROR(ParseStringWithClassicLocale(it->second, parsed_value));
+  output = parsed_value ? 1 : 0;
+}
 
 OrtStatus* ParseProviderOptions(_In_reads_(num_keys) const char* const* provider_options_keys,
                                 _In_reads_(num_keys) const char* const* provider_options_values,
@@ -102,6 +118,7 @@ ORT_API_STATUS_IMPL(OrtApis::SessionOptionsAppendExecutionProvider,
     CoreML,
     NvTensorRtRtx,  // TensorRt EP for RTX GPUs.
     MIGraphX,
+    MUSA,
     CPU
   };
 
@@ -111,7 +128,7 @@ ORT_API_STATUS_IMPL(OrtApis::SessionOptionsAppendExecutionProvider,
     const char* canonical_name = nullptr;
   };
 
-  static std::array<EpToAppend, 14> supported_eps = {
+  static std::array<EpToAppend, 15> supported_eps = {
       EpToAppend{EpID::DML, "DML", kDmlExecutionProvider},
       EpToAppend{EpID::QNN, "QNN", kQnnExecutionProvider},
       EpToAppend{EpID::OpenVINO, "OpenVINO", kOpenVINOExecutionProvider},
@@ -125,6 +142,7 @@ ORT_API_STATUS_IMPL(OrtApis::SessionOptionsAppendExecutionProvider,
       EpToAppend{EpID::CoreML, "CoreML", kCoreMLExecutionProvider},
       EpToAppend{EpID::NvTensorRtRtx, "NvTensorRtRtx", kNvTensorRTRTXExecutionProvider},
       EpToAppend{EpID::MIGraphX, "MIGraphX", kMIGraphXExecutionProvider},
+      EpToAppend{EpID::MUSA, "MUSA", kMusaExecutionProvider},
       EpToAppend{EpID::CPU, "CPU", kCpuExecutionProvider}};
 
   ProviderOptions provider_options;
@@ -294,6 +312,25 @@ ORT_API_STATUS_IMPL(OrtApis::SessionOptionsAppendExecutionProvider,
     case EpID::MIGraphX: {
 #if defined(USE_MIGRAPHX) || defined(USE_MIGRAPHX_PROVIDER_INTERFACE)
       options->provider_factories.push_back(MIGraphXProviderFactoryCreator::Create(provider_options));
+#else
+      status = create_not_supported_status();
+#endif
+      break;
+    }
+    case EpID::MUSA: {
+#if defined(USE_MUSA)
+      OrtMUSAProviderOptions musa_options{};
+      auto device_id_it = provider_options.find("device_id");
+      if (device_id_it != provider_options.end()) {
+        musa_options.device_id = std::stoi(device_id_it->second);
+      }
+      ParseMusaBoolOption(provider_options, "prefer_nhwc", musa_options.prefer_nhwc);
+      ParseMusaBoolOption(provider_options, "enable_musa_graph", musa_options.enable_musa_graph);
+      if (auto factory = MusaProviderFactoryCreator::Create(&musa_options)) {
+        options->provider_factories.push_back(std::move(factory));
+      } else {
+        status = create_failed_to_load_provider_status();
+      }
 #else
       status = create_not_supported_status();
 #endif
