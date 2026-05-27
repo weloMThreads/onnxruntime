@@ -50,6 +50,12 @@ public:
   Status ComputeInternal(OpKernelContext *ctx) const override;
 };
 
+template <typename T> class Min final : public BinaryElementwise {
+public:
+  Min(const OpKernelInfo &info) : BinaryElementwise(info) {}
+  Status ComputeInternal(OpKernelContext *ctx) const override;
+};
+
 template <typename T> class Max final : public BinaryElementwise {
 public:
   Max(const OpKernelInfo &info) : BinaryElementwise(info) {}

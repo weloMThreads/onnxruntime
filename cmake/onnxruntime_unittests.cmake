@@ -532,6 +532,7 @@ endif()
 if (onnxruntime_USE_MUSA AND NOT onnxruntime_MINIMAL_BUILD AND NOT onnxruntime_REDUCED_OPS_BUILD)
   file(GLOB onnxruntime_test_providers_musa_src CONFIGURE_DEPENDS
     "${TEST_SRC_DIR}/providers/musa/musa_basic_test.cc"
+    "${TEST_SRC_DIR}/providers/musa/musa_comparison_elementwise_test.cc"
     "${TEST_SRC_DIR}/providers/musa/musa_matmul_test.cc"
     "${TEST_SRC_DIR}/providers/musa/musa_reduce_test.cc"
     "${TEST_SRC_DIR}/providers/musa/musa_unary_elementwise_test.cc"

@@ -4,6 +4,7 @@
 #include "test/providers/compare_provider_test_utils.h"
 
 #include "core/optimizer/insert_cast_transformer.h"
+#include "core/session/onnxruntime_session_options_config_keys.h"
 #include "core/session/inference_session.h"
 
 #include "test/util/include/asserts.h"
@@ -36,6 +37,8 @@ std::unique_ptr<IExecutionProvider> GetExecutionProvider(const std::string& prov
     execution_provider = DefaultDmlExecutionProvider();
   else if (provider_type == onnxruntime::kWebGpuExecutionProvider)
     execution_provider = DefaultWebGpuExecutionProvider();
+  else if (provider_type == onnxruntime::kMusaExecutionProvider)
+    execution_provider = DefaultMusaExecutionProvider();
   // skip if execution provider is disabled
   if (execution_provider == nullptr) {
     return nullptr;
@@ -47,7 +50,8 @@ void CompareOpTester::CompareWithCPU(const std::string& target_provider_type,
                                      double per_sample_tolerance,
                                      double relative_per_sample_tolerance,
                                      const bool need_cpu_cast,
-                                     const std::unordered_map<std::string, int>& extra_domain_to_version) {
+                                     const std::unordered_map<std::string, int>& extra_domain_to_version,
+                                     bool disable_cpu_ep_fallback) {
   SetTestFunctionCalled();
 
   std::unique_ptr<IExecutionProvider> target_execution_provider = GetExecutionProvider(target_provider_type);
@@ -100,7 +104,12 @@ void CompareOpTester::CompareWithCPU(const std::string& target_provider_type,
 
   ASSERT_STATUS_OK(tp_graph.Resolve());
 
-  InferenceSession target_session_object{so, GetEnvironment()};
+  SessionOptions target_so;
+  target_so.session_logid = Op();
+  if (disable_cpu_ep_fallback) {
+    ASSERT_STATUS_OK(target_so.config_options.AddConfigEntry(kOrtSessionOptionsDisableCPUEPFallback, "1"));
+  }
+  InferenceSession target_session_object{target_so, GetEnvironment()};
   ASSERT_STATUS_OK(target_session_object.RegisterExecutionProvider(std::move(target_execution_provider)));
 
   std::string s2;

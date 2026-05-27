@@ -360,6 +360,8 @@ static ::musa::dnn::Binary::Mode GetBinaryMode(const std::string &op_name) {
     return ::musa::dnn::Binary::Mode::DIV;
   } else if (op_name == "Pow") {
     return ::musa::dnn::Binary::Mode::POW;
+  } else if (op_name == "Min") {
+    return ::musa::dnn::Binary::Mode::MIN;
   } else if (op_name == "Max") {
     return ::musa::dnn::Binary::Mode::MAX;
   } else if (op_name == "PRelu") {
@@ -375,11 +377,15 @@ template <typename T>
 Status SimpleMusaBinaryOp(const MusaPreparation &prepare, size_t size,
                           musaStream_t stream,
                           const std::string &op_name) {
-  // Support Add, Sub, Mul, Div, Pow, Max, PRelu operations
+  // Support Add, Sub, Mul, Div, Pow, Min, Max, PRelu operations
   if (op_name != "Add" && op_name != "Sub" && op_name != "Mul" && op_name != "Div" &&
-      op_name != "Pow" && op_name != "Max" && op_name != "PRelu") {
+      op_name != "Pow" && op_name != "Min" && op_name != "Max" && op_name != "PRelu") {
     return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT,
                            "Unsupported operation: " + op_name);
+  }
+
+  if (size == 0) {
+    return Status::OK();
   }
 
 
@@ -473,7 +479,7 @@ Status BinaryElementwise::Prepare(OpKernelContext *ctx,
   prepare.input_b_shape = B->Shape();
   prepare.output_shape = output_shape;
 
-  if (!prepare.input_a_ptr || !prepare.input_b_ptr || !prepare.output_ptr) {
+  if (prepare.output_size > 0 && (!prepare.input_a_ptr || !prepare.input_b_ptr || !prepare.output_ptr)) {
     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Invalid tensor data pointers");
   }
 
@@ -681,6 +687,25 @@ REGISTER_MUSA_POW_TYPED_COMPUTE(int32_t)
 REGISTER_MUSA_POW_TYPED_COMPUTE(int64_t)
 REGISTER_MUSA_POW_TYPED_COMPUTE(MLFloat16)
 REGISTER_MUSA_POW_TYPED_COMPUTE(float)
+
+// Register Min operations
+// Based on ONNX Min specification: supports versions 6-11, 12, 13
+REGISTER_MUSA_ELEMENTWISE_VERSIONED_ILHFD(Min, 6, 11)
+
+REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL(Min, 12, int32_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL(Min, 12, int64_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL(Min, 12, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL(Min, 12, float)
+
+REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL(Min, 13, int32_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL(Min, 13, int64_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL(Min, 13, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL(Min, 13, float)
+
+REGISTER_MUSA_ELEMENTWISE_TYPED_COMPUTE(Min, int32_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED_COMPUTE(Min, int64_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED_COMPUTE(Min, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_TYPED_COMPUTE(Min, float)
 
 // Register Max operations
 // Based on ONNX Max specification: supports versions 6-11, 12, 13
