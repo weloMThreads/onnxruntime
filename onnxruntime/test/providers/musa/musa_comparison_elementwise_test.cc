@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace onnxruntime {
@@ -39,6 +40,17 @@ void CompareWithMusaNoFallback(CompareOpTester& test,
 
 ONNX_NAMESPACE::TypeProto MakeTensorType(int32_t elem_type,
                                          std::initializer_list<int64_t> dims) {
+  ONNX_NAMESPACE::TypeProto type_proto;
+  auto* tensor_type = type_proto.mutable_tensor_type();
+  tensor_type->set_elem_type(elem_type);
+  for (int64_t dim : dims) {
+    tensor_type->mutable_shape()->add_dim()->set_dim_value(dim);
+  }
+  return type_proto;
+}
+
+ONNX_NAMESPACE::TypeProto MakeTensorType(int32_t elem_type,
+                                         const std::vector<int64_t>& dims) {
   ONNX_NAMESPACE::TypeProto type_proto;
   auto* tensor_type = type_proto.mutable_tensor_type();
   tensor_type->set_elem_type(elem_type);
@@ -94,6 +106,83 @@ class RoundAddRoundTester : public CompareOpTester {
     graph.AddNode("round2_node", "Round", "Round node",
                   {&sum_arg}, {graph_output_defs[0]});
   }
+};
+
+
+class RsqrtSquareLog1pTester : public CompareOpTester {
+ public:
+  explicit RsqrtSquareLog1pTester(std::vector<int64_t> dims,
+                                  int32_t elem_type = ONNX_NAMESPACE::TensorProto_DataType_FLOAT)
+      : CompareOpTester("RsqrtSquareLog1p", 13), dims_(std::move(dims)), elem_type_(elem_type) {}
+
+  void AddNodes(onnxruntime::Graph& graph,
+                std::vector<onnxruntime::NodeArg*>& graph_input_defs,
+                std::vector<onnxruntime::NodeArg*>& graph_output_defs,
+                std::vector<std::function<void(onnxruntime::Node& node)>>& add_attribute_funcs) override {
+    (void)add_attribute_funcs;
+
+    auto tensor_type = MakeTensorType(elem_type_, dims_);
+    auto& sqrt_arg = graph.GetOrCreateNodeArg("SqrtOut", &tensor_type);
+    auto& rsqrt_arg = graph.GetOrCreateNodeArg("RsqrtOut", &tensor_type);
+    auto& square_arg = graph.GetOrCreateNodeArg("SquareOut", &tensor_type);
+    auto& plus_one_arg = graph.GetOrCreateNodeArg("PlusOne", &tensor_type);
+    auto& log1p_arg = graph.GetOrCreateNodeArg("Log1pOut", &tensor_type);
+
+    graph.AddNode("sqrt_node", "Sqrt", "TF Rsqrt decomposition sqrt",
+                  {graph_input_defs[0]}, {&sqrt_arg});
+    graph.AddNode("div_node", "Div", "TF Rsqrt decomposition reciprocal",
+                  {graph_input_defs[1], &sqrt_arg}, {&rsqrt_arg});
+    graph.AddNode("square_node", "Mul", "TF Square decomposition",
+                  {&rsqrt_arg, &rsqrt_arg}, {&square_arg});
+    graph.AddNode("add_one_node", "Add", "TF Log1p decomposition add one",
+                  {graph_input_defs[0], graph_input_defs[1]}, {&plus_one_arg});
+    graph.AddNode("log_node", "Log", "TF Log1p decomposition log",
+                  {&plus_one_arg}, {&log1p_arg});
+    graph.AddNode("sum_node", "Add", "Combine model3 unary decompositions",
+                  {&square_arg, &log1p_arg}, {graph_output_defs[0]});
+  }
+
+ private:
+  std::vector<int64_t> dims_;
+  int32_t elem_type_;
+};
+
+class SplitSqueezeConcatTester : public CompareOpTester {
+ public:
+  explicit SplitSqueezeConcatTester(int32_t elem_type)
+      : CompareOpTester("SplitSqueezeConcat", 13), elem_type_(elem_type) {}
+
+  void AddNodes(onnxruntime::Graph& graph,
+                std::vector<onnxruntime::NodeArg*>& graph_input_defs,
+                std::vector<onnxruntime::NodeArg*>& graph_output_defs,
+                std::vector<std::function<void(onnxruntime::Node& node)>>& add_attribute_funcs) override {
+    (void)add_attribute_funcs;
+
+    auto split0_type = MakeTensorType(elem_type_, {2, 2});
+    auto split1_type = MakeTensorType(elem_type_, {2, 1});
+    auto split2_type = MakeTensorType(elem_type_, {2, 3});
+    auto squeezed_type = MakeTensorType(elem_type_, {2});
+    auto& split0_arg = graph.GetOrCreateNodeArg("SplitOut0", &split0_type);
+    auto& split1_arg = graph.GetOrCreateNodeArg("SplitOut1", &split1_type);
+    auto& split2_arg = graph.GetOrCreateNodeArg("SplitOut2", &split2_type);
+    auto& squeezed_arg = graph.GetOrCreateNodeArg("Squeezed", &squeezed_type);
+    auto& restored_arg = graph.GetOrCreateNodeArg("Restored", &split1_type);
+
+    auto& split_node = graph.AddNode("split_node", "Split", "TF SplitV decomposition",
+                                     {graph_input_defs[0], graph_input_defs[1]},
+                                     {&split0_arg, &split1_arg, &split2_arg});
+    split_node.AddAttribute("axis", int64_t{1});
+    graph.AddNode("squeeze_node", "Squeeze", "TF Unpack decomposition squeeze",
+                  {&split1_arg, graph_input_defs[2]}, {&squeezed_arg});
+    graph.AddNode("unsqueeze_node", "Unsqueeze", "TF Pack decomposition unsqueeze",
+                  {&squeezed_arg, graph_input_defs[2]}, {&restored_arg});
+    auto& concat_node = graph.AddNode("concat_node", "Concat", "TF Pack decomposition concat",
+                                      {&split0_arg, &restored_arg, &split2_arg}, {graph_output_defs[0]});
+    concat_node.AddAttribute("axis", int64_t{1});
+  }
+
+ private:
+  int32_t elem_type_;
 };
 
 }  // namespace
@@ -241,6 +330,72 @@ TEST(MusaComparisonElementwiseTest, RoundAddRoundMultiOpGraph) {
   test.AddInput<float>("X", {2, 3}, {0.5f, 1.5f, 2.5f, -0.5f, -1.5f, 3.2f});
   test.AddInput<float>("Bias", {2, 3}, {0.6f, 0.5f, 1.5f, -0.6f, -0.5f, -3.6f});
   test.AddOutput<float>("Y", {2, 3}, {1.0f, 2.0f, 4.0f, -1.0f, -2.0f, -1.0f});
+  CompareWithMusaNoFallback(test);
+}
+
+
+TEST(MusaComparisonElementwiseTest, WhereFloat16BroadcastDynamicShape) {
+  CompareOpTester test("Where", 16);
+  const std::vector<std::string> cond_dim_params{"batch", "1"};
+  const std::vector<std::string> x_dim_params{"batch", "seq"};
+  test.AddInput<bool>("Cond", {2, 1}, {true, false}, false, &cond_dim_params);
+  test.AddInput<MLFloat16>("X", {2, 3}, ToFloat16({1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f}), false, &x_dim_params);
+  test.AddInput<MLFloat16>("Y", {}, ToFloat16({9.0f}));
+  test.AddOutput<MLFloat16>("Z", {2, 3}, ToFloat16({1.0f, 2.0f, 3.0f, 9.0f, 9.0f, 9.0f}));
+  CompareWithMusaNoFallback(test, true, 1e-3, 1e-3);
+}
+
+TEST(MusaComparisonElementwiseTest, WhereInt32BroadcastScalar) {
+  CompareOpTester test("Where", 16);
+  test.AddInput<bool>("Cond", {1, 3}, {true, false, true});
+  test.AddInput<int32_t>("X", {}, {7});
+  test.AddInput<int32_t>("Y", {2, 3}, {1, 2, 3, 4, 5, 6});
+  test.AddOutput<int32_t>("Z", {2, 3}, {7, 2, 7, 7, 5, 7});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, RsqrtSquareLog1pFloatDynamicShape) {
+  RsqrtSquareLog1pTester test({2, 3});
+  const std::vector<std::string> dim_params{"batch", "seq"};
+  test.AddInput<float>("X", {2, 3}, {1.0f, 3.0f, 8.0f, 15.0f, 24.0f, 35.0f}, false, &dim_params);
+  test.AddInput<float>("One", {}, {1.0f}, true);
+  test.AddOutput<float>("Y", {2, 3}, {1.6931472f, 1.7196277f, 2.3222246f, 2.8392551f, 3.2605429f, 3.61209f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, RsqrtSquareLog1pFloatScalar) {
+  RsqrtSquareLog1pTester test({});
+  test.AddInput<float>("X", {}, {4.0f});
+  test.AddInput<float>("One", {}, {1.0f}, true);
+  test.AddOutput<float>("Y", {}, {1.859438f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, RsqrtSquareLog1pFloat16) {
+  RsqrtSquareLog1pTester test({2, 2}, ONNX_NAMESPACE::TensorProto_DataType_FLOAT16);
+  test.AddInput<MLFloat16>("X", {2, 2}, ToFloat16({1.0f, 4.0f, 16.0f, 64.0f}));
+  test.AddInput<MLFloat16>("One", {}, ToFloat16({1.0f}), true);
+  test.AddOutput<MLFloat16>("Y", {2, 2}, ToFloat16({1.6931472f, 1.859438f, 2.895213f, 4.1899705f}));
+  CompareWithMusaNoFallback(test, true, 1e-3, 1e-3);
+}
+
+TEST(MusaComparisonElementwiseTest, SplitSqueezeConcatFloatNoCpuFallback) {
+  SplitSqueezeConcatTester test(ONNX_NAMESPACE::TensorProto_DataType_FLOAT);
+  test.AddInput<float>("X", {2, 6}, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f,
+                                    7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f});
+  test.AddInput<int64_t>("SplitSizes", {3}, {2, 1, 3}, true);
+  test.AddInput<int64_t>("Axes", {1}, {1}, true);
+  test.AddOutput<float>("Y", {2, 6}, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f,
+                                    7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, SplitSqueezeConcatInt32NoCpuFallback) {
+  SplitSqueezeConcatTester test(ONNX_NAMESPACE::TensorProto_DataType_INT32);
+  test.AddInput<int32_t>("X", {2, 6}, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+  test.AddInput<int64_t>("SplitSizes", {3}, {2, 1, 3}, true);
+  test.AddInput<int64_t>("Axes", {1}, {1}, true);
+  test.AddOutput<int32_t>("Y", {2, 6}, {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
   CompareWithMusaNoFallback(test);
 }
 
