@@ -205,6 +205,18 @@ OnnxRuntimeTestSession::OnnxRuntimeTestSession(Ort::Env& env, std::random_device
 #else
     ORT_THROW("CUDA is not supported in this build\n");
 #endif
+  } else if (provider_name_ == onnxruntime::kMusaExecutionProvider) {
+#ifdef USE_MUSA
+#ifdef _MSC_VER
+    std::string option_string = ToUTF8String(performance_test_config.run_config.ep_runtime_config_string);
+#else
+    std::string option_string = performance_test_config.run_config.ep_runtime_config_string;
+#endif
+    ParseSessionConfigs(option_string, provider_options);
+    session_options.AppendExecutionProvider("MUSA", provider_options);
+#else
+    ORT_THROW("MUSA is not supported in this build\n");
+#endif
   } else if (provider_name_ == onnxruntime::kTensorrtExecutionProvider) {
 #ifdef USE_TENSORRT
     Ort::TensorRTProviderOptions tensorrt_options;

@@ -185,6 +185,28 @@ class SplitSqueezeConcatTester : public CompareOpTester {
   int32_t elem_type_;
 };
 
+class LogicalChainTester : public CompareOpTester {
+ public:
+  LogicalChainTester() : CompareOpTester("LogicalChain", 13) {}
+
+  void AddNodes(onnxruntime::Graph& graph,
+                std::vector<onnxruntime::NodeArg*>& graph_input_defs,
+                std::vector<onnxruntime::NodeArg*>& graph_output_defs,
+                std::vector<std::function<void(onnxruntime::Node& node)>>& add_attribute_funcs) override {
+    (void)add_attribute_funcs;
+
+    auto bool_tensor = MakeTensorType(ONNX_NAMESPACE::TensorProto_DataType_BOOL, {2, 3});
+    auto& and_arg = graph.GetOrCreateNodeArg("AndOut", &bool_tensor);
+    auto& or_arg = graph.GetOrCreateNodeArg("OrOut", &bool_tensor);
+
+    graph.AddNode("and_node", "And", "LogicalAnd node",
+                  {graph_input_defs[0], graph_input_defs[1]}, {&and_arg});
+    graph.AddNode("or_node", "Or", "LogicalOr node",
+                  {&and_arg, graph_input_defs[2]}, {&or_arg});
+    graph.AddNode("not_node", "Not", "LogicalNot node", {&or_arg}, {graph_output_defs[0]});
+  }
+};
+
 }  // namespace
 
 TEST(MusaComparisonElementwiseTest, GreaterFloatBroadcastDynamicShape) {
@@ -264,6 +286,41 @@ TEST(MusaComparisonElementwiseTest, GreaterMinWhereMultiOpGraph) {
   test.AddInput<float>("X", {2, 3}, {10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f});
   test.AddInput<float>("Y", {2, 3}, {6.0f, 25.0f, 35.0f, 35.0f, 70.0f, 55.0f});
   test.AddOutput<float>("Z", {2, 3}, {6.0f, 20.0f, 35.0f, 35.0f, 70.0f, 55.0f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, AndBoolBroadcastDynamicShape) {
+  CompareOpTester test("And", 7);
+  const std::vector<std::string> lhs_dim_params{"batch", "1"};
+  const std::vector<std::string> rhs_dim_params{"1", "seq"};
+  test.AddInput<bool>("A", {2, 1}, {true, false}, false, &lhs_dim_params);
+  test.AddInput<bool>("B", {1, 3}, {true, false, true}, false, &rhs_dim_params);
+  test.AddOutput<bool>("C", {2, 3}, {true, false, true, false, false, false});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, OrBoolScalar) {
+  CompareOpTester test("Or", 7);
+  test.AddInput<bool>("A", {4}, {false, false, true, true});
+  test.AddInput<bool>("B", {}, {true});
+  test.AddOutput<bool>("C", {4}, {true, true, true, true});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, XorBoolEmpty) {
+  CompareOpTester test("Xor", 7);
+  test.AddInput<bool>("A", {0}, {});
+  test.AddInput<bool>("B", {0}, {});
+  test.AddOutput<bool>("C", {0}, {});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, LogicalChainNoCpuFallback) {
+  LogicalChainTester test;
+  test.AddInput<bool>("A", {2, 3}, {true, false, true, false, true, false});
+  test.AddInput<bool>("B", {2, 3}, {true, true, false, false, true, true});
+  test.AddInput<bool>("C", {2, 3}, {false, false, true, true, false, true});
+  test.AddOutput<bool>("Y", {2, 3}, {false, true, false, false, false, false});
   CompareWithMusaNoFallback(test);
 }
 

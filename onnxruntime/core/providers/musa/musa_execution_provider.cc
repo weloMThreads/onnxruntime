@@ -783,6 +783,9 @@ class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 14, C
 
 // Logical unary operations
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, bool, Not);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, bool, And);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, bool, Or);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, bool, Xor);
 
 // ReduceMax operations (op 1-17, 18)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, MLFloat16, ReduceMax);
@@ -2482,6 +2485,12 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
       // Register Not operator
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 1, bool, Not)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 7, bool, And)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 7, bool, Or)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 7, bool, Xor)>,
 
       // Register MatMul operators - versioned (1-8) - Float types
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
