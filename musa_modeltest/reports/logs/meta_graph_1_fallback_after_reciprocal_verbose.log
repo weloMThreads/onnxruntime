@@ -1,0 +1,1329 @@
+2026-05-27 19:27:41.614606887 [I:onnxruntime:Default, device_discovery_common.cc:34 operator()] Discovered OrtHardwareDevice {vendor_id:0x1ed5, device_id:0x400, vendor:, type:1, metadata: [card_idx=7, pci_bus_id=0000:ca:00.0, ]}
+2026-05-27 19:27:41.615811895 [I:onnxruntime:Default, device_discovery_common.cc:34 operator()] Discovered OrtHardwareDevice {vendor_id:0x1a03, device_id:0x2000, vendor:, type:1, metadata: [card_idx=0, pci_bus_id=0000:02:00.0, ]}
+2026-05-27 19:27:41.615824555 [I:onnxruntime:Default, device_discovery_common.cc:34 operator()] Discovered OrtHardwareDevice {vendor_id:0x1ed5, device_id:0x400, vendor:, type:1, metadata: [card_idx=2, pci_bus_id=0000:3a:00.0, ]}
+2026-05-27 19:27:41.615829307 [I:onnxruntime:Default, device_discovery_common.cc:34 operator()] Discovered OrtHardwareDevice {vendor_id:0x1ed5, device_id:0x400, vendor:, type:1, metadata: [card_idx=6, pci_bus_id=0000:ba:00.0, ]}
+2026-05-27 19:27:41.615833300 [I:onnxruntime:Default, device_discovery_common.cc:34 operator()] Discovered OrtHardwareDevice {vendor_id:0x1ed5, device_id:0x400, vendor:, type:1, metadata: [card_idx=8, pci_bus_id=0000:da:00.0, ]}
+2026-05-27 19:27:41.615836917 [I:onnxruntime:Default, device_discovery_common.cc:34 operator()] Discovered OrtHardwareDevice {vendor_id:0x1ed5, device_id:0x400, vendor:, type:1, metadata: [card_idx=1, pci_bus_id=0000:2a:00.0, ]}
+2026-05-27 19:27:41.615840491 [I:onnxruntime:Default, device_discovery_common.cc:34 operator()] Discovered OrtHardwareDevice {vendor_id:0x1ed5, device_id:0x400, vendor:, type:1, metadata: [card_idx=3, pci_bus_id=0000:4c:00.0, ]}
+2026-05-27 19:27:41.615844379 [I:onnxruntime:Default, device_discovery_common.cc:34 operator()] Discovered OrtHardwareDevice {vendor_id:0x1ed5, device_id:0x400, vendor:, type:1, metadata: [card_idx=5, pci_bus_id=0000:aa:00.0, ]}
+2026-05-27 19:27:41.615847924 [I:onnxruntime:Default, device_discovery_common.cc:34 operator()] Discovered OrtHardwareDevice {vendor_id:0x1ed5, device_id:0x400, vendor:, type:1, metadata: [card_idx=4, pci_bus_id=0000:5c:00.0, ]}
+2026-05-27 19:27:41.615851799 [I:onnxruntime:Default, device_discovery_common.cc:34 operator()] Discovered OrtHardwareDevice {vendor_id:0x8086, device_id:0x0, vendor:Intel, type:0, metadata: []}
+2026-05-27 19:27:42.597745269 [V:onnxruntime:Default, env.cc:592 GetRuntimePath] Getting runtime path as parent directory of binary: ./runtime/onnxruntime_perf_test
+2026-05-27 19:27:42.597853080 [V:onnxruntime:Default, env.cc:592 GetRuntimePath] Getting runtime path as parent directory of binary: ./runtime/onnxruntime_perf_test
+Overriding dimension with name, unk__4954, to 1024
+Overriding dimension with name, unk__4955, to 1
+Overriding dimension with name, unk__4956, to 1024
+Overriding dimension with name, unk__4957, to 1
+Overriding dimension with name, unk__4958, to 1024
+Overriding dimension with name, unk__4959, to 1
+Overriding dimension with name, unk__4960, to 1024
+Overriding dimension with name, unk__4961, to 5
+Overriding dimension with name, unk__4962, to 1024
+Overriding dimension with name, unk__4963, to 1
+Overriding dimension with name, unk__4964, to 1024
+Overriding dimension with name, unk__4965, to 1
+Overriding dimension with name, unk__4966, to 1024
+Overriding dimension with name, unk__4967, to 5
+Overriding dimension with name, unk__4968, to 1024
+Overriding dimension with name, unk__4969, to 17
+Overriding dimension with name, unk__4970, to 1024
+Overriding dimension with name, unk__4971, to 17
+Overriding dimension with name, unk__4972, to 1024
+Overriding dimension with name, unk__4973, to 17
+Overriding dimension with name, unk__4974, to 1024
+Overriding dimension with name, unk__4975, to 41
+Overriding dimension with name, unk__4976, to 1024
+Overriding dimension with name, unk__4977, to 13
+Overriding dimension with name, unk__4978, to 1024
+Overriding dimension with name, unk__4979, to 17
+Overriding dimension with name, unk__4980, to 1024
+Overriding dimension with name, unk__4981, to 9
+Overriding dimension with name, unk__4982, to 1024
+Overriding dimension with name, unk__4983, to 13
+Overriding dimension with name, unk__4984, to 1024
+Overriding dimension with name, unk__4985, to 17
+Overriding dimension with name, unk__4986, to 1024
+Overriding dimension with name, unk__4987, to 13
+Overriding dimension with name, unk__4988, to 1024
+Overriding dimension with name, unk__4989, to 13
+Overriding dimension with name, unk__4990, to 1024
+Overriding dimension with name, unk__4991, to 1
+Overriding dimension with name, unk__4992, to 1024
+Overriding dimension with name, unk__4993, to 1
+Overriding dimension with name, unk__4994, to 1024
+Overriding dimension with name, unk__4995, to 1
+Overriding dimension with name, unk__4996, to 1024
+Overriding dimension with name, unk__4997, to 49
+Overriding dimension with name, unk__4998, to 1024
+Overriding dimension with name, unk__4999, to 45
+Overriding dimension with name, unk__5000, to 1024
+Overriding dimension with name, unk__5001, to 17
+Overriding dimension with name, unk__5002, to 1024
+Overriding dimension with name, unk__5003, to 49
+Overriding dimension with name, unk__5004, to 1024
+Overriding dimension with name, unk__5005, to 45
+Overriding dimension with name, unk__5006, to 1024
+Overriding dimension with name, unk__5007, to 41
+Overriding dimension with name, unk__5008, to 1024
+Overriding dimension with name, unk__5009, to 25
+Overriding dimension with name, unk__5010, to 1024
+Overriding dimension with name, unk__5011, to 25
+Overriding dimension with name, unk__5012, to 1024
+Overriding dimension with name, unk__5013, to 25
+Overriding dimension with name, unk__5014, to 1024
+Overriding dimension with name, unk__5015, to 25
+Overriding dimension with name, unk__5016, to 1024
+Overriding dimension with name, unk__5017, to 25
+Overriding dimension with name, unk__5018, to 1024
+Overriding dimension with name, unk__5019, to 17
+Overriding dimension with name, unk__5020, to 1024
+Overriding dimension with name, unk__5021, to 17
+Overriding dimension with name, unk__5022, to 1024
+Overriding dimension with name, unk__5023, to 13
+Overriding dimension with name, unk__5024, to 1024
+Overriding dimension with name, unk__5025, to 9
+Overriding dimension with name, unk__5026, to 1024
+Overriding dimension with name, unk__5027, to 25
+Overriding dimension with name, unk__5028, to 1024
+Overriding dimension with name, unk__5029, to 9
+Overriding dimension with name, unk__5030, to 1024
+Overriding dimension with name, unk__5031, to 17
+Overriding dimension with name, unk__5032, to 1024
+Overriding dimension with name, unk__5033, to 5
+Overriding dimension with name, unk__5034, to 1024
+Overriding dimension with name, unk__5035, to 17
+Overriding dimension with name, unk__5036, to 1024
+Overriding dimension with name, unk__5037, to 9
+Overriding dimension with name, unk__5038, to 1024
+Overriding dimension with name, unk__5039, to 25
+Overriding dimension with name, unk__5040, to 1024
+Overriding dimension with name, unk__5041, to 9
+Overriding dimension with name, unk__5042, to 1024
+Overriding dimension with name, unk__5043, to 33
+Overriding dimension with name, unk__5044, to 1024
+Overriding dimension with name, unk__5045, to 1
+Overriding dimension with name, unk__5046, to 1024
+Overriding dimension with name, unk__5047, to 17
+Overriding dimension with name, unk__5048, to 1024
+Overriding dimension with name, unk__5049, to 9
+Overriding dimension with name, unk__5050, to 1024
+Overriding dimension with name, unk__5051, to 1
+Overriding dimension with name, unk__5052, to 1024
+Overriding dimension with name, unk__5053, to 9
+Overriding dimension with name, unk__5054, to 1024
+Overriding dimension with name, unk__5055, to 17
+Overriding dimension with name, unk__5056, to 1024
+Overriding dimension with name, unk__5057, to 9
+Overriding dimension with name, unk__5058, to 1024
+Overriding dimension with name, unk__5059, to 1
+Overriding dimension with name, unk__5060, to 1024
+Overriding dimension with name, unk__5061, to 9
+Overriding dimension with name, unk__5062, to 1024
+Overriding dimension with name, unk__5063, to 5
+Overriding dimension with name, unk__5064, to 1024
+Overriding dimension with name, unk__5065, to 9
+Overriding dimension with name, unk__5066, to 1024
+Overriding dimension with name, unk__5067, to 5
+Overriding dimension with name, unk__5068, to 1024
+Overriding dimension with name, unk__5069, to 9
+Overriding dimension with name, unk__5070, to 1024
+Overriding dimension with name, unk__5071, to 9
+Overriding dimension with name, unk__5072, to 1024
+Overriding dimension with name, unk__5073, to 5
+Overriding dimension with name, unk__5074, to 1024
+Overriding dimension with name, unk__5075, to 9
+Overriding dimension with name, unk__5076, to 1024
+Overriding dimension with name, unk__5077, to 5
+Overriding dimension with name, unk__5078, to 1024
+Overriding dimension with name, unk__5079, to 5
+Overriding dimension with name, unk__5080, to 1024
+Overriding dimension with name, unk__5081, to 5
+Overriding dimension with name, unk__5082, to 1024
+Overriding dimension with name, unk__5083, to 5
+Overriding dimension with name, unk__5084, to 1024
+Overriding dimension with name, unk__5085, to 5
+Overriding dimension with name, unk__5086, to 1024
+Overriding dimension with name, unk__5087, to 5
+Overriding dimension with name, unk__5088, to 1024
+Overriding dimension with name, unk__5089, to 5
+Overriding dimension with name, unk__5090, to 1024
+Overriding dimension with name, unk__5091, to 9
+Overriding dimension with name, unk__5092, to 1024
+Overriding dimension with name, unk__5093, to 5
+Overriding dimension with name, unk__5094, to 1024
+Overriding dimension with name, unk__5095, to 5
+Overriding dimension with name, unk__5096, to 1024
+Overriding dimension with name, unk__5097, to 17
+Overriding dimension with name, unk__5098, to 1024
+Overriding dimension with name, unk__5099, to 17
+Overriding dimension with name, unk__5100, to 1024
+Overriding dimension with name, unk__5101, to 17
+Overriding dimension with name, unk__5102, to 1024
+Overriding dimension with name, unk__5103, to 9
+Overriding dimension with name, unk__5104, to 1024
+Overriding dimension with name, unk__5105, to 9
+Overriding dimension with name, unk__5106, to 1024
+Overriding dimension with name, unk__5107, to 9
+Overriding dimension with name, unk__5108, to 1024
+Overriding dimension with name, unk__5109, to 701
+Overriding dimension with name, unk__5110, to 1024
+Overriding dimension with name, unk__5111, to 481
+Overriding dimension with name, unk__5112, to 1024
+Overriding dimension with name, unk__5113, to 73
+Overriding dimension with name, unk__5114, to 1024
+Overriding dimension with name, unk__5115, to 69
+Overriding dimension with name, unk__5116, to 1024
+Overriding dimension with name, unk__5117, to 21
+Overriding dimension with name, unk__5118, to 1024
+Overriding dimension with name, unk__5119, to 73
+Overriding dimension with name, unk__5120, to 1024
+Overriding dimension with name, unk__5121, to 301
+Overriding dimension with name, unk__5122, to 1024
+Overriding dimension with name, unk__5123, to 41
+Overriding dimension with name, unk__5124, to 1024
+Overriding dimension with name, unk__5125, to 41
+Overriding dimension with name, unk__5126, to 1024
+Overriding dimension with name, unk__5127, to 45
+Overriding dimension with name, unk__5128, to 1024
+Overriding dimension with name, unk__5129, to 49
+Overriding dimension with name, unk__5130, to 1024
+Overriding dimension with name, unk__5131, to 49
+Overriding dimension with name, unk__5132, to 1024
+Overriding dimension with name, unk__5133, to 13
+Overriding dimension with name, unk__5134, to 1024
+Overriding dimension with name, unk__5135, to 25
+Overriding dimension with name, unk__5136, to 1024
+Overriding dimension with name, unk__5137, to 13
+Overriding dimension with name, unk__5138, to 1024
+Overriding dimension with name, unk__5139, to 65
+Overriding dimension with name, unk__5140, to 1024
+Overriding dimension with name, unk__5141, to 45
+Overriding dimension with name, unk__5142, to 1024
+Overriding dimension with name, unk__5143, to 45
+Overriding dimension with name, unk__5144, to 1024
+Overriding dimension with name, unk__5145, to 17
+Overriding dimension with name, unk__5146, to 1024
+Overriding dimension with name, unk__5147, to 17
+Overriding dimension with name, unk__5148, to 1024
+Overriding dimension with name, unk__5149, to 41
+Overriding dimension with name, unk__5150, to 1024
+Overriding dimension with name, unk__5151, to 13
+Overriding dimension with name, unk__5152, to 1024
+Overriding dimension with name, unk__5153, to 1
+Overriding dimension with name, unk__5154, to 1024
+Overriding dimension with name, unk__5155, to 9
+Overriding dimension with name, unk__5156, to 1024
+Overriding dimension with name, unk__5157, to 17
+Overriding dimension with name, unk__5158, to 1024
+Overriding dimension with name, unk__5159, to 1
+Overriding dimension with name, unk__5160, to 1024
+Overriding dimension with name, unk__5161, to 9
+Overriding dimension with name, unk__5162, to 1024
+Overriding dimension with name, unk__5163, to 1
+Overriding dimension with name, unk__5164, to 1024
+Overriding dimension with name, unk__5165, to 1
+Overriding dimension with name, unk__5166, to 1024
+Overriding dimension with name, unk__5167, to 9
+Overriding dimension with name, unk__5168, to 1024
+Overriding dimension with name, unk__5169, to 17
+Overriding dimension with name, unk__5170, to 1024
+Overriding dimension with name, unk__5171, to 17
+Overriding dimension with name, unk__5172, to 1024
+Overriding dimension with name, unk__5173, to 5
+Overriding dimension with name, unk__5174, to 1024
+Overriding dimension with name, unk__5175, to 1
+Overriding dimension with name, unk__5176, to 1024
+Overriding dimension with name, unk__5177, to 9
+Overriding dimension with name, unk__5178, to 1024
+Overriding dimension with name, unk__5179, to 1
+Overriding dimension with name, unk__5180, to 1024
+Overriding dimension with name, unk__5181, to 1
+Overriding dimension with name, unk__5182, to 1024
+Overriding dimension with name, unk__5183, to 1
+Overriding dimension with name, unk__5184, to 1024
+Overriding dimension with name, unk__5185, to 17
+Overriding dimension with name, unk__5186, to 1024
+Overriding dimension with name, unk__5187, to 1
+Overriding dimension with name, unk__5188, to 1024
+Overriding dimension with name, unk__5189, to 1
+Overriding dimension with name, unk__5190, to 1024
+Overriding dimension with name, unk__5191, to 1
+Overriding dimension with name, unk__5192, to 1024
+Overriding dimension with name, unk__5193, to 1
+Overriding dimension with name, unk__5194, to 1024
+Overriding dimension with name, unk__5195, to 13
+Overriding dimension with name, unk__5196, to 1024
+Overriding dimension with name, unk__5197, to 17
+Overriding dimension with name, unk__5198, to 1024
+Overriding dimension with name, unk__5199, to 49
+Overriding dimension with name, unk__5200, to 1024
+Overriding dimension with name, unk__5201, to 41
+Overriding dimension with name, unk__5202, to 1024
+Overriding dimension with name, unk__5203, to 13
+Overriding dimension with name, unk__5204, to 1024
+Overriding dimension with name, unk__5205, to 25
+Overriding dimension with name, unk__5206, to 1024
+Overriding dimension with name, unk__5207, to 9
+Overriding dimension with name, unk__5208, to 1024
+Overriding dimension with name, unk__5209, to 9
+Overriding dimension with name, unk__5210, to 1024
+Overriding dimension with name, unk__5211, to 37
+Overriding dimension with name, unk__5212, to 1024
+Overriding dimension with name, unk__5213, to 25
+Overriding dimension with name, unk__5214, to 1024
+Overriding dimension with name, unk__5215, to 25
+Overriding dimension with name, unk__5216, to 1024
+Overriding dimension with name, unk__5217, to 21
+Overriding dimension with name, unk__5218, to 1024
+Overriding dimension with name, unk__5219, to 9
+Overriding dimension with name, unk__5220, to 1024
+Overriding dimension with name, unk__5221, to 13
+Overriding dimension with name, unk__5222, to 1024
+Overriding dimension with name, unk__5223, to 17
+Overriding dimension with name, unk__5224, to 1024
+Overriding dimension with name, unk__5225, to 17
+Overriding dimension with name, unk__5226, to 1024
+Overriding dimension with name, unk__5227, to 13
+Overriding dimension with name, unk__5228, to 1024
+Overriding dimension with name, unk__5229, to 45
+Overriding dimension with name, unk__5230, to 1024
+Overriding dimension with name, unk__5231, to 25
+Overriding dimension with name, unk__5232, to 1024
+Overriding dimension with name, unk__5233, to 17
+Overriding dimension with name, unk__5234, to 1024
+Overriding dimension with name, unk__5235, to 21
+Overriding dimension with name, unk__5236, to 1024
+Overriding dimension with name, unk__5237, to 17
+Overriding dimension with name, unk__5238, to 1024
+Overriding dimension with name, unk__5239, to 13
+Overriding dimension with name, unk__5240, to 1024
+Overriding dimension with name, unk__5241, to 49
+Overriding dimension with name, unk__5242, to 1024
+Overriding dimension with name, unk__5243, to 25
+Overriding dimension with name, unk__5244, to 1024
+Overriding dimension with name, unk__5245, to 45
+Overriding dimension with name, unk__5246, to 1024
+Overriding dimension with name, unk__5247, to 17
+Overriding dimension with name, unk__5248, to 1024
+Overriding dimension with name, unk__5249, to 41
+Overriding dimension with name, unk__5250, to 1024
+Overriding dimension with name, unk__5251, to 13
+Overriding dimension with name, unk__5252, to 1024
+Overriding dimension with name, unk__5253, to 17
+Overriding dimension with name, unk__5254, to 1024
+Overriding dimension with name, unk__5255, to 13
+Overriding dimension with name, unk__5256, to 1024
+Overriding dimension with name, unk__5257, to 41
+Overriding dimension with name, unk__5258, to 1024
+Overriding dimension with name, unk__5259, to 45
+Overriding dimension with name, unk__5260, to 1024
+Overriding dimension with name, unk__5261, to 9
+Overriding dimension with name, unk__5262, to 1024
+Overriding dimension with name, unk__5263, to 13
+Overriding dimension with name, unk__5264, to 1024
+Overriding dimension with name, unk__5265, to 17
+Overriding dimension with name, unk__5266, to 1024
+Overriding dimension with name, unk__5267, to 13
+Overriding dimension with name, unk__5268, to 1024
+Overriding dimension with name, unk__5269, to 57
+Overriding dimension with name, unk__5270, to 1024
+Overriding dimension with name, unk__5271, to 13
+Overriding dimension with name, unk__5272, to 1024
+Overriding dimension with name, unk__5273, to 25
+Overriding dimension with name, unk__5274, to 1024
+Overriding dimension with name, unk__5275, to 45
+Overriding dimension with name, unk__5276, to 1024
+Overriding dimension with name, unk__5277, to 45
+Overriding dimension with name, unk__5278, to 1024
+Overriding dimension with name, unk__5279, to 45
+Overriding dimension with name, unk__5280, to 1024
+Overriding dimension with name, unk__5281, to 41
+Overriding dimension with name, unk__5282, to 1024
+Overriding dimension with name, unk__5283, to 41
+Overriding dimension with name, unk__5284, to 1024
+Overriding dimension with name, unk__5285, to 45
+Overriding dimension with name, unk__5286, to 1024
+Overriding dimension with name, unk__5287, to 25
+Overriding dimension with name, unk__5288, to 1024
+Overriding dimension with name, unk__5289, to 17
+Overriding dimension with name, unk__5290, to 1024
+Overriding dimension with name, unk__5291, to 13
+Overriding dimension with name, unk__5292, to 1024
+Overriding dimension with name, unk__5293, to 17
+Overriding dimension with name, unk__5294, to 1024
+Overriding dimension with name, unk__5295, to 17
+Overriding dimension with name, unk__5296, to 1024
+Overriding dimension with name, unk__5297, to 17
+Overriding dimension with name, unk__5298, to 1024
+Overriding dimension with name, unk__5299, to 13
+Overriding dimension with name, unk__5300, to 1024
+Overriding dimension with name, unk__5301, to 17
+Overriding dimension with name, unk__5302, to 1024
+Overriding dimension with name, unk__5303, to 13
+Overriding dimension with name, unk__5304, to 1024
+Overriding dimension with name, unk__5305, to 17
+Overriding dimension with name, unk__5306, to 1024
+Overriding dimension with name, unk__5307, to 17
+Overriding dimension with name, unk__5308, to 1024
+Overriding dimension with name, unk__5309, to 5
+Overriding dimension with name, unk__5310, to 1024
+Overriding dimension with name, unk__5311, to 5
+Overriding dimension with name, unk__5312, to 1024
+Overriding dimension with name, unk__5313, to 33
+Overriding dimension with name, unk__5314, to 1024
+Overriding dimension with name, unk__5315, to 17
+Overriding dimension with name, unk__5316, to 1024
+Overriding dimension with name, unk__5317, to 41
+Overriding dimension with name, unk__5318, to 1024
+Overriding dimension with name, unk__5319, to 13
+Overriding dimension with name, unk__5320, to 1024
+Overriding dimension with name, unk__5321, to 13
+Overriding dimension with name, unk__5322, to 1024
+Overriding dimension with name, unk__5323, to 13
+Overriding dimension with name, unk__5324, to 1024
+Overriding dimension with name, unk__5325, to 13
+Overriding dimension with name, unk__5326, to 1024
+Overriding dimension with name, unk__5327, to 9
+Overriding dimension with name, unk__5328, to 1024
+Overriding dimension with name, unk__5329, to 9
+Overriding dimension with name, unk__5330, to 1024
+Overriding dimension with name, unk__5331, to 13
+Overriding dimension with name, unk__5332, to 1024
+Overriding dimension with name, unk__5333, to 13
+Overriding dimension with name, unk__5334, to 1024
+Overriding dimension with name, unk__5335, to 13
+Overriding dimension with name, unk__5336, to 1024
+Overriding dimension with name, unk__5337, to 13
+Overriding dimension with name, unk__5338, to 1024
+Overriding dimension with name, unk__5339, to 13
+Overriding dimension with name, unk__5340, to 1024
+Overriding dimension with name, unk__5341, to 13
+Overriding dimension with name, unk__5342, to 1024
+Overriding dimension with name, unk__5343, to 13
+Overriding dimension with name, unk__5344, to 1024
+Overriding dimension with name, unk__5345, to 13
+Overriding dimension with name, unk__5346, to 1024
+Overriding dimension with name, unk__5347, to 13
+Overriding dimension with name, unk__5348, to 1024
+Overriding dimension with name, unk__5349, to 13
+Overriding dimension with name, unk__5350, to 1024
+Overriding dimension with name, unk__5351, to 13
+Overriding dimension with name, unk__5352, to 1024
+Overriding dimension with name, unk__5353, to 13
+Overriding dimension with name, unk__5354, to 1024
+Overriding dimension with name, unk__5355, to 13
+Overriding dimension with name, unk__5356, to 1024
+Overriding dimension with name, unk__5357, to 13
+Overriding dimension with name, unk__5358, to 1024
+Overriding dimension with name, unk__5359, to 13
+Overriding dimension with name, unk__5360, to 1024
+Overriding dimension with name, unk__5361, to 13
+Overriding dimension with name, unk__5362, to 1024
+Overriding dimension with name, unk__5363, to 13
+Overriding dimension with name, unk__5364, to 1024
+Overriding dimension with name, unk__5365, to 13
+Overriding dimension with name, unk__5366, to 1024
+Overriding dimension with name, unk__5367, to 13
+Overriding dimension with name, unk__5368, to 1024
+Overriding dimension with name, unk__5369, to 9
+Overriding dimension with name, unk__5370, to 1024
+Overriding dimension with name, unk__5371, to 9
+Overriding dimension with name, unk__5372, to 1024
+Overriding dimension with name, unk__5373, to 9
+Overriding dimension with name, unk__5374, to 1024
+Overriding dimension with name, unk__5375, to 9
+Overriding dimension with name, unk__5376, to 1024
+Overriding dimension with name, unk__5377, to 9
+Overriding dimension with name, unk__5378, to 1024
+Overriding dimension with name, unk__5379, to 9
+Overriding dimension with name, unk__5380, to 1024
+Overriding dimension with name, unk__5381, to 5
+Overriding dimension with name, unk__5382, to 1024
+Overriding dimension with name, unk__5383, to 9
+Overriding dimension with name, unk__5384, to 1024
+Overriding dimension with name, unk__5385, to 29
+Overriding dimension with name, unk__5386, to 1024
+Overriding dimension with name, unk__5387, to 5
+Overriding dimension with name, unk__5388, to 1024
+Overriding dimension with name, unk__5389, to 5
+Overriding dimension with name, unk__5390, to 1024
+Overriding dimension with name, unk__5391, to 5
+Overriding dimension with name, unk__5392, to 1024
+Overriding dimension with name, unk__5393, to 5
+Overriding dimension with name, unk__5394, to 1024
+Overriding dimension with name, unk__5395, to 5
+Overriding dimension with name, unk__5396, to 1024
+Overriding dimension with name, unk__5397, to 5
+Overriding dimension with name, unk__5398, to 1024
+Overriding dimension with name, unk__5399, to 9
+Overriding dimension with name, unk__5400, to 1024
+Overriding dimension with name, unk__5401, to 9
+Overriding dimension with name, unk__5402, to 1024
+Overriding dimension with name, unk__5403, to 9
+Overriding dimension with name, unk__5404, to 1024
+Overriding dimension with name, unk__5405, to 9
+Overriding dimension with name, unk__5406, to 1024
+Overriding dimension with name, unk__5407, to 9
+Overriding dimension with name, unk__5408, to 1024
+Overriding dimension with name, unk__5409, to 9
+Overriding dimension with name, unk__5410, to 1024
+Overriding dimension with name, unk__5411, to 9
+Overriding dimension with name, unk__5412, to 1024
+Overriding dimension with name, unk__5413, to 9
+Overriding dimension with name, unk__5414, to 1024
+Overriding dimension with name, unk__5415, to 13
+Overriding dimension with name, unk__5416, to 1024
+Overriding dimension with name, unk__5417, to 9
+Overriding dimension with name, unk__5418, to 1024
+Overriding dimension with name, unk__5419, to 9
+Overriding dimension with name, unk__5420, to 1024
+Overriding dimension with name, unk__5421, to 9
+Overriding dimension with name, unk__5422, to 1024
+Overriding dimension with name, unk__5423, to 9
+Overriding dimension with name, unk__5424, to 1024
+Overriding dimension with name, unk__5425, to 25
+Overriding dimension with name, unk__5426, to 1024
+Overriding dimension with name, unk__5427, to 9
+Overriding dimension with name, unk__5428, to 1024
+Overriding dimension with name, unk__5429, to 9
+Overriding dimension with name, unk__5430, to 1024
+Overriding dimension with name, unk__5431, to 9
+Overriding dimension with name, unk__5432, to 1024
+Overriding dimension with name, unk__5433, to 9
+Overriding dimension with name, unk__5434, to 1024
+Overriding dimension with name, unk__5435, to 33
+Overriding dimension with name, unk__5436, to 1024
+Overriding dimension with name, unk__5437, to 9
+Overriding dimension with name, unk__5438, to 1024
+Overriding dimension with name, unk__5439, to 9
+Overriding dimension with name, unk__5440, to 1024
+Overriding dimension with name, unk__5441, to 9
+Overriding dimension with name, unk__5442, to 1024
+Overriding dimension with name, unk__5443, to 9
+Overriding dimension with name, unk__5444, to 1024
+Overriding dimension with name, unk__5445, to 9
+Overriding dimension with name, unk__5446, to 1024
+Overriding dimension with name, unk__5447, to 9
+Overriding dimension with name, unk__5448, to 1024
+Overriding dimension with name, unk__5449, to 9
+Overriding dimension with name, unk__5450, to 1024
+Overriding dimension with name, unk__5451, to 9
+Overriding dimension with name, unk__5452, to 1024
+Overriding dimension with name, unk__5453, to 9
+Overriding dimension with name, unk__5454, to 1024
+Overriding dimension with name, unk__5455, to 9
+Overriding dimension with name, unk__5456, to 1024
+Overriding dimension with name, unk__5457, to 9
+Overriding dimension with name, unk__5458, to 1024
+Overriding dimension with name, unk__5459, to 17
+Overriding dimension with name, unk__5460, to 1024
+Overriding dimension with name, unk__5461, to 33
+Overriding dimension with name, unk__5462, to 1024
+Overriding dimension with name, unk__5463, to 113
+Overriding dimension with name, unk__5464, to 1024
+Overriding dimension with name, unk__5465, to 13
+Overriding dimension with name, unk__5466, to 1024
+Overriding dimension with name, unk__5467, to 13
+Overriding dimension with name, unk__5468, to 1024
+Overriding dimension with name, unk__5469, to 9
+Overriding dimension with name, unk__5470, to 1024
+Overriding dimension with name, unk__5471, to 13
+Overriding dimension with name, unk__5472, to 1024
+Overriding dimension with name, unk__5473, to 13
+Overriding dimension with name, unk__5474, to 1024
+Overriding dimension with name, unk__5475, to 13
+Overriding dimension with name, unk__5476, to 1024
+Overriding dimension with name, unk__5477, to 9
+Overriding dimension with name, unk__5478, to 1024
+Overriding dimension with name, unk__5479, to 13
+Overriding dimension with name, unk__5480, to 1024
+Overriding dimension with name, unk__5481, to 9
+Overriding dimension with name, unk__5482, to 1024
+Overriding dimension with name, unk__5483, to 13
+Overriding dimension with name, unk__5484, to 1024
+Overriding dimension with name, unk__5485, to 13
+Overriding dimension with name, unk__5486, to 1024
+Overriding dimension with name, unk__5487, to 13
+Overriding dimension with name, unk__5488, to 1024
+Overriding dimension with name, unk__5489, to 9
+Overriding dimension with name, unk__5490, to 1024
+Overriding dimension with name, unk__5491, to 13
+Overriding dimension with name, unk__5492, to 1024
+Overriding dimension with name, unk__5493, to 9
+Overriding dimension with name, unk__5494, to 1024
+Overriding dimension with name, unk__5495, to 9
+Overriding dimension with name, unk__5496, to 1024
+Overriding dimension with name, unk__5497, to 9
+Overriding dimension with name, unk__5498, to 1024
+Overriding dimension with name, unk__5499, to 9
+Overriding dimension with name, unk__5500, to 1024
+Overriding dimension with name, unk__5501, to 9
+Overriding dimension with name, unk__5502, to 1024
+Overriding dimension with name, unk__5503, to 9
+Overriding dimension with name, unk__5504, to 1024
+Overriding dimension with name, unk__5505, to 9
+Overriding dimension with name, unk__5506, to 1024
+Overriding dimension with name, unk__5507, to 9
+Overriding dimension with name, unk__5508, to 1024
+Overriding dimension with name, unk__5509, to 9
+Overriding dimension with name, unk__5510, to 1024
+Overriding dimension with name, unk__5511, to 9
+Overriding dimension with name, unk__5512, to 1024
+Overriding dimension with name, unk__5513, to 9
+Overriding dimension with name, unk__5514, to 1024
+Overriding dimension with name, unk__5515, to 9
+Overriding dimension with name, unk__5516, to 1024
+Overriding dimension with name, unk__5517, to 9
+Overriding dimension with name, unk__5518, to 1024
+Overriding dimension with name, unk__5519, to 5
+Overriding dimension with name, unk__5520, to 1024
+Overriding dimension with name, unk__5521, to 17
+Overriding dimension with name, unk__5522, to 1024
+Overriding dimension with name, unk__5523, to 1024
+Overriding dimension with name, unk__5524, to 17
+Overriding dimension with name, unk__5525, to 1024
+Overriding dimension with name, unk__5526, to 1024
+Overriding dimension with name, unk__5527, to 5
+Overriding dimension with name, unk__5528, to 1024
+Overriding dimension with name, unk__5529, to 5
+Overriding dimension with name, unk__5530, to 1024
+Overriding dimension with name, unk__5531, to 41
+Overriding dimension with name, unk__5532, to 1024
+Overriding dimension with name, unk__5533, to 1024
+Overriding dimension with name, unk__5534, to 97
+Overriding dimension with name, unk__5535, to 1024
+Overriding dimension with name, unk__5536, to 1024
+Overriding dimension with name, unk__5537, to 17
+Overriding dimension with name, unk__5538, to 1024
+Overriding dimension with name, unk__5539, to 1024
+Overriding dimension with name, unk__5540, to 5
+Overriding dimension with name, unk__5541, to 1024
+Overriding dimension with name, unk__5542, to 17
+Overriding dimension with name, unk__5543, to 1024
+Overriding dimension with name, unk__5544, to 1024
+Overriding dimension with name, unk__5545, to 5
+Overriding dimension with name, unk__5546, to 1024
+Overriding dimension with name, unk__5547, to 9
+Overriding dimension with name, unk__5548, to 1024
+Overriding dimension with name, unk__5549, to 5
+Overriding dimension with name, unk__5550, to 1024
+Overriding dimension with name, unk__5551, to 1024
+Overriding dimension with name, unk__5552, to 41
+Overriding dimension with name, unk__5553, to 1024
+Overriding dimension with name, unk__5554, to 9
+Overriding dimension with name, unk__5555, to 1024
+Overriding dimension with name, unk__5556, to 9
+Overriding dimension with name, unk__5557, to 1024
+Overriding dimension with name, unk__5558, to 17
+Overriding dimension with name, unk__5559, to 1024
+Overriding dimension with name, unk__5560, to 17
+Overriding dimension with name, unk__5561, to 1024
+Overriding dimension with name, unk__5562, to 9
+Overriding dimension with name, unk__5563, to 1024
+Overriding dimension with name, unk__5564, to 1024
+Overriding dimension with name, unk__5565, to 9
+Overriding dimension with name, unk__5566, to 1024
+Overriding dimension with name, unk__5567, to 17
+Overriding dimension with name, unk__5568, to 1024
+Overriding dimension with name, unk__5569, to 93
+Overriding dimension with name, unk__5570, to 1024
+Overriding dimension with name, unk__5571, to 1024
+Overriding dimension with name, unk__5572, to 21
+Overriding dimension with name, unk__5573, to 1024
+Overriding dimension with name, unk__5574, to 9
+Overriding dimension with name, unk__5575, to 1024
+Overriding dimension with name, unk__5576, to 1024
+Overriding dimension with name, unk__5577, to 21
+Overriding dimension with name, unk__5578, to 1024
+Overriding dimension with name, unk__5579, to 1024
+Overriding dimension with name, unk__5580, to 9
+Overriding dimension with name, unk__5581, to 1024
+Overriding dimension with name, unk__5582, to 17
+Overriding dimension with name, unk__5583, to 1024
+Overriding dimension with name, unk__5584, to 9
+Overriding dimension with name, unk__5585, to 1024
+Overriding dimension with name, unk__5586, to 17
+Overriding dimension with name, unk__5587, to 1024
+Overriding dimension with name, unk__5588, to 1024
+Overriding dimension with name, unk__5589, to 9
+Overriding dimension with name, unk__5590, to 1024
+Overriding dimension with name, unk__5591, to 1024
+Overriding dimension with name, unk__5592, to 9
+Overriding dimension with name, unk__5593, to 1024
+Overriding dimension with name, unk__5594, to 21
+Overriding dimension with name, unk__5595, to 1024
+Overriding dimension with name, unk__5596, to 1024
+Overriding dimension with name, unk__5597, to 9
+Overriding dimension with name, unk__5598, to 1024
+Overriding dimension with name, unk__5599, to 17
+Overriding dimension with name, unk__5600, to 1024
+Overriding dimension with name, unk__5601, to 17
+Overriding dimension with name, unk__5602, to 1024
+Overriding dimension with name, unk__5603, to 1024
+Overriding dimension with name, unk__5604, to 9
+Overriding dimension with name, unk__5605, to 1024
+Overriding dimension with name, unk__5606, to 1024
+Overriding dimension with name, unk__5607, to 9
+Overriding dimension with name, unk__5608, to 1024
+Overriding dimension with name, unk__5609, to 9
+Overriding dimension with name, unk__5610, to 1024
+Overriding dimension with name, unk__5611, 2026-05-27 19:27:43.288935611 [I:onnxruntime:, inference_session.cc:732 TraceSessionOptions] Session Options {  execution_mode:0 execution_order:DEFAULT enable_profiling:1 optimized_model_filepath:"" enable_mem_pattern:1 enable_mem_reuse:1 enable_cpu_mem_arena:1 profile_file_prefix:musa_modeltest/reports/profiles/meta_graph_1_fallback_after_reciprocal session_logid: session_log_severity_level:-1 session_log_verbosity_level:0 max_num_graph_transformation_steps:10 graph_optimization_level:4 intra_op_param:OrtThreadPoolParams { thread_pool_size: 0 auto_set_affinity: 0 allow_spinning: 1 spin_duration_us: -1 spin_backoff_max: 1 dynamic_block_base_: 0 stack_size: 0 affinity_str:  set_denormal_as_zero: 0 } inter_op_param:OrtThreadPoolParams { thread_pool_size: 0 auto_set_affinity: 0 allow_spinning: 1 spin_duration_us: -1 spin_backoff_max: 1 dynamic_block_base_: 0 stack_size: 0 affinity_str:  set_denormal_as_zero: 0 } use_per_session_threads:1 thread_pool_allow_spinning:1 use_deterministic_compute:0 ep_selection_policy:0 config_options: {  } }
+2026-05-27 19:27:43.288960442 [I:onnxruntime:, inference_session.cc:499 operator()] Flush-to-zero and denormal-as-zero are off
+2026-05-27 19:27:43.288970701 [I:onnxruntime:, inference_session.cc:507 ConstructorCommon] Creating and using per session threadpools since use_per_session_threads_ is true
+2026-05-27 19:27:43.288981095 [I:onnxruntime:, inference_session.cc:552 ConstructorCommon] Dynamic block base set to 0
+2026-05-27 19:27:43.290395598 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27440, index: 0, mask: {1, 65, }
+2026-05-27 19:27:43.291887972 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27475, index: 35, mask: {36, 100, }
+2026-05-27 19:27:43.290500956 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27442, index: 2, mask: {3, 67, }
+2026-05-27 19:27:43.290531282 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27443, index: 3, mask: {4, 68, }
+2026-05-27 19:27:43.290560167 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27444, index: 4, mask: {5, 69, }
+2026-05-27 19:27:43.291978813 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27477, index: 37, mask: {38, 102, }
+2026-05-27 19:27:43.291999035 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27478, index: 38, mask: {39, 103, }
+2026-05-27 19:27:43.290703278 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27447, index: 7, mask: {8, 72, }
+2026-05-27 19:27:43.290768606 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27448, index: 8, mask: {9, 73, }
+2026-05-27 19:27:43.290792117 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27449, index: 9, mask: {10, 74, }
+2026-05-27 19:27:43.290949178 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27452, index: 12, mask: {13, 77, }
+2026-05-27 19:27:43.290992648 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27453, index: 13, mask: {14, 78, }
+2026-05-27 19:27:43.290985986 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27451, index: 11, mask: {12, 76, }
+2026-05-27 19:27:43.291050624 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27454, index: 14, mask: {15, 79, }
+2026-05-27 19:27:43.291081027 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27455, index: 15, mask: {16, 80, }
+2026-05-27 19:27:43.291180794 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27457, index: 17, mask: {18, 82, }
+2026-05-27 19:27:43.291225939 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27458, index: 18, mask: {19, 83, }
+2026-05-27 19:27:43.291258833 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27459, index: 19, mask: {20, 84, }
+2026-05-27 19:27:43.291316921 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27460, index: 20, mask: {21, 85, }
+2026-05-27 19:27:43.291404230 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27462, index: 22, mask: {23, 87, }
+2026-05-27 19:27:43.291436878 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27463, index: 23, mask: {24, 88, }
+2026-05-27 19:27:43.293208953 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27493, index: 53, mask: {54, 118, }
+2026-05-27 19:27:43.291521848 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27465, index: 25, mask: {26, 90, }
+2026-05-27 19:27:43.291557358 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27466, index: 26, mask: {27, 91, }
+2026-05-27 19:27:43.291626855 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27468, index: 28, mask: {29, 93, }
+2026-05-27 19:27:43.291666933 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27469, index: 29, mask: {30, 94, }
+2026-05-27 19:27:43.291711229 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27470, index: 30, mask: {31, 95, }
+2026-05-27 19:27:43.291749180 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27471, index: 31, mask: {32, 96, }
+2026-05-27 19:27:43.291776211 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27472, index: 32, mask: {33, 97, }
+2026-05-27 19:27:43.291807859 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27473, index: 33, mask: {34, 98, }
+2026-05-27 19:27:43.291840073 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27474, index: 34, mask: {35, 99, }
+2026-05-27 19:27:43.290432010 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27441, index: 1, mask: {2, 66, }
+2026-05-27 19:27:43.293594984 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27502, index: 62, mask: {63, 127, }
+2026-05-27 19:27:43.290672874 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27446, index: 6, mask: {7, 71, }
+2026-05-27 19:27:43.292035491 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27479, index: 39, mask: {40, 104, }
+2026-05-27 19:27:43.292093214 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27467, index: 27, mask: {28, 92, }
+2026-05-27 19:27:43.292098014 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27480, index: 40, mask: {41, 105, }
+2026-05-27 19:27:43.292121341 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27481, index: 41, mask: {42, 106, }
+2026-05-27 19:27:43.292208236 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27482, index: 42, mask: {43, 107, }
+2026-05-27 19:27:43.292225111 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27476, index: 36, mask: {37, 101, }
+2026-05-27 19:27:43.292237621 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27450, index: 10, mask: {11, 75, }
+2026-05-27 19:27:43.292239106 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27483, index: 43, mask: {44, 108, }
+2026-05-27 19:27:43.292269213 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27484, index: 44, mask: {45, 109, }
+2026-05-27 19:27:43.292230592 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27461, index: 21, mask: {22, 86, }
+2026-05-27 19:27:43.292810297 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27485, index: 45, mask: {46, 110, }
+2026-05-27 19:27:43.292819933 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27456, index: 16, mask: {17, 81, }
+2026-05-27 19:27:43.292894563 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27486, index: 46, mask: {47, 111, }
+2026-05-27 19:27:43.292941988 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27487, index: 47, mask: {48, 112, }
+2026-05-27 19:27:43.292957759 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27488, index: 48, mask: {49, 113, }
+2026-05-27 19:27:43.293008236 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27489, index: 49, mask: {50, 114, }
+2026-05-27 19:27:43.293048073 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27490, index: 50, mask: {51, 115, }
+2026-05-27 19:27:43.293109658 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27491, index: 51, mask: {52, 116, }
+2026-05-27 19:27:43.293165226 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27492, index: 52, mask: {53, 117, }
+2026-05-27 19:27:43.291469281 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27464, index: 24, mask: {25, 89, }
+2026-05-27 19:27:43.293251477 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27494, index: 54, mask: {55, 119, }
+2026-05-27 19:27:43.293291845 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27495, index: 55, mask: {56, 120, }
+2026-05-27 19:27:43.293358766 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27496, index: 56, mask: {57, 121, }
+2026-05-27 19:27:43.293390068 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27497, index: 57, mask: {58, 122, }
+2026-05-27 19:27:43.293427455 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27498, index: 58, mask: {59, 123, }
+2026-05-27 19:27:43.293487701 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27499, index: 59, mask: {60, 124, }
+2026-05-27 19:27:43.293561224 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27501, index: 61, mask: {62, 126, }
+2026-05-27 19:27:43.290612065 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27445, index: 5, mask: {6, 70, }
+2026-05-27 19:27:43.293969765 [V:onnxruntime:Default, env.cc:222 ThreadMain] pthread_setaffinity_np succeed for thread: 27500, index: 60, mask: {61, 125, }
+2026-05-27 19:27:44.379836961 [I:onnxruntime:, inference_session.cc:2313 Initialize] Initializing session.
+2026-05-27 19:27:44.379869638 [I:onnxruntime:, inference_session.cc:2351 Initialize] Adding default CPU execution provider.
+2026-05-27 19:27:44.379898102 [I:onnxruntime:Default, bfc_arena.cc:27 BFCArena] Creating BFCArena for MUSA with following configs: initial_chunk_size_bytes: 1048576 max_dead_bytes_per_chunk: 134217728 initial_growth_chunk_size_bytes: 2097152 max_power_of_two_extend_bytes: 1073741824 memory limit: 18446744073709551615 arena_extend_strategy: 0
+2026-05-27 19:27:44.379903253 [V:onnxruntime:Default, bfc_arena.cc:64 BFCArena] Creating 21 bins of max chunk size 256 to 268435456
+2026-05-27 19:27:44.379908396 [I:onnxruntime:Default, bfc_arena.cc:27 BFCArena] Creating BFCArena for MUSA_PINNED with following configs: initial_chunk_size_bytes: 1048576 max_dead_bytes_per_chunk: 134217728 initial_growth_chunk_size_bytes: 2097152 max_power_of_two_extend_bytes: 1073741824 memory limit: 18446744073709551615 arena_extend_strategy: 0
+2026-05-27 19:27:44.379912101 [V:onnxruntime:Default, bfc_arena.cc:64 BFCArena] Creating 21 bins of max chunk size 256 to 268435456
+2026-05-27 19:27:44.379918322 [I:onnxruntime:Default, bfc_arena.cc:27 BFCArena] Creating BFCArena for Cpu with following configs: initial_chunk_size_bytes: 1048576 max_dead_bytes_per_chunk: 134217728 initial_growth_chunk_size_bytes: 2097152 max_power_of_two_extend_bytes: 1073741824 memory limit: 18446744073709551615 arena_extend_strategy: 0
+2026-05-27 19:27:44.379922394 [V:onnxruntime:Default, bfc_arena.cc:64 BFCArena] Creating 21 bins of max chunk size 256 to 268435456
+2026-05-27 19:27:44.382976382 [I:onnxruntime:, graph_partitioner.cc:1392 InlineFunctionsAOT] This model does not have any local functions defined. AOT Inlining is not performed
+2026-05-27 19:27:44.903400108 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer EnsureUniqueDQForNodeUnit modified: 0 with status: OK
+2026-05-27 19:27:44.908644924 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer Level1_RuleBasedTransformer modified: 1 with status: OK
+2026-05-27 19:27:44.931350426 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer DoubleQDQPairsRemover modified: 0 with status: OK
+2026-05-27 19:27:44.933975093 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer ConstantSharing modified: 0 with status: OK
+2026-05-27 19:27:44.939169381 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer CommonSubexpressionElimination modified: 0 with status: OK
+2026-05-27 19:27:44.942791311 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer ConstantFolding modified: 0 with status: OK
+2026-05-27 19:27:44.947218567 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer MatMulAddFusion modified: 1 with status: OK
+2026-05-27 19:27:44.968957694 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer ReshapeFusion modified: 0 with status: OK
+2026-05-27 19:27:44.969240303 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer FreeDimensionOverrideTransformer modified: 1 with status: OK
+2026-05-27 19:27:44.990758412 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer SliceConcatToSpaceToDepthFusion modified: 0 with status: OK
+2026-05-27 19:27:44.990774771 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer GeluFusionL1 modified: 0 with status: OK
+2026-05-27 19:27:44.994401449 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer LayerNormFusionL1 modified: 0 with status: OK
+2026-05-27 19:27:44.998065825 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer QDQPropagationTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.001968250 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer WeightBiasQuantization modified: 0 with status: OK
+2026-05-27 19:27:45.005440389 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer EnsureUniqueDQForNodeUnit modified: 0 with status: OK
+2026-05-27 19:27:45.009100169 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer WhereDummyDq modified: 0 with status: OK
+2026-05-27 19:27:45.018341830 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer TransposeOptimizer modified: 1 with status: OK
+2026-05-27 19:27:45.036219726 [I:onnxruntime:, graph.cc:5468 CleanUnusedInitializersAndNodeArgs] Removing NodeArg 'Gather_token_1_out0'. It is no longer used by any node.
+2026-05-27 19:27:45.036252049 [I:onnxruntime:, graph.cc:5468 CleanUnusedInitializersAndNodeArgs] Removing NodeArg 'Gather_out0'. It is no longer used by any node.
+2026-05-27 19:27:45.036353053 [I:onnxruntime:, graph.cc:5468 CleanUnusedInitializersAndNodeArgs] Removing NodeArg 'Gather_token_3_out0'. It is no longer used by any node.
+2026-05-27 19:27:45.041040336 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer Level1_RuleBasedTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.044873118 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer DoubleQDQPairsRemover modified: 0 with status: OK
+2026-05-27 19:27:45.050631340 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer CommonSubexpressionElimination modified: 0 with status: OK
+2026-05-27 19:27:45.066151599 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer ConstantFolding modified: 1 with status: OK
+2026-05-27 19:27:45.083473071 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'OS8QasCkPm:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083488846 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'QTM52Rav3L__1909:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083493156 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'QTM52Rav3L:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083496733 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'pgXQceRViY:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083500106 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'oRIbZ4dOpQ:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083503686 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'sLaTjZy3Mk__2661:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083507287 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'sLaTjZy3Mk:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083510773 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'GziyEptBac:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083527708 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '9O5oHsUjGi__3261:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083531520 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'gSZOAytdXe:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083535125 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'kXMgInUch6__2118:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083538833 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'rxWKIXdpAw:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083542094 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'QSEtcpTa5l:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083545533 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'bAxFTJQX2M:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083548832 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '93pLjWJP2k:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083552273 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '4DcWguXvIG__3578:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083555576 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '4DcWguXvIG:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083559073 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '2IX7aTt6hL:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083562332 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'hNWnZTxPzq:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083565644 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'O4KTe8uJXW:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083568858 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'hptiDxlGu6:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083572255 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'ytqldYfuxc:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083575420 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'pOEylQbJXZ:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083578676 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'KzDW9x531M:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083582024 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'BP4xG0iv9y:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083585259 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'Jrx9V1FoKf__2927:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083588568 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'Pfj97RpXB5:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083591857 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'Jrx9V1FoKf:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083595137 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'ngxWoEprfG:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083598331 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'WuTw85g3qS:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083601546 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'oZUkn45Kdw__3196:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083604971 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'hrqFilwIgU:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083610322 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'Lv02NfX9o5'. It is no longer used by any node.
+2026-05-27 19:27:45.083614034 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'K1Jd27NF0G:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083617270 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'nTAkxvi7HD:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083620462 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '7gQZELkxY5__3791:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083623721 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '7gQZELkxY5:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083627099 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'C7F0Ps59hg:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083630322 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '8tckBm2TeU:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083633506 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'v9ziR46l0w__3893:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083636949 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'v9ziR46l0w'. It is no longer used by any node.
+2026-05-27 19:27:45.083640590 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'pV4qhxBMbG:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083643674 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'KNGpt0dLV6:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083646789 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '0he2gr31fq:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083650157 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'sMXyhrqwed:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083653390 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '34jzwneiT9:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083656866 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'spduMbatRL:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083659931 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'eLBijfUXz2:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083663068 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'b1QlqmHywo:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083666668 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'A4MiSuZNBJ:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083669861 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'SRGFIU9KQJ:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083672977 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'idREh4nMFw:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083676250 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'const_transpose_optimizer_token_2'. It is no longer used by any node.
+2026-05-27 19:27:45.083679595 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'const_transpose_optimizer_token_0'. It is no longer used by any node.
+2026-05-27 19:27:45.083682882 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'const_transpose_optimizer'. It is no longer used by any node.
+2026-05-27 19:27:45.083688297 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'Ajpnfsry3Z:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083699669 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'i8s4tkrZJO:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083703180 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'RrpyVjXcH4:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083707384 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'BMaIQdlJqO:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083714068 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'GqF8drV063:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083718893 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'IuhO1aG3Wd:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083722648 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'KNFuLtI7iC:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083727525 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'Lv02NfX9o5:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083732405 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'Delo81N3dx__4046:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083742066 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'XTWp52Jtwq:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083750221 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'idREh4nMFw'. It is no longer used by any node.
+2026-05-27 19:27:45.083756608 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'MemXRDN4Jo:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083762416 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'cH5q7vQR3r:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083770790 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'kXMgInUch6:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083776330 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'pOEylQbJXZ__3290:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083781488 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '5826ysBQUH:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083785826 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '1XjS6wGNOa:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083789304 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'b1QlqmHywo__4146:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083796117 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'Lv02NfX9o5__3906:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083802475 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '9O5oHsUjGi:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083807051 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '34jzwneiT9__4612:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083813582 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'idREh4nMFw__4670:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083818172 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'HOfDQycLMh:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083821571 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'QSEtcpTa5l__3649:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083825881 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'v9ziR46l0w:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083832270 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'WF7zx0LGYA:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083835731 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'O4KTe8uJXW__3712:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083840237 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'CPyVeto3R2__3373:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083844838 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer '9kbvFMrQJz:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083848422 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'bnf0AGKmlU:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083854771 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'FRdfjyxaH0:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083859801 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'KMGaWOx01d:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083863401 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'cH5q7vQR3r__3594:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083872245 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'CPyVeto3R2:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083875699 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'h2YW9PeRBw:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083879464 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'p70Dwyz9Qa:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083882991 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'h2YW9PeRBw__3813:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083887938 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'oZUkn45Kdw:0'. It is no longer used by any node.
+2026-05-27 19:27:45.083892001 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'OKM6Jqh9DI:0'. It is no longer used by any node.
+2026-05-27 19:27:45.088510928 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer MatMulAddFusion modified: 0 with status: OK
+2026-05-27 19:27:45.092504626 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer ReshapeFusion modified: 1 with status: OK
+2026-05-27 19:27:45.109252601 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'tNeMwhfzmc__3656:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109267635 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'IhEJ29LfGl__3829:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109281985 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'iO0AVbek9S__3601:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109289118 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'q3cECFSdMa__3380:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109300797 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'gUShdMKaHO__3203:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109310896 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'tebOpyHoxR__2929:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109316348 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'DUrdBFm8qh__3298:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109324042 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'Dflbgo8QEv__3820:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109334137 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'nLyfNX9zsa__4619:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109349148 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'bOVjyqcu4K__1916:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109353104 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'yP1OgR86bo__3880:0'. It is no longer used by any node.
+2026-05-27 19:27:45.109364741 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'lZF389B2eG_shape__4919'. It is no longer used by any node.
+2026-05-27 19:27:45.109369058 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'const_fold_opt__4838'. It is no longer used by any node.
+2026-05-27 19:27:45.109384432 [I:onnxruntime:, graph.cc:5405 CleanUnusedInitializersAndNodeArgs] Removing initializer 'YEaweV1df8_shape__4940'. It is no longer used by any node.
+2026-05-27 19:27:45.109743296 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer FreeDimensionOverrideTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.113566452 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer SliceConcatToSpaceToDepthFusion modified: 0 with status: OK
+2026-05-27 19:27:45.113575087 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer GeluFusionL1 modified: 0 with status: OK
+2026-05-27 19:27:45.117006512 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer LayerNormFusionL1 modified: 0 with status: OK
+2026-05-27 19:27:45.120726202 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer QDQPropagationTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.124167617 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer WeightBiasQuantization modified: 0 with status: OK
+2026-05-27 19:27:45.127764929 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer EnsureUniqueDQForNodeUnit modified: 0 with status: OK
+2026-05-27 19:27:45.131140776 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer WhereDummyDq modified: 0 with status: OK
+2026-05-27 19:27:45.135303858 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer Level1_RuleBasedTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.138767086 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer DoubleQDQPairsRemover modified: 0 with status: OK
+2026-05-27 19:27:45.144690799 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer CommonSubexpressionElimination modified: 0 with status: OK
+2026-05-27 19:27:45.148478926 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer ConstantFolding modified: 0 with status: OK
+2026-05-27 19:27:45.151933705 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer MatMulAddFusion modified: 0 with status: OK
+2026-05-27 19:27:45.155356748 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer ReshapeFusion modified: 0 with status: OK
+2026-05-27 19:27:45.155428959 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer FreeDimensionOverrideTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.158908890 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer SliceConcatToSpaceToDepthFusion modified: 0 with status: OK
+2026-05-27 19:27:45.158917295 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer GeluFusionL1 modified: 0 with status: OK
+2026-05-27 19:27:45.162326745 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer LayerNormFusionL1 modified: 0 with status: OK
+2026-05-27 19:27:45.165826170 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer QDQPropagationTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.169304938 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer WeightBiasQuantization modified: 0 with status: OK
+2026-05-27 19:27:45.172701811 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer EnsureUniqueDQForNodeUnit modified: 0 with status: OK
+2026-05-27 19:27:45.176171922 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer WhereDummyDq modified: 0 with status: OK
+2026-05-27 19:27:45.220398634 [I:onnxruntime:, inference_session.cc:1690 TransformGraph] Running graph optimizations in loop 1 time/s (Graph Optimizations Loop Level : 1)
+2026-05-27 19:27:45.224257123 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer Level2_RuleBasedTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.232634373 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer TransposeOptimizer_CPUExecutionProvider modified: 0 with status: OK
+2026-05-27 19:27:45.236477221 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer QDQS8ToU8Transformer modified: 0 with status: OK
+2026-05-27 19:27:45.240309852 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer QDQSelectorActionTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.244136821 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer GemmActivationFusion modified: 0 with status: OK
+2026-05-27 19:27:45.247980831 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer MatMulIntegerToFloatFusion modified: 0 with status: OK
+2026-05-27 19:27:45.251809708 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer DynamicQuantizeMatMulFusion modified: 0 with status: OK
+2026-05-27 19:27:45.255687265 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer ConvActivationFusion modified: 0 with status: OK
+2026-05-27 19:27:45.259524865 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer GeluFusionL2 modified: 0 with status: OK
+2026-05-27 19:27:45.259532174 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer LayerNormFusionL2 modified: 0 with status: OK
+2026-05-27 19:27:45.263359350 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer SimplifiedLayerNormFusion modified: 0 with status: OK
+2026-05-27 19:27:45.267214776 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer AttentionFusion modified: 0 with status: OK
+2026-05-27 19:27:45.271042407 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer EmbedLayerNormFusion modified: 0 with status: OK
+2026-05-27 19:27:45.275843524 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer GatherSliceToSplitFusion modified: 0 with status: OK
+2026-05-27 19:27:45.279787796 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer GatherToSliceFusion modified: 0 with status: OK
+2026-05-27 19:27:45.283648506 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer MatmulTransposeFusion modified: 0 with status: OK
+2026-05-27 19:27:45.287431971 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer BiasGeluFusion modified: 0 with status: OK
+2026-05-27 19:27:45.291272143 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer GroupQueryAttentionFusion modified: 0 with status: OK
+2026-05-27 19:27:45.295109072 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer MatMulAddFusion modified: 0 with status: OK
+2026-05-27 19:27:45.298954946 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer SkipLayerNormFusion modified: 0 with status: OK
+2026-05-27 19:27:45.302789984 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer BiasSkipLayerNormFusion modified: 0 with status: OK
+2026-05-27 19:27:45.306667494 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer FastGeluFusion modified: 0 with status: OK
+2026-05-27 19:27:45.310499924 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer QuickGeluFusion modified: 0 with status: OK
+2026-05-27 19:27:45.314326249 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer BiasSoftmaxFusion modified: 0 with status: OK
+2026-05-27 19:27:45.318171967 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer BiasDropoutFusion modified: 0 with status: OK
+2026-05-27 19:27:45.322013024 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer MatMulScaleFusion modified: 0 with status: OK
+2026-05-27 19:27:45.325870040 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer MatMulActivationFusion modified: 0 with status: OK
+2026-05-27 19:27:45.329708186 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer MatMulNBitsFusion modified: 0 with status: OK
+2026-05-27 19:27:45.333543541 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer QDQFinalCleanupTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.337348458 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer NchwcTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.345045229 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer NhwcTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.348937300 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer ConvAddActivationFusion modified: 0 with status: OK
+2026-05-27 19:27:45.352913174 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer RemoveDuplicateCastTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.352923403 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer CastFloat16Transformer modified: 0 with status: OK
+2026-05-27 19:27:45.356761702 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer FuseFp16InitializerToFp32NodeTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.441054556 [I:onnxruntime:, graph_transformer.cc:15 Apply] GraphTransformer MemcpyTransformer modified: 0 with status: OK
+2026-05-27 19:27:45.441951512 [V:onnxruntime:, session_state.cc:1347 VerifyEachNodeIsAssignedToAnEp] Node placements
+2026-05-27 19:27:45.441963379 [V:onnxruntime:, session_state.cc:1350 VerifyEachNodeIsAssignedToAnEp]  All nodes placed on [MUSAExecutionProvider]. Number of nodes: 2245
+2026-05-27 19:27:45.466087232 [V:onnxruntime:, session_state.cc:183 CreateGraphInfo] SaveMLValueNameIndexMapping
+2026-05-27 19:27:45.466866891 [V:onnxruntime:, session_state.cc:229 CreateGraphInfo] Done saving OrtValue mappings.
+2026-05-27 19:27:45.466887105 [I:onnxruntime:, allocation_planner.cc:2658 CreateGraphPartitioner] Use DeviceBasedPartition as default
+2026-05-27 19:27:45.651064687 [I:onnxruntime:, session_state_utils.cc:249 SaveInitializedTensors] Saving initialized tensors.
+2026-05-27 19:27:45.651275039 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.651307924 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.651322393 [I:onnxruntime:Default, bfc_arena.cc:333 AllocateRawInternal] Extending BFCArena for MUSA. bin_num:18 (requested) num_bytes: 84934656 (actual) rounded_bytes:84934656
+2026-05-27 19:27:45.652028582 [I:onnxruntime:Default, bfc_arena.cc:204 Extend] Extended allocation by 134217728 bytes.
+2026-05-27 19:27:45.652034753 [I:onnxruntime:Default, bfc_arena.cc:207 Extend] Total allocated bytes: 134217728
+2026-05-27 19:27:45.652038899 [I:onnxruntime:Default, bfc_arena.cc:210 Extend] Allocated memory at 0x1000ca00000 to 0x10014a00000
+2026-05-27 19:27:45.664984509 [I:onnxruntime:Default, bfc_arena.cc:333 AllocateRawInternal] Extending BFCArena for MUSA. bin_num:2 (requested) num_bytes: 1024 (actual) rounded_bytes:1024
+2026-05-27 19:27:45.665476174 [I:onnxruntime:Default, bfc_arena.cc:204 Extend] Extended allocation by 134217728 bytes.
+2026-05-27 19:27:45.665482929 [I:onnxruntime:Default, bfc_arena.cc:207 Extend] Total allocated bytes: 268435456
+2026-05-27 19:27:45.665486715 [I:onnxruntime:Default, bfc_arena.cc:210 Extend] Allocated memory at 0x10014a00000 to 0x1001ca00000
+2026-05-27 19:27:45.666415197 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.666696727 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.666705334 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.666713933 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.666723597 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.666783706 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.666860527 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.682760023 [I:onnxruntime:Default, bfc_arena.cc:333 AllocateRawInternal] Extending BFCArena for MUSA. bin_num:5 (requested) num_bytes: 10240 (actual) rounded_bytes:10240
+2026-05-27 19:27:45.683634306 [I:onnxruntime:Default, bfc_arena.cc:204 Extend] Extended allocation by 268435456 bytes.
+2026-05-27 19:27:45.683642980 [I:onnxruntime:Default, bfc_arena.cc:207 Extend] Total allocated bytes: 536870912
+2026-05-27 19:27:45.683646905 [I:onnxruntime:Default, bfc_arena.cc:210 Extend] Allocated memory at 0x1001ca00000 to 0x1002ca00000
+2026-05-27 19:27:45.688554352 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.688573205 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.688582201 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.688615771 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.688623854 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.688791954 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.689262505 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.701033108 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.701050993 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.701087391 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.701291270 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.701544396 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.702413551 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.702642162 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.702809777 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.702818852 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.702890374 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.703462595 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.703677809 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.703712231 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.703909065 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.703916940 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.705422081 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.705620590 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.705629196 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.705637456 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.716864365 [I:onnxruntime:Default, bfc_arena.cc:333 AllocateRawInternal] Extending BFCArena for MUSA. bin_num:11 (requested) num_bytes: 524288 (actual) rounded_bytes:524288
+2026-05-27 19:27:45.718453751 [I:onnxruntime:Default, bfc_arena.cc:204 Extend] Extended allocation by 536870912 bytes.
+2026-05-27 19:27:45.718463378 [I:onnxruntime:Default, bfc_arena.cc:207 Extend] Total allocated bytes: 1073741824
+2026-05-27 19:27:45.718467323 [I:onnxruntime:Default, bfc_arena.cc:210 Extend] Allocated memory at 0x1002ca00000 to 0x1004ca00000
+2026-05-27 19:27:45.728359053 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.728405839 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.728647418 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.728917030 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.728978899 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.729753998 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.729993945 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.730093433 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.730100610 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.730819458 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.731014733 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.731259059 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.731288230 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.731296502 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.731823187 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.732038987 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.732544701 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.732554264 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.732764552 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.732793400 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.732802235 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.732809986 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.732818694 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.732826221 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.733027813 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.733053973 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.733061128 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 8
+2026-05-27 19:27:45.733254003 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.733292853 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.733570961 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.734023833 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.734239411 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.734417833 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.734594125 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.734970893 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.735001756 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.735052920 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.736582655 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.736897456 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.736905020 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.736912995 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.736920270 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.737070492 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.737171213 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.737179278 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.737457258 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.737486197 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.737493418 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.737789433 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.737925982 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.738132883 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.738572357 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.738580872 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.738631604 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.738638747 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.739261542 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.739576473 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.739585214 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.739635822 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.740997854 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.741009077 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.741360078 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.741367205 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.741662139 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.741897132 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.741904653 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.742139790 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.742146584 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.742154213 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.742177384 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.742260348 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.742844969 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.742852535 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.742859743 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.742866529 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.742892028 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.743298051 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.743330538 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.743337506 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.744714296 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.744885058 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.744892189 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.745108199 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.745116708 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 12
+2026-05-27 19:27:45.745328864 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.745337634 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.745946667 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.745953680 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.745981768 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.745988965 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.745997266 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.746024597 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.747810454 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.747941752 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.747950263 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.748294080 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.748302311 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.748599244 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.748870096 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.748878321 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.749126466 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.749177310 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.749445493 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.749891897 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.749976975 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.750039766 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.750046813 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.750053633 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.750127184 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.750133927 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.750275367 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.751217318 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.763306021 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.763819038 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.763827876 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.763946519 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.763975757 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.764163331 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.764171650 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.764180091 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.775371264 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.775432298 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.776432049 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.776772145 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.777141431 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.777391752 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.777400317 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.777429860 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.777438114 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.777469866 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.778001094 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.778051388 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.778120270 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.778444416 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.778959447 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.778966845 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.779133744 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.779141524 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.779176035 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.779183674 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.779190339 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.779468569 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.779477706 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.779500816 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.779508142 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.779879939 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.780110818 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.780117727 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.780506567 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.780772261 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.781053080 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.781586111 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.781593405 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.797156761 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.797500924 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.798079727 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.798667712 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.799773253 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.799787119 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.799839874 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.800049645 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.800216797 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.800246803 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.800253404 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.800260954 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.800533662 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.801034623 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.801044357 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.801958987 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.802164225 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.802584973 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.803719311 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.803788153 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.803795089 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.803802090 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.804089448 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.804124982 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.804138245 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.804270370 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.804346429 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.805812374 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.805818933 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.805920645 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.805966120 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.805993018 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.806001644 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.806047613 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.806073618 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.806235963 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.806529670 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.806557431 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.806588015 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.806638423 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.806685355 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.806691831 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.806699131 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.806779744 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.807104968 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.807112298 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 8
+2026-05-27 19:27:45.807151632 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.807362686 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.807507815 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.820934464 [I:onnxruntime:Default, bfc_arena.cc:333 AllocateRawInternal] Extending BFCArena for MUSA. bin_num:2 (requested) num_bytes: 1024 (actual) rounded_bytes:1024
+2026-05-27 19:27:45.823969027 [I:onnxruntime:Default, bfc_arena.cc:204 Extend] Extended allocation by 1073741824 bytes.
+2026-05-27 19:27:45.823980691 [I:onnxruntime:Default, bfc_arena.cc:207 Extend] Total allocated bytes: 2147483648
+2026-05-27 19:27:45.823985259 [I:onnxruntime:Default, bfc_arena.cc:210 Extend] Allocated memory at 0x1004ca00000 to 0x1008ca00000
+2026-05-27 19:27:45.843882150 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.843908861 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.844272046 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.844281085 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.844316951 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.844527459 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.844586047 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.844596545 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.844605188 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.844612630 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.844826854 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.846531670 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.846851890 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.846913073 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.846939838 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.846947928 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.847806194 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.847824640 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 4
+2026-05-27 19:27:45.847848752 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.847859914 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.847867946 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 64
+2026-05-27 19:27:45.847957589 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 8
+2026-05-27 19:27:45.848094264 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 24
+2026-05-27 19:27:45.848295026 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.848369251 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 32
+2026-05-27 19:27:45.848380287 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.848406042 [I:onnxruntime:Default, bfc_arena.cc:280 Reserve] Reserving memory in BFCArena for Cpu size: 16
+2026-05-27 19:27:45.848608497 [I:onnxruntime:, session_state_utils.cc:445 SaveInitializedTensors] Done saving initialized tensors
+2026-05-27 19:27:45.860241356 [I:onnxruntime:, inference_session.cc:2793 Initialize] Session successfully initialized.
+2026-05-27 19:28:00.383114801 [I:onnxruntime:Default, bfc_arena.cc:333 AllocateRawInternal] Extending BFCArena for Cpu. bin_num:4 (requested) num_bytes: 4096 (actual) rounded_bytes:4096
+2026-05-27 19:28:00.383158898 [I:onnxruntime:Default, bfc_arena.cc:204 Extend] Extended allocation by 1048576 bytes.
+2026-05-27 19:28:00.383165334 [I:onnxruntime:Default, bfc_arena.cc:207 Extend] Total allocated bytes: 1052976
+2026-05-27 19:28:00.383170485 [I:onnxruntime:Default, bfc_arena.cc:210 Extend] Allocated memory at 0x55d6ddee33c0 to 0x55d6ddfe33c0
+to 9
+Overriding dimension with name, unk__5612, to 1024
+Overriding dimension with name, unk__5613, to 9
+Overriding dimension with name, unk__5614, to 1024
+Overriding dimension with name, unk__5615, to 21
+Overriding dimension with name, unk__5616, to 1024
+Overriding dimension with name, unk__5617, to 9
+Overriding dimension with name, unk__5618, to 1024
+Overriding dimension with name, unk__5619, to 9
+Overriding dimension with name, unk__5620, to 1024
+Overriding dimension with name, unk__5621, to 17
+Overriding dimension with name, unk__5622, to 1024
+Overriding dimension with name, unk__5623, to 21
+Overriding dimension with name, unk__5624, to 1024
+Overriding dimension with name, unk__5625, to 1024
+Overriding dimension with name, unk__5626, to 5
+Overriding dimension with name, unk__5627, to 1024
+Overriding dimension with name, unk__5628, to 17
+Overriding dimension with name, unk__5629, to 1024
+Overriding dimension with name, unk__5630, to 9
+Overriding dimension with name, unk__5631, to 1024
+Overriding dimension with name, unk__5632, to 17
+Overriding dimension with name, unk__5633, to 1024
+Overriding dimension with name, unk__5634, to 9
+Overriding dimension with name, unk__5635, to 1024
+Overriding dimension with name, unk__5636, to 9
+Overriding dimension with name, unk__5637, to 1024
+Overriding dimension with name, unk__5638, to 9
+Overriding dimension with name, unk__5639, to 1024
+Overriding dimension with name, unk__5640, to 1024
+Overriding dimension with name, unk__5641, to 201
+Overriding dimension with name, unk__5642, to 1024
+Overriding dimension with name, unk__5643, to 93
+Overriding dimension with name, unk__5644, to 1024
+Overriding dimension with name, unk__5645, to 93
+Overriding dimension with name, unk__5646, to 1024
+Overriding dimension with name, unk__5647, to 93
+Overriding dimension with name, unk__5648, to 1024
+Overriding dimension with name, unk__5649, to 5
+Overriding dimension with name, unk__5650, to 1024
+Overriding dimension with name, unk__5651, to 5
+Overriding dimension with name, unk__5652, to 1024
+Overriding dimension with name, unk__5653, to 5
+Overriding dimension with name, unk__5654, to 1024
+Overriding dimension with name, unk__5655, to 5
+Overriding dimension with name, unk__5656, to 1024
+Overriding dimension with name, unk__5657, to 5
+Overriding dimension with name, unk__5658, to 1024
+Overriding dimension with name, unk__5659, to 5
+Overriding dimension with name, unk__5660, to 1024
+Overriding dimension with name, unk__5661, to 5
+Overriding dimension with name, unk__5662, to 1024
+Overriding dimension with name, unk__5663, to 5
+Overriding dimension with name, unk__5664, to 1024
+Overriding dimension with name, unk__5665, to 5
+Overriding dimension with name, unk__5666, to 1024
+Overriding dimension with name, unk__5667, to 5
+Overriding dimension with name, unk__5668, to 1024
+Overriding dimension with name, unk__5669, to 57
+Overriding dimension with name, unk__5670, to 1024
+Overriding dimension with name, unk__5671, to 481
+Overriding dimension with name, unk__5672, to 1024
+Overriding dimension with name, unk__5673, to 17
+Overriding dimension with name, unk__5674, to 1024
+Overriding dimension with name, unk__5675, to 1024
+Overriding dimension with name, unk__5676, to 17
+Overriding dimension with name, unk__5677, to 1024
+Overriding dimension with name, unk__5678, to 1024
+Overriding dimension with name, unk__5679, to 17
+Overriding dimension with name, unk__5680, to 1024
+Overriding dimension with name, unk__5681, to 1024
+Overriding dimension with name, unk__5682, to 17
+Overriding dimension with name, unk__5683, to 1024
+Overriding dimension with name, unk__5684, to 1024
+iteration:1,time_cost_submission:0.283478,time_cost_total:0.283478
+Session creation time cost: 3.26276 s
+First inference time cost: 14492 ms
+Total inference time cost: 0.283478 s
+Total inference requests: 1
+Average inference time cost total: 283.477781 ms
+Total inference run time: 0.283571 s
+Number of inferences per second: 3.52645
+Avg CPU usage: 4 %
+Peak working set size: 6678786048 bytes
+Avg CPU usage:4
+Peak working set size:6678786048
+Runs:1
+Min Latency: 0.283478 s
+Max Latency: 0.283478 s
+P50 Latency: 0.283478 s
+P90 Latency: 0.283478 s
+P95 Latency: 0.283478 s
+P99 Latency: 0.283478 s
+P999 Latency: 0.283478 s
+2026-05-27 19:28:00.670727690 [I:onnxruntime:, profiler.cc:123 EndProfiling] Writing profiler data to file musa_modeltest/reports/profiles/meta_graph_1_fallback_after_reciprocal_2026-05-27_19-27-43_293.json

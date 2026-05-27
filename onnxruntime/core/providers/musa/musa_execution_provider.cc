@@ -252,6 +252,16 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Exp);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Exp);
 
+// Reciprocal operations (op 6-12, 13)
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Reciprocal);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Reciprocal);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, double, Reciprocal);
+
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Reciprocal);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Reciprocal);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, double, Reciprocal);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, BFloat16, Reciprocal);
+
 // Sqrt operations (op 6-12, 13)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Sqrt);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Sqrt);
@@ -1576,6 +1586,24 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Exp)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, float, Exp)>,
+
+      // Register Reciprocal operators (version 6-12)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Reciprocal)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Reciprocal)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 6, 12, double, Reciprocal)>,
+
+      // Register Reciprocal operators (version 13)
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Reciprocal)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, float, Reciprocal)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, double, Reciprocal)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, BFloat16, Reciprocal)>,
 
       // Register Sqrt operators (version 6-12)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
