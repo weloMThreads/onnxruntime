@@ -73,6 +73,29 @@ class GreaterMinWhereTester : public CompareOpTester {
   }
 };
 
+class RoundAddRoundTester : public CompareOpTester {
+ public:
+  RoundAddRoundTester() : CompareOpTester("RoundAddRound", 13) {}
+
+  void AddNodes(onnxruntime::Graph& graph,
+                std::vector<onnxruntime::NodeArg*>& graph_input_defs,
+                std::vector<onnxruntime::NodeArg*>& graph_output_defs,
+                std::vector<std::function<void(onnxruntime::Node& node)>>& add_attribute_funcs) override {
+    (void)add_attribute_funcs;
+
+    auto float_tensor = MakeTensorType(ONNX_NAMESPACE::TensorProto_DataType_FLOAT, {2, 3});
+    auto& rounded_arg = graph.GetOrCreateNodeArg("Rounded", &float_tensor);
+    auto& sum_arg = graph.GetOrCreateNodeArg("Sum", &float_tensor);
+
+    graph.AddNode("round1_node", "Round", "Round node",
+                  {graph_input_defs[0]}, {&rounded_arg});
+    graph.AddNode("add_node", "Add", "Add node",
+                  {&rounded_arg, graph_input_defs[1]}, {&sum_arg});
+    graph.AddNode("round2_node", "Round", "Round node",
+                  {&sum_arg}, {graph_output_defs[0]});
+  }
+};
+
 }  // namespace
 
 TEST(MusaComparisonElementwiseTest, GreaterFloatBroadcastDynamicShape) {
@@ -152,6 +175,72 @@ TEST(MusaComparisonElementwiseTest, GreaterMinWhereMultiOpGraph) {
   test.AddInput<float>("X", {2, 3}, {10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f});
   test.AddInput<float>("Y", {2, 3}, {6.0f, 25.0f, 35.0f, 35.0f, 70.0f, 55.0f});
   test.AddOutput<float>("Z", {2, 3}, {6.0f, 20.0f, 35.0f, 35.0f, 70.0f, 55.0f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, BitwiseAndInt32BroadcastDynamicShape) {
+  CompareOpTester test("BitwiseAnd", 18);
+  const std::vector<std::string> lhs_dim_params{"batch", "1"};
+  const std::vector<std::string> rhs_dim_params{"1", "seq"};
+  test.AddInput<int32_t>("A", {2, 1}, {7, 12}, false, &lhs_dim_params);
+  test.AddInput<int32_t>("B", {1, 3}, {3, 10, 15}, false, &rhs_dim_params);
+  test.AddOutput<int32_t>("C", {2, 3}, {3, 2, 7, 0, 8, 12});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, BitwiseAndInt64Scalar) {
+  CompareOpTester test("BitwiseAnd", 18);
+  test.AddInput<int64_t>("A", {4}, {1, 2, 3, 4});
+  test.AddInput<int64_t>("B", {}, {3});
+  test.AddOutput<int64_t>("C", {4}, {1, 2, 3, 0});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, BitwiseAndUInt8) {
+  CompareOpTester test("BitwiseAnd", 18);
+  test.AddInput<uint8_t>("A", {4}, {0xff, 0x0f, 0xf0, 0x55});
+  test.AddInput<uint8_t>("B", {4}, {0x0f, 0xf0, 0xff, 0x33});
+  test.AddOutput<uint8_t>("C", {4}, {0x0f, 0x00, 0xf0, 0x11});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, BitwiseAndInt32Empty) {
+  CompareOpTester test("BitwiseAnd", 18);
+  const std::vector<int32_t> empty;
+  test.AddInput<int32_t>("A", {0}, empty);
+  test.AddInput<int32_t>("B", {0}, empty);
+  test.AddOutput<int32_t>("C", {0}, empty);
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, RoundFloatDynamicShape) {
+  CompareOpTester test("Round", 13);
+  const std::vector<std::string> dim_params{"batch", "seq"};
+  test.AddInput<float>("X", {2, 3}, {0.9f, 2.5f, 2.3f, 1.5f, -4.5f, -0.6f}, false, &dim_params);
+  test.AddOutput<float>("Y", {2, 3}, {1.0f, 2.0f, 2.0f, 2.0f, -4.0f, -1.0f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, RoundFloat16Scalar) {
+  CompareOpTester test("Round", 13);
+  test.AddInput<MLFloat16>("X", {}, ToFloat16({2.5f}));
+  test.AddOutput<MLFloat16>("Y", {}, ToFloat16({2.0f}));
+  CompareWithMusaNoFallback(test, true, 1e-3, 1e-3);
+}
+
+TEST(MusaComparisonElementwiseTest, RoundFloatEmpty) {
+  CompareOpTester test("Round", 13);
+  const std::vector<float> empty;
+  test.AddInput<float>("X", {0}, empty);
+  test.AddOutput<float>("Y", {0}, empty);
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaComparisonElementwiseTest, RoundAddRoundMultiOpGraph) {
+  RoundAddRoundTester test;
+  test.AddInput<float>("X", {2, 3}, {0.5f, 1.5f, 2.5f, -0.5f, -1.5f, 3.2f});
+  test.AddInput<float>("Bias", {2, 3}, {0.6f, 0.5f, 1.5f, -0.6f, -0.5f, -3.6f});
+  test.AddOutput<float>("Y", {2, 3}, {1.0f, 2.0f, 4.0f, -1.0f, -2.0f, -1.0f});
   CompareWithMusaNoFallback(test);
 }
 
