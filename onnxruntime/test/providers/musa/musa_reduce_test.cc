@@ -4,8 +4,11 @@
 #include "core/session/onnxruntime_session_options_config_keys.h"
 #include "gtest/gtest.h"
 #include "test/common/tensor_op_test_utils.h"
+#include "test/providers/compare_provider_test_utils.h"
 #include "test/providers/provider_test_utils.h"
 #include "test/util/include/default_providers.h"
+
+#include <vector>
 
 namespace onnxruntime {
 namespace test {
@@ -19,6 +22,55 @@ SessionOptions MakeNoFallbackSessionOptions() {
   ORT_THROW_IF_ERROR(so.config_options.AddConfigEntry(kOrtSessionOptionsDisableCPUEPFallback, "1"));
   return so;
 }
+
+void CompareWithMusaNoFallback(CompareOpTester& test,
+                               bool need_cpu_cast = false,
+                               double abs_error = 1e-4,
+                               double rel_error = 1e-4) {
+  auto musa_provider = DefaultMusaExecutionProvider();
+  if (!musa_provider) {
+    GTEST_SKIP() << "MUSA execution provider not available";
+  }
+
+  test.CompareWithCPU(kMusaExecutionProvider, abs_error, rel_error,
+                      need_cpu_cast, {}, true);
+}
+
+ONNX_NAMESPACE::TypeProto MakeTensorType(int32_t elem_type,
+                                         std::initializer_list<int64_t> dims) {
+  ONNX_NAMESPACE::TypeProto type_proto;
+  auto* tensor_type = type_proto.mutable_tensor_type();
+  tensor_type->set_elem_type(elem_type);
+  for (int64_t dim : dims) {
+    tensor_type->mutable_shape()->add_dim()->set_dim_value(dim);
+  }
+  return type_proto;
+}
+
+class ReduceProdAddLogTester : public CompareOpTester {
+ public:
+  ReduceProdAddLogTester() : CompareOpTester("ReduceProdAddLog", 13) {}
+
+  void AddNodes(onnxruntime::Graph& graph,
+                std::vector<onnxruntime::NodeArg*>& graph_input_defs,
+                std::vector<onnxruntime::NodeArg*>& graph_output_defs,
+                std::vector<std::function<void(onnxruntime::Node& node)>>& add_attribute_funcs) override {
+    (void)add_attribute_funcs;
+
+    auto reduced_tensor = MakeTensorType(ONNX_NAMESPACE::TensorProto_DataType_FLOAT, {2, 1});
+    auto& reduced_arg = graph.GetOrCreateNodeArg("Reduced", &reduced_tensor);
+    auto& sum_arg = graph.GetOrCreateNodeArg("Sum", &reduced_tensor);
+
+    auto& reduce_node = graph.AddNode("reduceprod_node", "ReduceProd", "ReduceProd node",
+                                      {graph_input_defs[0]}, {&reduced_arg});
+    reduce_node.AddAttribute("axes", std::vector<int64_t>{1});
+    reduce_node.AddAttribute("keepdims", int64_t{1});
+    graph.AddNode("add_node", "Add", "Add node",
+                  {&reduced_arg, graph_input_defs[1]}, {&sum_arg});
+    graph.AddNode("log_node", "Log", "Log node",
+                  {&sum_arg}, {graph_output_defs[0]});
+  }
+};
 
 }  // namespace
 
@@ -208,6 +260,60 @@ TEST(MusaTensorTest, FlattenNoCpuFallback) {
            {},
            nullptr,
            &execution_providers);
+}
+
+TEST(MusaReduceTest, ReduceProdFloatNoCpuFallback) {
+  CompareOpTester test("ReduceProd", 13);
+  test.AddAttribute("axes", std::vector<int64_t>{1});
+  test.AddAttribute("keepdims", int64_t{1});
+  test.AddInput<float>("data", {2, 3}, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 1.0f});
+  test.AddOutput<float>("reduced", {2, 1}, {6.0f, 20.0f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaReduceTest, ReduceProdFloat16NoCpuFallback) {
+  CompareOpTester test("ReduceProd", 13);
+  test.AddAttribute("axes", std::vector<int64_t>{0});
+  test.AddAttribute("keepdims", int64_t{0});
+  test.AddInput<MLFloat16>("data", {2, 3}, ToFloat16({1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f}));
+  test.AddOutput<MLFloat16>("reduced", {3}, ToFloat16({4.0f, 10.0f, 18.0f}));
+  CompareWithMusaNoFallback(test, true, 1e-3, 1e-3);
+}
+
+TEST(MusaReduceTest, ReduceProdInt32DynamicShapeNoCpuFallback) {
+  CompareOpTester test("ReduceProd", 13);
+  const std::vector<std::string> dim_params{"batch", "seq"};
+  test.AddAttribute("axes", std::vector<int64_t>{1});
+  test.AddAttribute("keepdims", int64_t{0});
+  test.AddInput<int32_t>("data", {2, 3}, {1, 2, 3, 4, 5, 1}, false, &dim_params);
+  test.AddOutput<int32_t>("reduced", {2}, {6, 20});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaReduceTest, ReduceProdInt64ScalarOutputNoCpuFallback) {
+  CompareOpTester test("ReduceProd", 13);
+  test.AddAttribute("keepdims", int64_t{0});
+  test.AddInput<int64_t>("data", {3}, {2, 3, 4});
+  test.AddOutput<int64_t>("reduced", {}, {24});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaReduceTest, ReduceProdFloatEmptyNoCpuFallback) {
+  CompareOpTester test("ReduceProd", 13);
+  test.AddAttribute("axes", std::vector<int64_t>{1});
+  test.AddAttribute("keepdims", int64_t{0});
+  const std::vector<float> empty;
+  test.AddInput<float>("data", {0, 2}, empty);
+  test.AddOutput<float>("reduced", {0}, empty);
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaReduceTest, ReduceProdAddLogMultiOpNoCpuFallback) {
+  ReduceProdAddLogTester test;
+  test.AddInput<float>("data", {2, 3}, {1.0f, 2.0f, 3.0f, 2.0f, 2.0f, 2.0f});
+  test.AddInput<float>("bias", {2, 1}, {1.0f, 1.0f});
+  test.AddOutput<float>("log_out", {2, 1}, {1.94591015f, 2.19722462f});
+  CompareWithMusaNoFallback(test);
 }
 
 }  // namespace test

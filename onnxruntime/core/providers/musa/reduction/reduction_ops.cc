@@ -7,6 +7,7 @@
 #include "core/providers/musa/musa_fwd.h"
 #include "core/providers/musa/musa_execution_provider.h"
 #include "core/providers/musa/reduction/reduce_l2_keepdims_impl.h"
+#include "core/providers/musa/reduction/reduce_prod_int32_impl.h"
 #include <algorithm>
 #include <musa_runtime.h>
 #include <mudnn.h>
@@ -247,6 +248,62 @@ Status PrepareReduceL2Params(const TensorShape& input_shape,
 
     if (output_dim_index >= output_strides.size()) {
       return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Invalid ReduceL2 output rank mapping");
+    }
+    params.output_strides[dim] = output_strides[output_dim_index++];
+  }
+
+  return Status::OK();
+}
+
+Status PrepareReduceProdInt32Params(const TensorShape& input_shape,
+                                    const TensorShape& output_shape,
+                                    const TensorShapeVector& axes,
+                                    bool keepdims,
+                                    ReduceProdInt32Params& params) {
+  const size_t rank = input_shape.NumDimensions();
+  ORT_RETURN_IF_NOT(rank <= static_cast<size_t>(kReduceProdInt32MaxRank),
+                    "ReduceProd int32 MUSA kernel only supports rank <= ",
+                    kReduceProdInt32MaxRank);
+
+  params.rank = static_cast<int32_t>(rank);
+  params.input_size = input_shape.Size();
+  params.output_size = output_shape.Size();
+  std::fill_n(params.input_strides, kReduceProdInt32MaxRank, 0);
+  std::fill_n(params.output_strides, kReduceProdInt32MaxRank, 0);
+
+  bool reduced_axes[kReduceProdInt32MaxRank] = {};
+  for (int64_t axis : axes) {
+    if (axis < 0 || axis >= static_cast<int64_t>(rank)) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT, "Invalid ReduceProd axis: ", axis);
+    }
+    reduced_axes[axis] = true;
+  }
+
+  int64_t input_stride = 1;
+  for (int64_t dim = static_cast<int64_t>(rank) - 1; dim >= 0; --dim) {
+    params.input_strides[dim] = input_stride;
+    input_stride *= input_shape[static_cast<size_t>(dim)];
+  }
+
+  std::vector<int64_t> output_strides(output_shape.NumDimensions(), 1);
+  int64_t output_stride = 1;
+  for (int64_t dim = static_cast<int64_t>(output_shape.NumDimensions()) - 1; dim >= 0; --dim) {
+    output_strides[static_cast<size_t>(dim)] = output_stride;
+    output_stride *= output_shape[static_cast<size_t>(dim)];
+  }
+
+  size_t output_dim_index = 0;
+  for (size_t dim = 0; dim < rank; ++dim) {
+    if (reduced_axes[dim]) {
+      params.output_strides[dim] = 0;
+      if (keepdims) {
+        ++output_dim_index;
+      }
+      continue;
+    }
+
+    if (output_dim_index >= output_strides.size()) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Invalid ReduceProd int32 output rank mapping");
     }
     params.output_strides[dim] = output_strides[output_dim_index++];
   }
@@ -1100,6 +1157,53 @@ Status ReduceProd<T>::ComputeInternal(OpKernelContext* ctx) const {
     return Status::OK();
   }
 
+  if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, float>) {
+    ReduceProdInt32Params params{};
+    ORT_RETURN_IF_ERROR(PrepareReduceProdInt32Params(X->Shape(),
+                                                     prepare.output_shape,
+                                                     processed_axes,
+                                                     GetKeepDims(),
+                                                     params));
+
+    musaError_t status = musaSuccess;
+    if constexpr (std::is_same_v<T, int32_t>) {
+      status = LaunchFillInt32Kernel(Stream(ctx),
+                                     static_cast<int32_t*>(prepare.output_ptr),
+                                     params.output_size,
+                                     1);
+    } else {
+      status = LaunchFillFloatKernel(Stream(ctx),
+                                     static_cast<float*>(prepare.output_ptr),
+                                     params.output_size,
+                                     1.0f);
+    }
+
+    if (status != musaSuccess) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "ReduceProd fill kernel failed, status: ",
+                             static_cast<int>(status));
+    }
+
+    if constexpr (std::is_same_v<T, int32_t>) {
+      status = LaunchReduceProdInt32Kernel(Stream(ctx),
+                                           static_cast<const int32_t*>(prepare.input_a_ptr),
+                                           static_cast<int32_t*>(prepare.output_ptr),
+                                           params);
+    } else {
+      status = LaunchReduceProdFloatKernel(Stream(ctx),
+                                           static_cast<const float*>(prepare.input_a_ptr),
+                                           static_cast<float*>(prepare.output_ptr),
+                                           params);
+    }
+
+    if (status != musaSuccess) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "ReduceProd kernel failed, status: ",
+                             static_cast<int>(status));
+    }
+    return Status::OK();
+  }
+
   // Call MUSA device ReduceProd operation using prepared data
   ORT_RETURN_IF_ERROR(SimpleMusaReduceOp<T>(prepare, this, ctx, processed_axes, ::musa::dnn::Reduce::Mode::PROD));
 
@@ -1683,6 +1787,12 @@ REGISTER_MUSA_REDUCE_HFD_NO_CPU_INPUT(ReduceMean, 13)
 // Register ReduceProd operations following ONNX operator versions
 REGISTER_MUSA_REDUCE_VERSIONED_HFD_NO_CPU_INPUT(ReduceProd, 1, 17)
 REGISTER_MUSA_REDUCE_HFD_AXES_INPUT(ReduceProd, 18)
+REGISTER_MUSA_REDUCE_VERSIONED_TYPED_KERNEL_NO_CPU_INPUT(ReduceProd, 1, 17, int32_t)
+REGISTER_MUSA_REDUCE_VERSIONED_TYPED_KERNEL_NO_CPU_INPUT(ReduceProd, 1, 17, int64_t)
+REGISTER_MUSA_REDUCE_TYPED_KERNEL_AXES_INPUT(ReduceProd, 18, int32_t)
+REGISTER_MUSA_REDUCE_TYPED_KERNEL_AXES_INPUT(ReduceProd, 18, int64_t)
+REGISTER_MUSA_REDUCE_TYPED_COMPUTE(ReduceProd, int32_t)
+REGISTER_MUSA_REDUCE_TYPED_COMPUTE(ReduceProd, int64_t)
 
 // Register ReduceL2 operations following ONNX operator versions
 REGISTER_MUSA_REDUCE_VERSIONED_HFD_NO_CPU_INPUT(ReduceL2, 1, 17)

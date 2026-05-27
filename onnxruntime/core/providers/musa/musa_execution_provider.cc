@@ -815,9 +815,13 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 // ReduceProd operations (op 1-17, 18)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, MLFloat16, ReduceProd);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, float, ReduceProd);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int32_t, ReduceProd);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int64_t, ReduceProd);
 
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, MLFloat16, ReduceProd);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, float, ReduceProd);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int32_t, ReduceProd);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int64_t, ReduceProd);
 
 // ReduceL2 operations (op 1-17 uses axes attribute, 18+ supports axes input)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, MLFloat16, ReduceL2);
@@ -2546,17 +2550,25 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, float, ReduceMean)>,
 
-      // // Register ReduceProd operators (version 1-17)
-      // BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
-      //     kMusaExecutionProvider, kOnnxDomain, 1, 17, MLFloat16, ReduceProd)>,
-      // BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
-      //     kMusaExecutionProvider, kOnnxDomain, 1, 17, float, ReduceProd)>,
+      // Register ReduceProd operators (version 1-17)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, MLFloat16, ReduceProd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, float, ReduceProd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int32_t, ReduceProd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int64_t, ReduceProd)>,
 
-      // // Register ReduceProd operators (version 18)
-      // BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
-      //     kMusaExecutionProvider, kOnnxDomain, 18, MLFloat16, ReduceProd)>,
-      // BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
-      //     kMusaExecutionProvider, kOnnxDomain, 18, float, ReduceProd)>,
+      // Register ReduceProd operators (version 18)
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, MLFloat16, ReduceProd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, float, ReduceProd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int32_t, ReduceProd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int64_t, ReduceProd)>,
 
       // Register ReduceL2 operators (version 1-17)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
