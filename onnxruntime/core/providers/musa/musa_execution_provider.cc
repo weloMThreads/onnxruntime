@@ -14,6 +14,7 @@
 #include <mudnn_version.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <unordered_set>
 #include <vector>
@@ -98,6 +99,7 @@ class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, Me
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaTokenMixerResidual);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaReshapeMatMul);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaFeatureNorm);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaGelu);
 
 // Conv operations (op 1-10 and op 11) - NCHW
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 10, float, Conv);
@@ -1674,6 +1676,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kMSDomain, 1, MusaReshapeMatMul)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kMSDomain, 1, MusaFeatureNorm)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kMSDomain, 1, MusaGelu)>,
 
       // Register Conv operators with float type (NCHW)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
@@ -4834,6 +4838,31 @@ namespace {
 constexpr const char* kMusaTokenMixerResidualOpName = "MusaTokenMixerResidual";
 constexpr const char* kMusaReshapeMatMulOpName = "MusaReshapeMatMul";
 constexpr const char* kMusaFeatureNormOpName = "MusaFeatureNorm";
+constexpr const char* kMusaGeluOpName = "MusaGelu";
+
+
+bool ReadScalarFloatInitializer(const GraphViewer& graph_viewer,
+                                const std::string& name,
+                                float& value) {
+  const auto* tensor = graph_viewer.GetConstantInitializer(name, true);
+  if (tensor == nullptr || tensor->data_type() != ONNX_NAMESPACE::TensorProto_DataType_FLOAT) {
+    return false;
+  }
+  const auto& raw = tensor->raw_data();
+  if (raw.size() != sizeof(float)) {
+    return false;
+  }
+  std::memcpy(&value, raw.data(), sizeof(float));
+  return true;
+}
+
+bool IsScalarFloatInitializerNear(const GraphViewer& graph_viewer,
+                                  const std::string& name,
+                                  float expected,
+                                  float tolerance = 1e-4f) {
+  float value = 0.0f;
+  return ReadScalarFloatInitializer(graph_viewer, name, value) && std::fabs(value - expected) <= tolerance;
+}
 
 bool ReadIntShapeInitializer(const GraphViewer& graph_viewer,
                              const std::string& name,
@@ -5134,6 +5163,143 @@ bool IsFeatureNormVariance(const GraphViewer& graph_viewer,
   return GetNodeInputName(*sub, 0, sub0) && GetNodeInputName(*sub, 1, sub1) &&
          ((sub0 == bn_input_name && sub1 == reduce_mean_output) ||
           (sub1 == bn_input_name && sub0 == reduce_mean_output));
+}
+
+
+bool TryMatchMulByScalar(const GraphViewer& graph_viewer,
+                         const Node& mul,
+                         float expected_scalar,
+                         std::string& data_input_name) {
+  if (mul.OpType() != "Mul" || mul.InputDefs().size() != 2) {
+    return false;
+  }
+  std::string input0;
+  std::string input1;
+  if (!GetNodeInputName(mul, 0, input0) || !GetNodeInputName(mul, 1, input1)) {
+    return false;
+  }
+  if (IsScalarFloatInitializerNear(graph_viewer, input0, expected_scalar)) {
+    data_input_name = input1;
+    return true;
+  }
+  if (IsScalarFloatInitializerNear(graph_viewer, input1, expected_scalar)) {
+    data_input_name = input0;
+    return true;
+  }
+  return false;
+}
+
+bool TryMatchGeluFactor(const GraphViewer& graph_viewer,
+                        const Node& add,
+                        const std::string& expected_input_name,
+                        const Node*& erf,
+                        const Node*& scale_mul) {
+  if (add.OpType() != "Add" || add.InputDefs().size() != 2) {
+    return false;
+  }
+  std::string add_input0;
+  std::string add_input1;
+  if (!GetNodeInputName(add, 0, add_input0) || !GetNodeInputName(add, 1, add_input1)) {
+    return false;
+  }
+  std::string erf_output;
+  if (IsScalarFloatInitializerNear(graph_viewer, add_input0, 1.0f)) {
+    erf_output = add_input1;
+  } else if (IsScalarFloatInitializerNear(graph_viewer, add_input1, 1.0f)) {
+    erf_output = add_input0;
+  } else {
+    return false;
+  }
+
+  erf = graph_viewer.GetProducerNode(erf_output);
+  if (erf == nullptr || erf->OpType() != "Erf" || erf->InputDefs().size() != 1) {
+    return false;
+  }
+
+  std::string scale_output;
+  if (!GetNodeInputName(*erf, 0, scale_output)) {
+    return false;
+  }
+  scale_mul = graph_viewer.GetProducerNode(scale_output);
+  if (scale_mul == nullptr) {
+    return false;
+  }
+
+  std::string scaled_input;
+  return TryMatchMulByScalar(graph_viewer, *scale_mul, 0.70710678f, scaled_input) &&
+         scaled_input == expected_input_name;
+}
+
+std::unique_ptr<ComputeCapability> TryCreateGeluCapability(
+    const GraphViewer& graph_viewer,
+    const Node& final_mul) {
+  if (final_mul.OpType() != "Mul" || final_mul.InputDefs().size() != 2 || final_mul.OutputDefs().size() != 1) {
+    return nullptr;
+  }
+  std::string final_input0;
+  std::string final_input1;
+  std::string final_output;
+  if (!GetNodeInputName(final_mul, 0, final_input0) || !GetNodeInputName(final_mul, 1, final_input1) ||
+      !GetNodeOutputName(final_mul, 0, final_output)) {
+    return nullptr;
+  }
+
+  const Node* half_mul = nullptr;
+  const Node* factor_add = nullptr;
+  std::string gelu_input;
+  auto try_order = [&](const std::string& half_output, const std::string& factor_output) -> bool {
+    half_mul = graph_viewer.GetProducerNode(half_output);
+    factor_add = graph_viewer.GetProducerNode(factor_output);
+    return half_mul != nullptr && factor_add != nullptr &&
+           TryMatchMulByScalar(graph_viewer, *half_mul, 0.5f, gelu_input);
+  };
+  if (!try_order(final_input0, final_input1) && !try_order(final_input1, final_input0)) {
+    return nullptr;
+  }
+
+  const Node* erf = nullptr;
+  const Node* scale_mul = nullptr;
+  if (!TryMatchGeluFactor(graph_viewer, *factor_add, gelu_input, erf, scale_mul)) {
+    return nullptr;
+  }
+
+  const auto half_outputs = half_mul->OutputDefs();
+  const auto factor_outputs = factor_add->OutputDefs();
+  const auto erf_outputs = erf->OutputDefs();
+  const auto scale_outputs = scale_mul->OutputDefs();
+  if (half_outputs.empty() || factor_outputs.empty() || erf_outputs.empty() || scale_outputs.empty() ||
+      !HasSingleConsumer(graph_viewer, half_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, factor_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, erf_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, scale_outputs[0]->Name())) {
+    return nullptr;
+  }
+
+  const auto input_type = GetElementType(half_mul->InputDefs()[0]->Name() == gelu_input
+                                             ? half_mul->InputDefs()[0]
+                                             : half_mul->InputDefs()[1]);
+  if (input_type != ONNX_NAMESPACE::TensorProto_DataType_FLOAT) {
+    return nullptr;
+  }
+
+  std::vector<NodeIndex> node_indices = {
+      scale_mul->Index(), erf->Index(), factor_add->Index(), half_mul->Index(), final_mul.Index()};
+  std::sort(node_indices.begin(), node_indices.end());
+  node_indices.erase(std::unique(node_indices.begin(), node_indices.end()), node_indices.end());
+
+  auto sub_graph = IndexedSubGraph::Create();
+  for (auto node_index : node_indices) {
+    sub_graph->Nodes().push_back(node_index);
+  }
+
+  auto meta_def = IndexedSubGraph_MetaDef::Create();
+  meta_def->name() = kMusaGeluOpName;
+  meta_def->domain() = kMSDomain;
+  meta_def->since_version() = 1;
+  meta_def->inputs().push_back(gelu_input);
+  meta_def->outputs().push_back(final_output);
+  sub_graph->SetMetaDef(std::move(meta_def));
+  return ComputeCapability::Create(std::move(sub_graph));
 }
 
 std::unique_ptr<ComputeCapability> TryCreateFeatureNormCapability(
@@ -5588,6 +5754,12 @@ MusaExecutionProvider::GetCapability(const onnxruntime::GraphViewer& graph_viewe
 
     if (auto fused_capability = TryCreateFeatureNormCapability(graph_viewer, *p_node)) {
       LOGS(*GetLogger(), INFO) << "MUSA EP fused feature norm at node: " << p_node->Name();
+      result.push_back(std::move(fused_capability));
+      continue;
+    }
+
+    if (auto fused_capability = TryCreateGeluCapability(graph_viewer, *p_node)) {
+      LOGS(*GetLogger(), INFO) << "MUSA EP fused gelu at node: " << p_node->Name();
       result.push_back(std::move(fused_capability));
       continue;
     }
