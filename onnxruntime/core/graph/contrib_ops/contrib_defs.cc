@@ -1961,6 +1961,33 @@ activation and leaky_relu_alpha.)DOC")
                                   }
                                 }));
 
+ONNX_MS_OPERATOR_SET_SCHEMA(MusaConcatMatMul, 1,
+                            OpSchema()
+                                .SetDoc(R"DOC(
+Fuses a standard ONNX Concat followed by MatMul for the MUSA execution provider.
+Input 0..N-2 are the Concat data inputs. Input N-1 is the remaining MatMul input.
+)DOC")
+                                .Input(0,
+                                       "inputs",
+                                       "Concat inputs followed by the remaining MatMul input.",
+                                       "T",
+                                       OpSchema::Variadic,
+                                       false,
+                                       3,
+                                       OpSchema::NonDifferentiable)
+                                .Output(0, "Y", "Matrix multiply results.", "T")
+                                .TypeConstraint(
+                                    "T",
+                                    {"tensor(float16)", "tensor(float)"},
+                                    "Constrain input and output types to float tensors.")
+                                .Attr("axis", "Concat axis.", AttributeProto::INT)
+                                .Attr("concat_input_idx",
+                                      "Which MatMul input (0 or 1) is produced by the fused Concat.",
+                                      AttributeProto::INT)
+                                .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+                                  propagateElemTypeFromInputToOutput(ctx, 0, 0);
+                                }));
+
 ONNX_MS_OPERATOR_SET_SCHEMA(ExpandDims, 1,
                             OpSchema()
                                 .Input(0, "X", "input", "T")

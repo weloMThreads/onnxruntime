@@ -18,6 +18,8 @@ class MUSA_MS_OP_TYPED_CLASS_NAME(1, float, QuickGelu);
 class MUSA_MS_OP_TYPED_CLASS_NAME(1, MLFloat16, QuickGelu);
 class MUSA_MS_OP_TYPED_CLASS_NAME(1, float, FusedGemm);
 class MUSA_MS_OP_TYPED_CLASS_NAME(1, MLFloat16, FusedGemm);
+class MUSA_MS_OP_TYPED_CLASS_NAME(1, float, MusaConcatMatMul);
+class MUSA_MS_OP_TYPED_CLASS_NAME(1, MLFloat16, MusaConcatMatMul);
 
 Status RegisterMusaContribKernels(KernelRegistry& kernel_registry) {
   static const BuildKernelCreateInfoFn function_table[] = {
@@ -25,6 +27,8 @@ Status RegisterMusaContribKernels(KernelRegistry& kernel_registry) {
       BuildKernelCreateInfo<MUSA_MS_OP_TYPED_CLASS_NAME(1, MLFloat16, QuickGelu)>,
       BuildKernelCreateInfo<MUSA_MS_OP_TYPED_CLASS_NAME(1, float, FusedGemm)>,
       BuildKernelCreateInfo<MUSA_MS_OP_TYPED_CLASS_NAME(1, MLFloat16, FusedGemm)>,
+      BuildKernelCreateInfo<MUSA_MS_OP_TYPED_CLASS_NAME(1, float, MusaConcatMatMul)>,
+      BuildKernelCreateInfo<MUSA_MS_OP_TYPED_CLASS_NAME(1, MLFloat16, MusaConcatMatMul)>,
   };
 
   for (auto& function_table_entry : function_table) {

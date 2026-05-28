@@ -3916,6 +3916,74 @@ TEST_F(GraphTransformationTests, MusaOperatorFusion_SkipNonBiasBroadcast) {
   ASSERT_STATUS_OK(TestGraphTransformer(build_test_case, 18, *logger_, std::move(transformer), TransformerLevel::Level2,
                                         1, pre_graph_checker, post_graph_checker));
 }
+
+TEST_F(GraphTransformationTests, MusaOperatorFusion_ConcatMatMul) {
+  auto build_test_case = [&](ModelTestBuilder& builder) {
+    auto* concat0 = builder.MakeInput<float>({{8, 4, 16}});
+    auto* concat1 = builder.MakeInput<float>({{8, 6, 16}});
+    auto* other = builder.MakeInput<float>({{8, 16, 12}});
+    auto* concat_out = builder.MakeIntermediate();
+    auto* output_arg = builder.MakeOutput();
+    auto& concat_node = builder.AddNode("Concat", {concat0, concat1}, {concat_out});
+    concat_node.AddAttribute("axis", static_cast<int64_t>(1));
+    builder.AddNode("MatMul", {concat_out, other}, {output_arg});
+  };
+
+  auto pre_graph_checker = [&](Graph& graph) {
+    for (auto& node : graph.Nodes()) {
+      node.SetExecutionProviderType(kMusaExecutionProvider);
+    }
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["Concat"] == 1);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["MatMul"] == 1);
+    return Status::OK();
+  };
+
+  auto post_graph_checker = [&](Graph& graph) {
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["Concat"] == 0);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["MatMul"] == 0);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["com.microsoft.MusaConcatMatMul"] == 1);
+    return Status::OK();
+  };
+
+  std::unique_ptr<GraphTransformer> transformer =
+      std::make_unique<MusaOperatorFusionTransformer>(InlinedHashSet<std::string_view>{kMusaExecutionProvider});
+  ASSERT_STATUS_OK(TestGraphTransformer(build_test_case, 18, *logger_, std::move(transformer), TransformerLevel::Level2,
+                                        1, pre_graph_checker, post_graph_checker));
+}
+
+TEST_F(GraphTransformationTests, MusaOperatorFusion_SkipSharedConcatMatMul) {
+  auto build_test_case = [&](ModelTestBuilder& builder) {
+    auto* concat0 = builder.MakeInput<float>({{8, 4, 16}});
+    auto* concat1 = builder.MakeInput<float>({{8, 6, 16}});
+    auto* other = builder.MakeInput<float>({{8, 16, 12}});
+    auto* concat_out = builder.MakeIntermediate();
+    auto* matmul_out = builder.MakeOutput();
+    auto* identity_out = builder.MakeOutput();
+    auto& concat_node = builder.AddNode("Concat", {concat0, concat1}, {concat_out});
+    concat_node.AddAttribute("axis", static_cast<int64_t>(1));
+    builder.AddNode("MatMul", {concat_out, other}, {matmul_out});
+    builder.AddNode("Identity", {concat_out}, {identity_out});
+  };
+
+  auto pre_graph_checker = [&](Graph& graph) {
+    for (auto& node : graph.Nodes()) {
+      node.SetExecutionProviderType(kMusaExecutionProvider);
+    }
+    return Status::OK();
+  };
+
+  auto post_graph_checker = [&](Graph& graph) {
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["Concat"] == 1);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["MatMul"] == 1);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["com.microsoft.MusaConcatMatMul"] == 0);
+    return Status::OK();
+  };
+
+  std::unique_ptr<GraphTransformer> transformer =
+      std::make_unique<MusaOperatorFusionTransformer>(InlinedHashSet<std::string_view>{kMusaExecutionProvider});
+  ASSERT_STATUS_OK(TestGraphTransformer(build_test_case, 18, *logger_, std::move(transformer), TransformerLevel::Level2,
+                                        1, pre_graph_checker, post_graph_checker));
+}
 #endif
 
 // (A')'B' = AB'
