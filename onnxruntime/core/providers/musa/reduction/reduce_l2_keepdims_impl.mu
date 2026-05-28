@@ -171,6 +171,28 @@ __global__ void ReduceMeanRank2Axis1Kernel(const T* input_data,
 }
 
 template <typename T>
+__global__ void ReduceSumRank2Axis1Kernel(const T* input_data,
+                                          T* output_data,
+                                          int64_t rows,
+                                          int64_t cols) {
+  const int64_t row = blockIdx.x;
+  if (row >= rows) {
+    return;
+  }
+
+  float sum = 0.0f;
+  const T* row_data = input_data + row * cols;
+  for (int64_t col = threadIdx.x; col < cols; col += blockDim.x) {
+    sum += ReduceL2ToFloat<T>(row_data[col]);
+  }
+
+  const float total = BlockReduceSum<kReduceL2ThreadsPerBlock>(sum);
+  if (threadIdx.x == 0) {
+    output_data[row] = ReduceL2FromFloat<T>(total);
+  }
+}
+
+template <typename T>
 __global__ void ReduceMeanRank3Axis1Kernel(const T* input_data,
                                            T* output_data,
                                            int64_t outer,
@@ -211,6 +233,27 @@ __global__ void ReduceSumRank3Axis1Kernel(const T* input_data,
       sum += ReduceL2ToFloat<T>(row_data[r * inner + col]);
     }
     row_output[col] = ReduceL2FromFloat<T>(sum);
+  }
+}
+
+template <typename T>
+__global__ void ReduceSumRank3Axis0Kernel(const T* input_data,
+                                          T* output_data,
+                                          int64_t reduce_dim,
+                                          int64_t rows,
+                                          int64_t inner) {
+  const int64_t row = blockIdx.x;
+  if (row >= rows) {
+    return;
+  }
+
+  for (int64_t col = threadIdx.x; col < inner; col += blockDim.x) {
+    float sum = 0.0f;
+    for (int64_t r = 0; r < reduce_dim; ++r) {
+      const int64_t input_index = (r * rows + row) * inner + col;
+      sum += ReduceL2ToFloat<T>(input_data[input_index]);
+    }
+    output_data[row * inner + col] = ReduceL2FromFloat<T>(sum);
   }
 }
 
@@ -316,8 +359,22 @@ musaError_t LaunchReduceSumTyped(musaStream_t stream,
     return musaSuccess;
   }
 
+  if (params.rank == 2 && params.num_axes == 1 && params.axes[0] == 1) {
+    ReduceSumRank2Axis1Kernel<T><<<static_cast<int>(params.input_dims[0]),
+                                   kReduceL2ThreadsPerBlock, 0, stream>>>(
+        input_data, output_data, params.input_dims[0], params.input_dims[1]);
+    return musaGetLastError();
+  }
+
   if (params.rank == 3 && params.num_axes == 1 && params.axes[0] == 1) {
     ReduceSumRank3Axis1Kernel<T><<<static_cast<int>(params.input_dims[0]),
+                                   kReduceL2ThreadsPerBlock, 0, stream>>>(
+        input_data, output_data, params.input_dims[0], params.input_dims[1], params.input_dims[2]);
+    return musaGetLastError();
+  }
+
+  if (params.rank == 3 && params.num_axes == 1 && params.axes[0] == 0) {
+    ReduceSumRank3Axis0Kernel<T><<<static_cast<int>(params.input_dims[1]),
                                    kReduceL2ThreadsPerBlock, 0, stream>>>(
         input_data, output_data, params.input_dims[0], params.input_dims[1], params.input_dims[2]);
     return musaGetLastError();

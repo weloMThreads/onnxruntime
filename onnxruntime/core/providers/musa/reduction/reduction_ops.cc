@@ -313,16 +313,26 @@ Status PrepareReduceProdInt32Params(const TensorShape& input_shape,
 
 bool CanUseReduceSumFastPath(const TensorShape& input_shape,
                              const TensorShapeVector& axes) {
-  if (input_shape.Size() == 0 || axes.size() != 1 || axes[0] != 1) {
+  if (input_shape.Size() == 0 || axes.size() != 1) {
     return false;
   }
 
-  if (input_shape.NumDimensions() != 3) {
+  if (axes[0] != 0 && axes[0] != 1) {
     return false;
   }
 
-  return input_shape[0] > 0 && input_shape[1] > 0 && input_shape[2] > 0 &&
-         input_shape[0] <= std::numeric_limits<int>::max();
+  if (input_shape.NumDimensions() == 2 && axes[0] == 1) {
+    return input_shape[0] > 0 && input_shape[1] > 0 &&
+           input_shape[0] <= std::numeric_limits<int>::max();
+  }
+
+  if (input_shape.NumDimensions() == 3) {
+    return input_shape[0] > 0 && input_shape[1] > 0 && input_shape[2] > 0 &&
+           input_shape[0] <= std::numeric_limits<int>::max() &&
+           input_shape[1] <= std::numeric_limits<int>::max();
+  }
+
+  return false;
 }
 
 bool CanUseReduceMeanFastPath(const TensorShape& input_shape,
