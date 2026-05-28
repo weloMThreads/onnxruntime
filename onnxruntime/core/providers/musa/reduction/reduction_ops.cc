@@ -1364,6 +1364,29 @@ Status ReduceProd<T>::ComputeInternal(OpKernelContext* ctx) const {
     return Status::OK();
   }
 
+  if constexpr (std::is_same_v<T, int64_t>) {
+    ReduceProdInt32Params params{};
+    ORT_RETURN_IF_ERROR(PrepareReduceProdInt32Params(X->Shape(),
+                                                     prepare.output_shape,
+                                                     processed_axes,
+                                                     GetKeepDims(),
+                                                     params));
+
+    if (params.output_size == 1) {
+      musaError_t status = LaunchReduceProdInt64ScalarKernel(
+          Stream(ctx),
+          static_cast<const int64_t*>(prepare.input_a_ptr),
+          static_cast<int64_t*>(prepare.output_ptr),
+          params.input_size);
+      if (status != musaSuccess) {
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                               "ReduceProd int64 scalar kernel failed, status: ",
+                               static_cast<int>(status));
+      }
+      return Status::OK();
+    }
+  }
+
   if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, float>) {
     ReduceProdInt32Params params{};
     ORT_RETURN_IF_ERROR(PrepareReduceProdInt32Params(X->Shape(),

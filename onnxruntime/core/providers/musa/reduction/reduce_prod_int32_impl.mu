@@ -82,6 +82,16 @@ __global__ void ReduceProdFloatKernel(const float* input,
   }
 }
 
+__global__ void ReduceProdInt64ScalarKernel(const int64_t* input,
+                                            int64_t* output,
+                                            int64_t input_size) {
+  int64_t product = 1;
+  for (int64_t i = 0; i < input_size; ++i) {
+    product *= input[i];
+  }
+  *output = product;
+}
+
 int BlocksForSize(int64_t size) {
   int64_t blocks = (size + kReduceProdThreadsPerBlock - 1) / kReduceProdThreadsPerBlock;
   if (blocks > kReduceProdMaxBlocks) {
@@ -135,6 +145,18 @@ musaError_t LaunchReduceProdFloatKernel(musaStream_t stream,
 
   ReduceProdFloatKernel<<<BlocksForSize(params.input_size), kReduceProdThreadsPerBlock, 0, stream>>>(
       input, output, params);
+  return musaGetLastError();
+}
+
+musaError_t LaunchReduceProdInt64ScalarKernel(musaStream_t stream,
+                                              const int64_t* input,
+                                              int64_t* output,
+                                              int64_t input_size) {
+  if (input_size == 0) {
+    return musaSuccess;
+  }
+
+  ReduceProdInt64ScalarKernel<<<1, 1, 0, stream>>>(input, output, input_size);
   return musaGetLastError();
 }
 

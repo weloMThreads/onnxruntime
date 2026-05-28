@@ -33,5 +33,10 @@ musaError_t LaunchReduceProdFloatKernel(musaStream_t stream,
                                         float* output,
                                         const ReduceProdInt32Params& params);
 
+musaError_t LaunchReduceProdInt64ScalarKernel(musaStream_t stream,
+                                              const int64_t* input,
+                                              int64_t* output,
+                                              int64_t input_size);
+
 }  // namespace musa
 }  // namespace onnxruntime
