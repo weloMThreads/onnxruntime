@@ -4,6 +4,7 @@
 #include "core/providers/shared_library/provider_api.h"
 #include "core/providers/common.h"
 #include "core/providers/musa/math/matmul.h"
+#include "core/providers/musa/math/matmul_bf16_impl.h"
 #include "core/providers/musa/musa_fwd.h"
 #include "core/providers/musa/musa_execution_provider.h"
 #include <algorithm>
@@ -113,8 +114,9 @@ Status MatMul<T>::ComputeInternal(OpKernelContext* ctx) const {
   ORT_RETURN_IF_ERROR(PrepareMatMul(ctx, prepare, helper));
 
   // Select and execute compute strategy
+  const bool use_bf16_fast_math = std::is_same_v<T, float> && ep != nullptr && ep->UseBF16();
   auto strategy = SelectStrategy(A->Shape(), B->Shape(), A->DataType(),
-                                 helper.OutputOffsets().size());
+                                 helper.OutputOffsets().size(), use_bf16_fast_math);
 
   auto* ort_stream = ctx->GetComputeStream();
 
@@ -127,7 +129,7 @@ Status MatMul<T>::ComputeInternal(OpKernelContext* ctx) const {
       result = ExecuteWithMuDNN(prepare, helper, false, ort_stream);
       break;
     case ComputeStrategy::MU_BLAS_GEMM:
-      result = ExecuteWithMuBLAS(prepare, helper, Stream(ctx));
+      result = ExecuteWithMuBLAS(prepare, helper, Stream(ctx), ort_stream);
       break;
     case ComputeStrategy::MU_DNN_LOOP:
       result = ExecuteWithMuDNNLoop(ctx, helper, ort_stream);
@@ -339,7 +341,13 @@ Status MatMul<T>::SetupMusaTensorWithReshape(::musa::dnn::Tensor& musa_tensor,
 template <typename T>
 typename MatMul<T>::ComputeStrategy MatMul<T>::SelectStrategy(
     const TensorShape& a_shape, const TensorShape& b_shape,
-    MLDataType dtype, size_t batch_count) const {
+    MLDataType dtype, size_t batch_count, bool use_bf16_fast_math) const {
+  ORT_UNUSED_PARAMETER(dtype);
+
+  if (use_bf16_fast_math) {
+    return ComputeStrategy::MU_BLAS_GEMM;
+  }
+
   if (CanReshape4DTo3D(a_shape, b_shape)) {
     return ComputeStrategy::MU_DNN_BATCH;
   }
@@ -486,10 +494,12 @@ Status MatMul<T>::ExecuteWithMuDNN(const MusaPreparation& prepare,
 template <typename T>
 Status MatMul<T>::ExecuteWithMuBLAS(const MusaPreparation& prepare,
                                     const MatMulComputeHelper& helper,
-                                    musaStream_t stream) const {
+                                    musaStream_t stream,
+                                    onnxruntime::Stream* ort_stream) const {
   // Get pooled muBLAS handle with stream binding (key optimization)
   const auto* ep = static_cast<const MusaExecutionProvider*>(Info().GetExecutionProvider());
-  mublasHandle_t mublas_handle = GetMublasHandle(stream, ep != nullptr && ep->UseTF32());
+  const bool use_bf16_fast_math = std::is_same_v<T, float> && ep != nullptr && ep->UseBF16();
+  mublasHandle_t mublas_handle = GetMublasHandle(stream, ep != nullptr && ep->UseTF32() && !use_bf16_fast_math);
   mublasStatus_t status;
 
   // Get GEMM parameters from helper
@@ -529,6 +539,56 @@ Status MatMul<T>::ExecuteWithMuBLAS(const MusaPreparation& prepare,
     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "No batches to process");
   }
 
+  IAllocatorUniquePtr<void> a_bf16_buffer;
+  IAllocatorUniquePtr<void> b_bf16_buffer;
+  IAllocatorUniquePtr<void> c_bf16_buffer;
+  const void* A_gemm_data = A_data;
+  const void* B_gemm_data = B_data;
+  void* C_gemm_data = C_data;
+
+  if constexpr (std::is_same_v<T, float>) {
+    if (use_bf16_fast_math) {
+      auto get_last_span = [](const std::vector<size_t>& offsets, size_t matrix_elements) -> size_t {
+        size_t max_offset = 0;
+        for (size_t offset : offsets) {
+          max_offset = std::max(max_offset, offset);
+        }
+        return max_offset + matrix_elements;
+      };
+
+      const size_t a_matrix_elements = static_cast<size_t>(M * K);
+      const size_t b_matrix_elements = static_cast<size_t>(K * N);
+      const size_t c_matrix_elements = static_cast<size_t>(M * N);
+      const size_t a_elements = get_last_span(left_offsets, a_matrix_elements);
+      const size_t b_elements = get_last_span(right_offsets, b_matrix_elements);
+      const size_t c_elements = get_last_span(output_offsets, c_matrix_elements);
+
+      a_bf16_buffer = this->GetScratchBuffer<void>(a_elements * sizeof(uint16_t), ort_stream);
+      b_bf16_buffer = this->GetScratchBuffer<void>(b_elements * sizeof(uint16_t), ort_stream);
+      c_bf16_buffer = this->GetScratchBuffer<void>(c_elements * sizeof(uint16_t), ort_stream);
+
+      A_gemm_data = a_bf16_buffer.get();
+      B_gemm_data = b_bf16_buffer.get();
+      C_gemm_data = c_bf16_buffer.get();
+
+      LaunchFloatToBFloat16Kernel(stream, A_data, a_bf16_buffer.get(), static_cast<int64_t>(a_elements));
+      auto launch_status = musaGetLastError();
+      if (launch_status != musaSuccess) {
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                               "Float to BF16 conversion failed for MatMul A: ",
+                               musaGetErrorString(launch_status));
+      }
+
+      LaunchFloatToBFloat16Kernel(stream, B_data, b_bf16_buffer.get(), static_cast<int64_t>(b_elements));
+      launch_status = musaGetLastError();
+      if (launch_status != musaSuccess) {
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                               "Float to BF16 conversion failed for MatMul B: ",
+                               musaGetErrorString(launch_status));
+      }
+    }
+  }
+
   if (batch_count == 1) {
     // Simple case: single GEMM operation, no offset processing needed
     if constexpr (std::is_same_v<T, float>) {
@@ -537,17 +597,29 @@ Status MatMul<T>::ExecuteWithMuBLAS(const MusaPreparation& prepare,
       int ldb = trans_B_ ? static_cast<int>(K) : static_cast<int>(N);
       int ldc = static_cast<int>(N);
 
-      status = mublasSgemm(mublas_handle,
-                           transA, transB,
-                           static_cast<int>(N), static_cast<int>(M), static_cast<int>(K),
-                           &alpha_val,
-                           B_data, ldb,
-                           A_data, lda,
-                           &beta_val,
-                           C_data, ldc);
+      if (use_bf16_fast_math) {
+        status = mublasGemmEx(mublas_handle,
+                              transA, transB,
+                              static_cast<int>(N), static_cast<int>(M), static_cast<int>(K),
+                              &alpha_val,
+                              B_gemm_data, MUSA_R_16BF, ldb,
+                              A_gemm_data, MUSA_R_16BF, lda,
+                              &beta_val,
+                              C_gemm_data, MUSA_R_16BF, ldc,
+                              MUBLAS_COMPUTE_32F, MUBLAS_GEMM_DEFAULT_TENSOR_OP);
+      } else {
+        status = mublasSgemm(mublas_handle,
+                             transA, transB,
+                             static_cast<int>(N), static_cast<int>(M), static_cast<int>(K),
+                             &alpha_val,
+                             B_data, ldb,
+                             A_data, lda,
+                             &beta_val,
+                             C_data, ldc);
+      }
 
       if (status != MUBLAS_STATUS_SUCCESS) {
-        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "muBLAS GEMM computation failed");
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "muBLAS GEMM computation failed, status: ", static_cast<int>(status));
       }
 
     } else if constexpr (std::is_same_v<T, MLFloat16>) {
@@ -590,17 +662,33 @@ Status MatMul<T>::ExecuteWithMuBLAS(const MusaPreparation& prepare,
         int ldb = trans_B_ ? static_cast<int>(K) : static_cast<int>(N);
         int ldc = static_cast<int>(N);
 
-        status = mublasSgemm(mublas_handle,
-                             transA, transB,
-                             static_cast<int>(N), static_cast<int>(M), static_cast<int>(K),
-                             &alpha_val,
-                             B_batch, ldb,
-                             A_batch, lda,
-                             &beta_val,
-                             C_batch, ldc);
+        if (use_bf16_fast_math) {
+          const auto* A_bf16_batch = static_cast<const uint16_t*>(A_gemm_data) + left_offsets[batch];
+          const auto* B_bf16_batch = static_cast<const uint16_t*>(B_gemm_data) + right_offsets[batch];
+          auto* C_bf16_batch = static_cast<uint16_t*>(C_gemm_data) + output_offsets[batch];
+
+          status = mublasGemmEx(mublas_handle,
+                                transA, transB,
+                                static_cast<int>(N), static_cast<int>(M), static_cast<int>(K),
+                                &alpha_val,
+                                B_bf16_batch, MUSA_R_16BF, ldb,
+                                A_bf16_batch, MUSA_R_16BF, lda,
+                                &beta_val,
+                                C_bf16_batch, MUSA_R_16BF, ldc,
+                                MUBLAS_COMPUTE_32F, MUBLAS_GEMM_DEFAULT_TENSOR_OP);
+        } else {
+          status = mublasSgemm(mublas_handle,
+                               transA, transB,
+                               static_cast<int>(N), static_cast<int>(M), static_cast<int>(K),
+                               &alpha_val,
+                               B_batch, ldb,
+                               A_batch, lda,
+                               &beta_val,
+                               C_batch, ldc);
+        }
 
         if (status != MUBLAS_STATUS_SUCCESS) {
-          return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "muBLAS GEMM computation failed for batch " + std::to_string(batch));
+          return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "muBLAS GEMM computation failed for batch ", batch, ", status: ", static_cast<int>(status));
         }
 
       } else if constexpr (std::is_same_v<T, MLFloat16>) {
@@ -624,6 +712,24 @@ Status MatMul<T>::ExecuteWithMuBLAS(const MusaPreparation& prepare,
 
       } else {
         return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Unsupported data type for muBLAS GEMM");
+      }
+    }
+  }
+
+  if constexpr (std::is_same_v<T, float>) {
+    if (use_bf16_fast_math) {
+      const size_t c_matrix_elements = static_cast<size_t>(M * N);
+      size_t c_elements = 0;
+      for (size_t offset : output_offsets) {
+        c_elements = std::max(c_elements, offset + c_matrix_elements);
+      }
+
+      LaunchBFloat16ToFloatKernel(stream, c_bf16_buffer.get(), C_data, static_cast<int64_t>(c_elements));
+      auto launch_status = musaGetLastError();
+      if (launch_status != musaSuccess) {
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                               "BF16 to float conversion failed for MatMul output: ",
+                               musaGetErrorString(launch_status));
       }
     }
   }

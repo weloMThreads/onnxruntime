@@ -4549,7 +4549,7 @@ std::vector<AllocatorPtr> MusaExecutionProvider::CreatePreferredAllocators() {
 // ============================================================================
 
 MusaExecutionProvider::PerThreadContext::PerThreadContext(
-    OrtDevice::DeviceId device_id, musaStream_t stream, bool use_tf32) {
+    OrtDevice::DeviceId device_id, musaStream_t stream, bool use_tf32, bool use_bf16) {
   // Set device (executed once per thread on first call)
   MUSA_CALL_THROW(musaSetDevice(device_id));
 
@@ -4571,10 +4571,11 @@ MusaExecutionProvider::PerThreadContext::PerThreadContext(
   }
 
   // Default to strict FP32 for correctness-focused CPU vs MUSA parity.
-  // Users can opt into TF32 through the MUSA EP provider option use_tf32=1.
-  status = mudnn_handle_->SetAllowTF32(use_tf32);
+  // Users can opt into TF32 through use_tf32=1. BF16 fast math uses explicit
+  // muBLAS paths and should not also enable muDNN TF32 on FP32 ops.
+  status = mudnn_handle_->SetAllowTF32(use_tf32 && !use_bf16);
   if (status != ::musa::dnn::Status::SUCCESS) {
-    ORT_THROW("Failed to set TF32 mode for MUSA DNN handle, status: " +
+    ORT_THROW("Failed to set TF32/BF16 mode for MUSA DNN handle, status: " +
               std::to_string(static_cast<int>(status)));
   }
 
@@ -4667,7 +4668,7 @@ MusaExecutionProvider::PerThreadContext& MusaExecutionProvider::GetPerThreadCont
 
     if (context_state_.retired_context_pool.empty()) {
       // Create new context
-      context = std::make_shared<PerThreadContext>(info_.device_id, stream_, info_.use_tf32);
+      context = std::make_shared<PerThreadContext>(info_.device_id, stream_, info_.use_tf32, info_.use_bf16);
     } else {
       // Reuse existing context
       context = context_state_.retired_context_pool.back();

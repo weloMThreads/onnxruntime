@@ -1334,6 +1334,7 @@ static std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory
     ParseMusaBoolOption(options, "prefer_nhwc", musa_options.prefer_nhwc);
     ParseMusaBoolOption(options, "enable_musa_graph", musa_options.enable_musa_graph);
     ParseMusaBoolOption(options, "use_tf32", musa_options.use_tf32);
+    ParseMusaBoolOption(options, "use_bf16", musa_options.use_bf16);
 
     auto musa_factory = onnxruntime::MusaProviderFactoryCreator::Create(&musa_options);
     if (musa_factory) {

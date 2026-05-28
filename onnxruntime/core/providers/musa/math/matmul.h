@@ -44,7 +44,8 @@ class MatMul final : public MusaKernel {
   ;
 
   ComputeStrategy SelectStrategy(const TensorShape& a_shape, const TensorShape& b_shape,
-                                 MLDataType dtype, size_t batch_count) const;
+                                 MLDataType dtype, size_t batch_count,
+                                 bool use_bf16_fast_math) const;
 
   Status ExecuteWithMuDNN(const MusaPreparation& prepare,
                           const MatMulComputeHelper& helper, bool use_batch,
@@ -52,7 +53,8 @@ class MatMul final : public MusaKernel {
 
   Status ExecuteWithMuBLAS(const MusaPreparation& prepare,
                            const MatMulComputeHelper& helper,
-                           musaStream_t stream) const;
+                           musaStream_t stream,
+                           onnxruntime::Stream* ort_stream) const;
 
   Status ExecuteWithMuDNNLoop(OpKernelContext* ctx,
                               const MatMulComputeHelper& helper,

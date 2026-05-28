@@ -46,6 +46,8 @@ class MusaExecutionProvider : public IExecutionProvider {
 
   bool UseTF32() const { return info_.use_tf32; }
 
+  bool UseBF16() const { return info_.use_bf16; }
+
   int GetDeviceId() const override { return info_.device_id; }
 
   FusionStyle GetFusionStyle() const override {
@@ -64,7 +66,7 @@ class MusaExecutionProvider : public IExecutionProvider {
   // ============================================================================
   class PerThreadContext final {
    public:
-    PerThreadContext(OrtDevice::DeviceId device_id, musaStream_t stream, bool use_tf32);
+    PerThreadContext(OrtDevice::DeviceId device_id, musaStream_t stream, bool use_tf32, bool use_bf16);
     ~PerThreadContext();
 
     ORT_DISALLOW_COPY_ASSIGNMENT_AND_MOVE(PerThreadContext);
