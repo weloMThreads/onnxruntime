@@ -4,6 +4,7 @@
 
 #include "core/providers/shared_library/provider_api.h"
 #include "core/providers/musa/fusion/reshape_matmul.h"
+#include "core/providers/musa/fusion/reshape_matmul_impl.h"
 #include "core/providers/musa/musa_execution_provider.h"
 #include "core/providers/musa/musa_fwd.h"
 #include "core/providers/musa/musa_utils.h"
@@ -137,6 +138,45 @@ Status MusaReshapeMatMul::ComputeInternal(OpKernelContext* ctx) const {
                     "MusaReshapeMatMul requires input rank >= 2, got ", input->Shape().ToString());
   ORT_RETURN_IF_NOT(weight->Shape().NumDimensions() == 2,
                     "MusaReshapeMatMul requires 2D weight, got ", weight->Shape().ToString());
+
+  if (transpose_input_021_) {
+    ORT_RETURN_IF_NOT(input->IsDataType<float>() && weight->IsDataType<float>(),
+                      "MusaReshapeMatMul transpose_input_021 supports float only");
+    ORT_RETURN_IF_NOT(input->Shape().NumDimensions() == 3,
+                      "MusaReshapeMatMul transpose_input_021 requires rank-3 input, got ",
+                      input->Shape().ToString());
+
+    const int64_t batch = input->Shape()[0];
+    const int64_t k = input->Shape()[1];
+    const int64_t tokens = input->Shape()[2];
+    const int64_t weight_k = transpose_b_ ? weight->Shape()[1] : weight->Shape()[0];
+    const int64_t n = transpose_b_ ? weight->Shape()[0] : weight->Shape()[1];
+    ORT_RETURN_IF_NOT(k == weight_k,
+                      "MusaReshapeMatMul transpose_input_021 K mismatch: input dim1=", k,
+                      ", weight K=", weight_k);
+
+    Tensor* output = ctx->Output(0, TensorShape({batch, tokens, n}));
+    ORT_RETURN_IF_NOT(output != nullptr, "MusaReshapeMatMul output is null");
+    if (output->Shape().Size() == 0) {
+      return Status::OK();
+    }
+
+    const musaError_t status = LaunchTranspose021MatMulFloat(Stream(ctx),
+                                                             input->Data<float>(),
+                                                             weight->Data<float>(),
+                                                             output->MutableData<float>(),
+                                                             batch,
+                                                             k,
+                                                             tokens,
+                                                             n,
+                                                             transpose_b_);
+    if (status != musaSuccess) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "MusaReshapeMatMul transpose_input_021 kernel launch failed, status=",
+                             static_cast<int>(status));
+    }
+    return Status::OK();
+  }
 
   const int64_t k = input->Shape()[input->Shape().NumDimensions() - 1];
   const int64_t weight_k = transpose_b_ ? weight->Shape()[1] : weight->Shape()[0];

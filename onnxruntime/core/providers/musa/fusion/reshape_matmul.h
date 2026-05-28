@@ -15,12 +15,14 @@ class MusaReshapeMatMul final : public MusaKernel {
  public:
   explicit MusaReshapeMatMul(const OpKernelInfo& info)
       : MusaKernel(info),
-        transpose_b_(info.GetAttrOrDefault<int64_t>("transpose_b", 0) != 0) {}
+        transpose_b_(info.GetAttrOrDefault<int64_t>("transpose_b", 0) != 0),
+        transpose_input_021_(info.GetAttrOrDefault<int64_t>("transpose_input_021", 0) != 0) {}
 
   Status ComputeInternal(OpKernelContext* ctx) const override;
 
  private:
   bool transpose_b_;
+  bool transpose_input_021_;
 };
 
 }  // namespace musa

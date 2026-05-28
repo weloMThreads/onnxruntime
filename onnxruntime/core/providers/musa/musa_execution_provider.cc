@@ -5066,6 +5066,10 @@ bool HasIntAttributeValue(const Node& node, const std::string& name, int64_t exp
   return GetIntAttribute(node, name, value) && value == expected;
 }
 
+bool IsPermute021(const Node& transpose) {
+  return transpose.OpType() == "Transpose" && HasIntListAttribute(transpose, "perm", {0, 2, 1});
+}
+
 bool IsFloatInitializer(const GraphViewer& graph_viewer, const std::string& name) {
   const auto* tensor = graph_viewer.GetConstantInitializer(name, true);
   return tensor != nullptr && tensor->data_type() == ONNX_NAMESPACE::TensorProto_DataType_FLOAT;
@@ -5810,6 +5814,213 @@ std::unique_ptr<ComputeCapability> TryCreateReshapeMatMulCapability(
   return ComputeCapability::Create(std::move(sub_graph));
 }
 
+std::unique_ptr<ComputeCapability> TryCreateTranspose021ReshapeMatMulCapability(
+    const GraphViewer& graph_viewer,
+    const Node& final_reshape) {
+  if (final_reshape.OpType() != "Reshape" || final_reshape.InputDefs().size() != 2 ||
+      final_reshape.OutputDefs().size() != 1) {
+    return nullptr;
+  }
+
+  std::string matmul_output;
+  std::string final_shape_name;
+  std::string final_output;
+  if (!GetNodeInputName(final_reshape, 0, matmul_output) ||
+      !GetNodeInputName(final_reshape, 1, final_shape_name) ||
+      !GetNodeOutputName(final_reshape, 0, final_output)) {
+    return nullptr;
+  }
+
+  const Node* matmul = graph_viewer.GetProducerNode(matmul_output);
+  const Node* cast_to_i64 = graph_viewer.GetProducerNode(final_shape_name);
+  if (matmul == nullptr || cast_to_i64 == nullptr || matmul->OpType() != "MatMul" ||
+      !IsCastTo(*cast_to_i64, ONNX_NAMESPACE::TensorProto_DataType_INT64)) {
+    return nullptr;
+  }
+
+  std::string reshape0_output;
+  std::string weight_name;
+  if (!GetNodeInputName(*matmul, 0, reshape0_output) || !GetNodeInputName(*matmul, 1, weight_name)) {
+    return nullptr;
+  }
+
+  const Node* reshape0 = graph_viewer.GetProducerNode(reshape0_output);
+  if (reshape0 == nullptr || reshape0->OpType() != "Reshape" || reshape0->InputDefs().size() != 2) {
+    return nullptr;
+  }
+
+  std::string transpose_output;
+  std::string reshape0_shape_name;
+  if (!GetNodeInputName(*reshape0, 0, transpose_output) ||
+      !GetNodeInputName(*reshape0, 1, reshape0_shape_name)) {
+    return nullptr;
+  }
+
+  const Node* transpose = graph_viewer.GetProducerNode(transpose_output);
+  if (transpose == nullptr || !IsPermute021(*transpose) || transpose->InputDefs().size() != 1) {
+    return nullptr;
+  }
+
+  std::string input_name;
+  if (!GetNodeInputName(*transpose, 0, input_name)) {
+    return nullptr;
+  }
+
+  std::vector<int64_t> reshape0_shape;
+  if (!ReadIntShapeInitializer(graph_viewer, reshape0_shape_name, reshape0_shape) ||
+      reshape0_shape.size() != 2 || reshape0_shape[0] != -1 || reshape0_shape[1] <= 0) {
+    return nullptr;
+  }
+
+  std::string concat_output;
+  if (!GetNodeInputName(*cast_to_i64, 0, concat_output)) {
+    return nullptr;
+  }
+  const Node* concat = graph_viewer.GetProducerNode(concat_output);
+  int64_t concat_axis = -1;
+  if (concat == nullptr || concat->OpType() != "Concat" ||
+      !GetIntAttribute(*concat, "axis", concat_axis) || concat_axis != 0 ||
+      concat->InputDefs().size() != 2) {
+    return nullptr;
+  }
+
+  std::string gather_prefix_output;
+  std::string concat_const_name;
+  if (!GetNodeInputName(*concat, 0, gather_prefix_output) ||
+      !GetNodeInputName(*concat, 1, concat_const_name)) {
+    return nullptr;
+  }
+
+  std::vector<int64_t> concat_const;
+  if (!ReadIntShapeInitializer(graph_viewer, concat_const_name, concat_const) ||
+      concat_const.size() != 1 || concat_const[0] <= 0) {
+    return nullptr;
+  }
+
+  const Node* gather_prefix = graph_viewer.GetProducerNode(gather_prefix_output);
+  int64_t gather_prefix_axis = -1;
+  if (gather_prefix == nullptr || gather_prefix->OpType() != "Gather" ||
+      !GetIntAttribute(*gather_prefix, "axis", gather_prefix_axis) || gather_prefix_axis != 0 ||
+      gather_prefix->InputDefs().size() != 2) {
+    return nullptr;
+  }
+
+  std::string cast32_output;
+  std::string gather_prefix_indices_name;
+  if (!GetNodeInputName(*gather_prefix, 0, cast32_output) ||
+      !GetNodeInputName(*gather_prefix, 1, gather_prefix_indices_name)) {
+    return nullptr;
+  }
+
+  std::vector<int64_t> gather_prefix_indices;
+  if (!ReadIntShapeInitializer(graph_viewer, gather_prefix_indices_name, gather_prefix_indices) ||
+      gather_prefix_indices.size() != 2 || gather_prefix_indices[0] != 0 || gather_prefix_indices[1] != 1) {
+    return nullptr;
+  }
+
+  const Node* cast_to_i32 = graph_viewer.GetProducerNode(cast32_output);
+  if (cast_to_i32 == nullptr || !IsCastTo(*cast_to_i32, ONNX_NAMESPACE::TensorProto_DataType_INT32)) {
+    return nullptr;
+  }
+
+  std::string reordered_shape_output;
+  if (!GetNodeInputName(*cast_to_i32, 0, reordered_shape_output)) {
+    return nullptr;
+  }
+  const Node* reorder_gather = graph_viewer.GetProducerNode(reordered_shape_output);
+  int64_t reorder_axis = -1;
+  if (reorder_gather == nullptr || reorder_gather->OpType() != "Gather" ||
+      !GetIntAttribute(*reorder_gather, "axis", reorder_axis) || reorder_axis != 0 ||
+      reorder_gather->InputDefs().size() != 2) {
+    return nullptr;
+  }
+
+  std::string shape_output;
+  std::string reorder_indices_name;
+  if (!GetNodeInputName(*reorder_gather, 0, shape_output) ||
+      !GetNodeInputName(*reorder_gather, 1, reorder_indices_name)) {
+    return nullptr;
+  }
+
+  std::vector<int64_t> reorder_indices;
+  if (!ReadIntShapeInitializer(graph_viewer, reorder_indices_name, reorder_indices) ||
+      reorder_indices.size() != 3 || reorder_indices[0] != 0 ||
+      reorder_indices[1] != 2 || reorder_indices[2] != 1) {
+    return nullptr;
+  }
+
+  const Node* shape = graph_viewer.GetProducerNode(shape_output);
+  if (shape == nullptr || shape->OpType() != "Shape" || shape->InputDefs().size() != 1) {
+    return nullptr;
+  }
+
+  std::string shape_input;
+  if (!GetNodeInputName(*shape, 0, shape_input) || shape_input != input_name) {
+    return nullptr;
+  }
+
+  const auto* weight_tensor = graph_viewer.GetConstantInitializer(weight_name, true);
+  if (weight_tensor == nullptr || weight_tensor->dims_size() != 2 ||
+      weight_tensor->dims()[0] != reshape0_shape[1] || weight_tensor->dims()[1] != concat_const[0]) {
+    return nullptr;
+  }
+
+  const auto input_type = GetElementType(transpose->InputDefs()[0]);
+  const auto weight_type = GetElementType(matmul->InputDefs()[1]);
+  if (input_type != ONNX_NAMESPACE::TensorProto_DataType_FLOAT ||
+      weight_type != ONNX_NAMESPACE::TensorProto_DataType_FLOAT) {
+    return nullptr;
+  }
+
+  const auto transpose_outputs = transpose->OutputDefs();
+  const auto reshape0_outputs = reshape0->OutputDefs();
+  const auto matmul_outputs = matmul->OutputDefs();
+  const auto shape_outputs = shape->OutputDefs();
+  const auto reorder_outputs = reorder_gather->OutputDefs();
+  const auto cast32_outputs = cast_to_i32->OutputDefs();
+  const auto gather_prefix_outputs = gather_prefix->OutputDefs();
+  const auto concat_outputs = concat->OutputDefs();
+  const auto cast64_outputs = cast_to_i64->OutputDefs();
+  if (transpose_outputs.empty() || reshape0_outputs.empty() || matmul_outputs.empty() ||
+      shape_outputs.empty() || reorder_outputs.empty() || cast32_outputs.empty() ||
+      gather_prefix_outputs.empty() || concat_outputs.empty() || cast64_outputs.empty() ||
+      !HasSingleConsumer(graph_viewer, transpose_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, reshape0_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, matmul_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, shape_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, reorder_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, cast32_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, gather_prefix_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, concat_outputs[0]->Name()) ||
+      !HasSingleConsumer(graph_viewer, cast64_outputs[0]->Name())) {
+    return nullptr;
+  }
+
+  std::vector<NodeIndex> node_indices = {
+      shape->Index(), reorder_gather->Index(), cast_to_i32->Index(), gather_prefix->Index(),
+      concat->Index(), cast_to_i64->Index(), transpose->Index(), reshape0->Index(),
+      matmul->Index(), final_reshape.Index()};
+  std::sort(node_indices.begin(), node_indices.end());
+  node_indices.erase(std::unique(node_indices.begin(), node_indices.end()), node_indices.end());
+
+  auto sub_graph = IndexedSubGraph::Create();
+  for (auto node_index : node_indices) {
+    sub_graph->Nodes().push_back(node_index);
+  }
+
+  auto meta_def = IndexedSubGraph_MetaDef::Create();
+  meta_def->name() = kMusaReshapeMatMulOpName;
+  meta_def->domain() = kMSDomain;
+  meta_def->since_version() = 1;
+  meta_def->inputs().push_back(input_name);
+  meta_def->inputs().push_back(weight_name);
+  meta_def->outputs().push_back(final_output);
+  AddIntAttribute(meta_def->attributes(), "transpose_b", 0);
+  AddIntAttribute(meta_def->attributes(), "transpose_input_021", 1);
+  sub_graph->SetMetaDef(std::move(meta_def));
+  return ComputeCapability::Create(std::move(sub_graph));
+}
+
 struct PlnCascadeBranch {
   const Node* mask_mul = nullptr;
   std::string mask_name;
@@ -6235,6 +6446,12 @@ MusaExecutionProvider::GetCapability(const onnxruntime::GraphViewer& graph_viewe
 
     if (auto fused_capability = TryCreateGeluCapability(graph_viewer, *p_node)) {
       LOGS(*GetLogger(), INFO) << "MUSA EP fused gelu at node: " << p_node->Name();
+      result.push_back(std::move(fused_capability));
+      continue;
+    }
+
+    if (auto fused_capability = TryCreateTranspose021ReshapeMatMulCapability(graph_viewer, *p_node)) {
+      LOGS(*GetLogger(), INFO) << "MUSA EP fused transpose021 reshape matmul at node: " << p_node->Name();
       result.push_back(std::move(fused_capability));
       continue;
     }
