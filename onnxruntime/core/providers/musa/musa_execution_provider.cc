@@ -100,6 +100,7 @@ class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, Musa
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaReshapeMatMul);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaFeatureNorm);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaGelu);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaPlnCascadeBlock);
 
 // Conv operations (op 1-10 and op 11) - NCHW
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 10, float, Conv);
@@ -1678,6 +1679,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kMSDomain, 1, MusaFeatureNorm)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kMSDomain, 1, MusaGelu)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kMSDomain, 1, MusaPlnCascadeBlock)>,
 
       // Register Conv operators with float type (NCHW)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
@@ -4839,6 +4842,7 @@ constexpr const char* kMusaTokenMixerResidualOpName = "MusaTokenMixerResidual";
 constexpr const char* kMusaReshapeMatMulOpName = "MusaReshapeMatMul";
 constexpr const char* kMusaFeatureNormOpName = "MusaFeatureNorm";
 constexpr const char* kMusaGeluOpName = "MusaGelu";
+constexpr const char* kMusaPlnCascadeBlockOpName = "MusaPlnCascadeBlock";
 
 
 bool ReadScalarFloatInitializer(const GraphViewer& graph_viewer,
@@ -5595,6 +5599,242 @@ std::unique_ptr<ComputeCapability> TryCreateReshapeMatMulCapability(
   return ComputeCapability::Create(std::move(sub_graph));
 }
 
+struct PlnCascadeBranch {
+  const Node* mask_mul = nullptr;
+  std::string mask_name;
+  std::string data_name;
+};
+
+struct PlnCascadeStepMatch {
+  const Node* select_add = nullptr;
+  const Node* candidate_scale_mul = nullptr;
+  const Node* candidate_add = nullptr;
+  const Node* candidate_mask_mul = nullptr;
+  const Node* passthrough_mask_mul = nullptr;
+  std::string previous_value;
+  std::string candidate_mask;
+  std::string passthrough_mask;
+  std::string add_values;
+  std::string bias_values;
+};
+
+bool IsPlnSelectName(const std::string& name) {
+  return name.find("/pln") != std::string::npos && name.find("Select") != std::string::npos;
+}
+
+void EnumerateMaskedBranches(const Node& mul,
+                             std::vector<PlnCascadeBranch>& branches) {
+  if (mul.OpType() != "Mul" || mul.InputDefs().size() != 2) {
+    return;
+  }
+  std::string input0;
+  std::string input1;
+  if (!GetNodeInputName(mul, 0, input0) || !GetNodeInputName(mul, 1, input1)) {
+    return;
+  }
+  branches.push_back(PlnCascadeBranch{&mul, input0, input1});
+  branches.push_back(PlnCascadeBranch{&mul, input1, input0});
+}
+
+bool TryParsePlnAffineCandidate(const GraphViewer& graph_viewer,
+                                const std::string& candidate_value,
+                                const std::string& passthrough_value,
+                                PlnCascadeStepMatch& match) {
+  const Node* candidate_add = graph_viewer.GetProducerNode(candidate_value);
+  if (candidate_add == nullptr || candidate_add->OpType() != "Add" ||
+      candidate_add->InputDefs().size() != 2) {
+    return false;
+  }
+
+  std::string add_input0;
+  std::string add_input1;
+  if (!GetNodeInputName(*candidate_add, 0, add_input0) ||
+      !GetNodeInputName(*candidate_add, 1, add_input1)) {
+    return false;
+  }
+
+  auto try_parse = [&](const std::string& mul_output,
+                       const std::string& bias_name) -> bool {
+    if (!IsFloatInitializer(graph_viewer, bias_name)) {
+      return false;
+    }
+
+    const Node* scale_mul = graph_viewer.GetProducerNode(mul_output);
+    if (scale_mul == nullptr || scale_mul->OpType() != "Mul" ||
+        scale_mul->InputDefs().size() != 2) {
+      return false;
+    }
+
+    std::string mul_input0;
+    std::string mul_input1;
+    if (!GetNodeInputName(*scale_mul, 0, mul_input0) ||
+        !GetNodeInputName(*scale_mul, 1, mul_input1)) {
+      return false;
+    }
+
+    std::string add_values;
+    if (mul_input0 == passthrough_value && IsFloatInitializer(graph_viewer, mul_input1)) {
+      add_values = mul_input1;
+    } else if (mul_input1 == passthrough_value && IsFloatInitializer(graph_viewer, mul_input0)) {
+      add_values = mul_input0;
+    } else {
+      return false;
+    }
+
+    match.candidate_scale_mul = scale_mul;
+    match.candidate_add = candidate_add;
+    match.add_values = add_values;
+    match.bias_values = bias_name;
+    match.previous_value = passthrough_value;
+    return true;
+  };
+
+  return try_parse(add_input0, add_input1) || try_parse(add_input1, add_input0);
+}
+
+bool TryParsePlnCascadeStep(const GraphViewer& graph_viewer,
+                            const Node& select_add,
+                            PlnCascadeStepMatch& match) {
+  if (select_add.OpType() != "Add" || select_add.InputDefs().size() != 2 ||
+      select_add.OutputDefs().size() != 1 || !IsPlnSelectName(select_add.Name())) {
+    return false;
+  }
+
+  if (GetElementType(select_add.OutputDefs()[0]) != ONNX_NAMESPACE::TensorProto_DataType_FLOAT) {
+    return false;
+  }
+
+  std::string input0;
+  std::string input1;
+  if (!GetNodeInputName(select_add, 0, input0) || !GetNodeInputName(select_add, 1, input1)) {
+    return false;
+  }
+  const Node* mul0 = graph_viewer.GetProducerNode(input0);
+  const Node* mul1 = graph_viewer.GetProducerNode(input1);
+  if (mul0 == nullptr || mul1 == nullptr || mul0->OpType() != "Mul" || mul1->OpType() != "Mul") {
+    return false;
+  }
+
+  std::vector<PlnCascadeBranch> left_branches;
+  std::vector<PlnCascadeBranch> right_branches;
+  EnumerateMaskedBranches(*mul0, left_branches);
+  EnumerateMaskedBranches(*mul1, right_branches);
+
+  for (const auto& left : left_branches) {
+    for (const auto& right : right_branches) {
+      PlnCascadeStepMatch local;
+      if (TryParsePlnAffineCandidate(graph_viewer, left.data_name, right.data_name, local)) {
+        local.select_add = &select_add;
+        local.candidate_mask_mul = left.mask_mul;
+        local.passthrough_mask_mul = right.mask_mul;
+        local.candidate_mask = left.mask_name;
+        local.passthrough_mask = right.mask_name;
+        match = std::move(local);
+        return true;
+      }
+
+      local = PlnCascadeStepMatch{};
+      if (TryParsePlnAffineCandidate(graph_viewer, right.data_name, left.data_name, local)) {
+        local.select_add = &select_add;
+        local.candidate_mask_mul = right.mask_mul;
+        local.passthrough_mask_mul = left.mask_mul;
+        local.candidate_mask = right.mask_name;
+        local.passthrough_mask = left.mask_name;
+        match = std::move(local);
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool HasPlnCascadeContinuation(const GraphViewer& graph_viewer,
+                               const std::string& value_name) {
+  for (auto& node_index : graph_viewer.GetNodesInTopologicalOrder()) {
+    const auto* node = graph_viewer.GetNode(node_index);
+    if (node == nullptr) {
+      continue;
+    }
+
+    PlnCascadeStepMatch step;
+    if (TryParsePlnCascadeStep(graph_viewer, *node, step) &&
+        step.previous_value == value_name) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::unique_ptr<ComputeCapability> TryCreatePlnCascadeBlockCapability(
+    const GraphViewer& graph_viewer,
+    const Node& final_add) {
+  std::string final_output;
+  if (!GetNodeOutputName(final_add, 0, final_output)) {
+    return nullptr;
+  }
+
+  std::vector<PlnCascadeStepMatch> reverse_steps;
+  const Node* current = &final_add;
+  std::string base_value;
+  while (current != nullptr && reverse_steps.size() < 16) {
+    PlnCascadeStepMatch step;
+    if (!TryParsePlnCascadeStep(graph_viewer, *current, step)) {
+      break;
+    }
+
+    base_value = step.previous_value;
+    reverse_steps.push_back(std::move(step));
+    current = graph_viewer.GetProducerNode(base_value);
+  }
+
+  if (reverse_steps.size() < 2 || base_value.empty()) {
+    return nullptr;
+  }
+
+  if (HasPlnCascadeContinuation(graph_viewer, final_output)) {
+    return nullptr;
+  }
+
+  std::vector<PlnCascadeStepMatch> steps(reverse_steps.rbegin(), reverse_steps.rend());
+  std::unordered_set<NodeIndex> node_index_set;
+  for (const auto& step : steps) {
+    node_index_set.insert(step.candidate_scale_mul->Index());
+    node_index_set.insert(step.candidate_add->Index());
+    node_index_set.insert(step.candidate_mask_mul->Index());
+    node_index_set.insert(step.passthrough_mask_mul->Index());
+    node_index_set.insert(step.select_add->Index());
+  }
+
+  if (!ValidateNoExternalConsumers(graph_viewer, node_index_set, final_output)) {
+    return nullptr;
+  }
+
+  std::vector<NodeIndex> node_indices(node_index_set.begin(), node_index_set.end());
+  std::sort(node_indices.begin(), node_indices.end());
+
+  auto sub_graph = IndexedSubGraph::Create();
+  for (auto node_index : node_indices) {
+    sub_graph->Nodes().push_back(node_index);
+  }
+
+  auto meta_def = IndexedSubGraph_MetaDef::Create();
+  meta_def->name() = kMusaPlnCascadeBlockOpName;
+  meta_def->domain() = kMSDomain;
+  meta_def->since_version() = 1;
+  meta_def->inputs().push_back(base_value);
+  for (const auto& step : steps) {
+    meta_def->inputs().push_back(step.candidate_mask);
+    meta_def->inputs().push_back(step.passthrough_mask);
+    meta_def->inputs().push_back(step.add_values);
+    meta_def->inputs().push_back(step.bias_values);
+  }
+  meta_def->outputs().push_back(final_output);
+  AddIntAttribute(meta_def->attributes(), "num_steps", static_cast<int64_t>(steps.size()));
+  sub_graph->SetMetaDef(std::move(meta_def));
+  return ComputeCapability::Create(std::move(sub_graph));
+}
+
 std::unique_ptr<ComputeCapability> TryCreateTokenMixerResidualCapability(
     const GraphViewer& graph_viewer,
     const Node& add_node,
@@ -5749,6 +5989,12 @@ MusaExecutionProvider::GetCapability(const onnxruntime::GraphViewer& graph_viewe
   for (auto& node_index : graph_viewer.GetNodesInTopologicalOrder()) {
     const auto* p_node = graph_viewer.GetNode(node_index);
     if (p_node == nullptr || !p_node->GetExecutionProviderType().empty()) {
+      continue;
+    }
+
+    if (auto fused_capability = TryCreatePlnCascadeBlockCapability(graph_viewer, *p_node)) {
+      LOGS(*GetLogger(), INFO) << "MUSA EP fused PLN cascade block at node: " << p_node->Name();
+      result.push_back(std::move(fused_capability));
       continue;
     }
 
