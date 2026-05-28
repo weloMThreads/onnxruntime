@@ -5801,9 +5801,21 @@ std::unique_ptr<ComputeCapability> TryCreatePlnCascadeBlockCapability(
   for (const auto& step : steps) {
     node_index_set.insert(step.candidate_scale_mul->Index());
     node_index_set.insert(step.candidate_add->Index());
-    node_index_set.insert(step.candidate_mask_mul->Index());
-    node_index_set.insert(step.passthrough_mask_mul->Index());
     node_index_set.insert(step.select_add->Index());
+  }
+  for (const auto& step : steps) {
+    const auto candidate_mask_outputs = step.candidate_mask_mul->OutputDefs();
+    if (candidate_mask_outputs.empty() ||
+        !OutputHasExternalConsumer(graph_viewer, candidate_mask_outputs[0]->Name(),
+                                   node_index_set, final_output)) {
+      node_index_set.insert(step.candidate_mask_mul->Index());
+    }
+    const auto passthrough_mask_outputs = step.passthrough_mask_mul->OutputDefs();
+    if (passthrough_mask_outputs.empty() ||
+        !OutputHasExternalConsumer(graph_viewer, passthrough_mask_outputs[0]->Name(),
+                                   node_index_set, final_output)) {
+      node_index_set.insert(step.passthrough_mask_mul->Index());
+    }
   }
 
   if (!ValidateNoExternalConsumers(graph_viewer, node_index_set, final_output)) {
