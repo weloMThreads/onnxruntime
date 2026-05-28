@@ -4549,7 +4549,7 @@ std::vector<AllocatorPtr> MusaExecutionProvider::CreatePreferredAllocators() {
 // ============================================================================
 
 MusaExecutionProvider::PerThreadContext::PerThreadContext(
-    OrtDevice::DeviceId device_id, musaStream_t stream) {
+    OrtDevice::DeviceId device_id, musaStream_t stream, bool use_tf32) {
   // Set device (executed once per thread on first call)
   MUSA_CALL_THROW(musaSetDevice(device_id));
 
@@ -4570,13 +4570,11 @@ MusaExecutionProvider::PerThreadContext::PerThreadContext(
               std::to_string(static_cast<int>(status)));
   }
 
-  // Enable TF32 (TensorFloat-32) for FP32 acceleration on Matrix Unit / Tensor Core
-  // Following torch_musa pattern: allow_tf32_ = true by default
-  // This provides huge performance gain for MatMul and Conv while preserving FP32-level accuracy
-  // Reference: CUDA EP also enables TF32 by default (use_tf32{true})
-  status = mudnn_handle_->SetAllowTF32(true);
+  // Default to strict FP32 for correctness-focused CPU vs MUSA parity.
+  // Users can opt into TF32 through the MUSA EP provider option use_tf32=1.
+  status = mudnn_handle_->SetAllowTF32(use_tf32);
   if (status != ::musa::dnn::Status::SUCCESS) {
-    ORT_THROW("Failed to enable TF32 for MUSA DNN handle, status: " +
+    ORT_THROW("Failed to set TF32 mode for MUSA DNN handle, status: " +
               std::to_string(static_cast<int>(status)));
   }
 
@@ -4669,7 +4667,7 @@ MusaExecutionProvider::PerThreadContext& MusaExecutionProvider::GetPerThreadCont
 
     if (context_state_.retired_context_pool.empty()) {
       // Create new context
-      context = std::make_shared<PerThreadContext>(info_.device_id, stream_);
+      context = std::make_shared<PerThreadContext>(info_.device_id, stream_, info_.use_tf32);
     } else {
       // Reuse existing context
       context = context_state_.retired_context_pool.back();

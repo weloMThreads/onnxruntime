@@ -326,6 +326,7 @@ ORT_API_STATUS_IMPL(OrtApis::SessionOptionsAppendExecutionProvider,
       }
       ParseMusaBoolOption(provider_options, "prefer_nhwc", musa_options.prefer_nhwc);
       ParseMusaBoolOption(provider_options, "enable_musa_graph", musa_options.enable_musa_graph);
+      ParseMusaBoolOption(provider_options, "use_tf32", musa_options.use_tf32);
       if (auto factory = MusaProviderFactoryCreator::Create(&musa_options)) {
         options->provider_factories.push_back(std::move(factory));
       } else {

@@ -34,16 +34,14 @@ constexpr mublasMath kMublasTensorOpMathMode = MUBLAS_TP32_TENSOR_OP_MATH;
 
 // Get pooled muBLAS handle with stream binding
 // CRITICAL: mublasSetStream must be called on every use to ensure correct stream context
-mublasHandle_t GetMublasHandle(musaStream_t stream) {
+mublasHandle_t GetMublasHandle(musaStream_t stream, bool use_tf32) {
   if (!g_mublas_initialized) {
     mublasCreate(&g_mublas_handle);
     g_mublas_initialized = true;
   }
   // Reset stream on every use - this is the key fix for handle pooling
   mublasSetStream(g_mublas_handle, stream);
-  // Enable TF32 for FP32 acceleration on Matrix Unit
-  // Following CUDA EP pattern: use_tf32{true} with the SDK-specific tensor-op math mode.
-  mublasSetMathMode(g_mublas_handle, kMublasTensorOpMathMode);
+  mublasSetMathMode(g_mublas_handle, use_tf32 ? kMublasTensorOpMathMode : MUBLAS_DEFAULT_MATH);
   return g_mublas_handle;
 }
 
@@ -404,10 +402,12 @@ Status MatMul<T>::ExecuteWithMuDNN(const MusaPreparation& prepare,
       return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to set BatchMatMul transpose");
     }
 
-    // Enable Tensor Core / Matrix Unit for better performance (torch_musa pattern)
-    status = batch_op.SetComputeMode(::musa::dnn::BatchMatMul::ComputeMode::TENSOR);
-    if (status != ::musa::dnn::Status::SUCCESS) {
-      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to set BatchMatMul compute mode");
+    const auto* ep = static_cast<const MusaExecutionProvider*>(Info().GetExecutionProvider());
+    if (ep != nullptr && ep->UseTF32()) {
+      status = batch_op.SetComputeMode(::musa::dnn::BatchMatMul::ComputeMode::TENSOR);
+      if (status != ::musa::dnn::Status::SUCCESS) {
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to set BatchMatMul compute mode");
+      }
     }
 
     std::vector<IAllocatorUniquePtr<void>> workspace_buffers_holder;
@@ -450,10 +450,12 @@ Status MatMul<T>::ExecuteWithMuDNN(const MusaPreparation& prepare,
       return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to set MatMul transpose");
     }
 
-    // Enable Tensor Core / Matrix Unit for better performance (torch_musa pattern)
-    status = matmul_op.SetComputeMode(::musa::dnn::MatMul::ComputeMode::TENSOR);
-    if (status != ::musa::dnn::Status::SUCCESS) {
-      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to set MatMul compute mode");
+    const auto* ep = static_cast<const MusaExecutionProvider*>(Info().GetExecutionProvider());
+    if (ep != nullptr && ep->UseTF32()) {
+      status = matmul_op.SetComputeMode(::musa::dnn::MatMul::ComputeMode::TENSOR);
+      if (status != ::musa::dnn::Status::SUCCESS) {
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to set MatMul compute mode");
+      }
     }
 
     std::vector<IAllocatorUniquePtr<void>> workspace_buffers_holder;
@@ -486,7 +488,8 @@ Status MatMul<T>::ExecuteWithMuBLAS(const MusaPreparation& prepare,
                                     const MatMulComputeHelper& helper,
                                     musaStream_t stream) const {
   // Get pooled muBLAS handle with stream binding (key optimization)
-  mublasHandle_t mublas_handle = GetMublasHandle(stream);
+  const auto* ep = static_cast<const MusaExecutionProvider*>(Info().GetExecutionProvider());
+  mublasHandle_t mublas_handle = GetMublasHandle(stream, ep != nullptr && ep->UseTF32());
   mublasStatus_t status;
 
   // Get GEMM parameters from helper
@@ -679,7 +682,9 @@ Status MatMul<T>::ExecuteWithMuDNNLoop(OpKernelContext* ctx,
   matmul_op.SetAlpha(static_cast<double>(alpha_));
   matmul_op.SetBeta(0.0);
   matmul_op.SetTranspose(trans_A_, trans_B_);
-  matmul_op.SetComputeMode(::musa::dnn::MatMul::ComputeMode::TENSOR);
+  if (ep->UseTF32()) {
+    matmul_op.SetComputeMode(::musa::dnn::MatMul::ComputeMode::TENSOR);
+  }
 
   // Pre-configure tensor dimensions (only addresses change per batch)
   const auto musa_type = GetMusaDataType<T>();

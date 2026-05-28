@@ -20,11 +20,12 @@
 #define ORT_MUSA_PROVIDER_OPTIONS_DEFINED
 struct OrtMUSAProviderOptions {
 #ifdef __cplusplus
-  OrtMUSAProviderOptions() : device_id{0}, prefer_nhwc{false}, enable_musa_graph{0} {}
+  OrtMUSAProviderOptions() : device_id{0}, prefer_nhwc{false}, enable_musa_graph{0}, use_tf32{0} {}
 #endif
   int device_id;
   bool prefer_nhwc;
   int enable_musa_graph;
+  int use_tf32;
 };
 #endif
 
@@ -36,6 +37,7 @@ namespace provider_option_names {
 constexpr const char* kDeviceId = "device_id";
 constexpr const char* kPreferNHWC = "prefer_nhwc";
 constexpr const char* kEnableMUSAGraph = "enable_musa_graph";
+constexpr const char* kUseTF32 = "use_tf32";
 }  // namespace provider_option_names
 }  // namespace musa
 
@@ -43,6 +45,7 @@ struct MusaExecutionProviderInfo {
   int device_id{0};
   bool prefer_nhwc{false};
   bool enable_musa_graph{false};
+  bool use_tf32{false};
 
   static inline MusaExecutionProviderInfo FromProviderOptions(const ProviderOptions& options) {
     MusaExecutionProviderInfo info{};
@@ -57,6 +60,7 @@ struct MusaExecutionProviderInfo {
                   return Status::OK();
                 })
             .AddAssignmentToReference(musa::provider_option_names::kEnableMUSAGraph, info.enable_musa_graph)
+            .AddAssignmentToReference(musa::provider_option_names::kUseTF32, info.use_tf32)
             .Parse(options));
 
     return info;
@@ -67,6 +71,7 @@ struct MusaExecutionProviderInfo {
         {musa::provider_option_names::kDeviceId, MakeStringWithClassicLocale(info.device_id)},
         {musa::provider_option_names::kPreferNHWC, MakeStringWithClassicLocale(info.prefer_nhwc)},
         {musa::provider_option_names::kEnableMUSAGraph, MakeStringWithClassicLocale(info.enable_musa_graph)},
+        {musa::provider_option_names::kUseTF32, MakeStringWithClassicLocale(info.use_tf32)},
     };
     return options;
   }

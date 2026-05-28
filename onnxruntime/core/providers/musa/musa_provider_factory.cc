@@ -78,6 +78,7 @@ struct Musa_Provider : Provider {
     info.device_id = static_cast<OrtDevice::DeviceId>(params->device_id);
     info.prefer_nhwc = params->prefer_nhwc;
     info.enable_musa_graph = params->enable_musa_graph != 0;
+    info.use_tf32 = params->use_tf32 != 0;
     // info.npu_mem_limit = params->npu_mem_limit;
     // info.arena_extend_strategy = params->arena_extend_strategy;
     // info.enable_cann_graph = params->enable_cann_graph != 0;
@@ -99,6 +100,7 @@ struct Musa_Provider : Provider {
     musa_options.device_id = internal_options.device_id;
     musa_options.prefer_nhwc = internal_options.prefer_nhwc;
     musa_options.enable_musa_graph = internal_options.enable_musa_graph;
+    musa_options.use_tf32 = internal_options.use_tf32 ? 1 : 0;
   }
 
   ProviderOptions GetProviderOptions(const void *provider_options) override {
@@ -108,6 +110,7 @@ struct Musa_Provider : Provider {
     info.device_id = static_cast<OrtDevice::DeviceId>(musa_options.device_id);
     info.prefer_nhwc = musa_options.prefer_nhwc != 0;
     info.enable_musa_graph = musa_options.enable_musa_graph != 0;
+    info.use_tf32 = musa_options.use_tf32 != 0;
 
     return onnxruntime::MusaExecutionProviderInfo::ToProviderOptions(info);
   }

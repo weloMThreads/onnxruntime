@@ -44,6 +44,8 @@ class MusaExecutionProvider : public IExecutionProvider {
 
   bool IsNHWCPreferred() const { return info_.prefer_nhwc; }
 
+  bool UseTF32() const { return info_.use_tf32; }
+
   int GetDeviceId() const override { return info_.device_id; }
 
   FusionStyle GetFusionStyle() const override {
@@ -62,7 +64,7 @@ class MusaExecutionProvider : public IExecutionProvider {
   // ============================================================================
   class PerThreadContext final {
    public:
-    PerThreadContext(OrtDevice::DeviceId device_id, musaStream_t stream);
+    PerThreadContext(OrtDevice::DeviceId device_id, musaStream_t stream, bool use_tf32);
     ~PerThreadContext();
 
     ORT_DISALLOW_COPY_ASSIGNMENT_AND_MOVE(PerThreadContext);

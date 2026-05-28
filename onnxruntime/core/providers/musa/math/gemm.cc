@@ -195,9 +195,11 @@ Status Gemm<T>::ComputeInternal(OpKernelContext *ctx) const {
     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to set MatMul alpha");
   }
 
-  status = matmul_op.SetComputeMode(::musa::dnn::MatMul::ComputeMode::TENSOR);
-  if (status != ::musa::dnn::Status::SUCCESS) {
-    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to set MatMul compute mode");
+  if (ep != nullptr && ep->UseTF32()) {
+    status = matmul_op.SetComputeMode(::musa::dnn::MatMul::ComputeMode::TENSOR);
+    if (status != ::musa::dnn::Status::SUCCESS) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to set MatMul compute mode");
+    }
   }
 
   float effective_beta = (B != nullptr) ? beta_ : 0.0f;
