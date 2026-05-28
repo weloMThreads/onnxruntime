@@ -78,6 +78,13 @@ class ReduceSum final : public ReduceKernel<true> {
 };
 
 template <typename T>
+class ReduceSumSquare final : public ReduceKernel<true> {
+ public:
+  explicit ReduceSumSquare(const OpKernelInfo& info) : ReduceKernel<true>(info) {}
+  Status ComputeInternal(OpKernelContext* ctx) const override;
+};
+
+template <typename T>
 class ReduceMean final : public ReduceKernel<true> {
  public:
   explicit ReduceMean(const OpKernelInfo& info) : ReduceKernel<true>(info) {}
