@@ -216,6 +216,7 @@ InlinedVector<std::unique_ptr<GraphTransformer>> GenerateTransformers(
       session_options.config_options.GetConfigOrDefault(kOrtSessionOptionsEnableCastChainElimination, "0") == "1";
 #ifndef DISABLE_CONTRIB_OPS
   const InlinedHashSet<std::string_view> cpu_ep = {onnxruntime::kCpuExecutionProvider};
+  const InlinedHashSet<std::string_view> musa_ep = {onnxruntime::kMusaExecutionProvider};
   const InlinedHashSet<std::string_view> cpu_acl_eps = {onnxruntime::kCpuExecutionProvider,
                                                         onnxruntime::kAclExecutionProvider};
 #endif
@@ -390,6 +391,12 @@ InlinedVector<std::unique_ptr<GraphTransformer>> GenerateTransformers(
       }
 
       transformers.emplace_back(std::make_unique<GemmActivationFusion>(cpu_ep));
+      // MUSA FusedGemm is intentionally registered as a separate Level2 pass.
+      // Level2 runs after EP assignment, and GemmActivationFusion also requires
+      // the Gemm and activation nodes to have the same assigned provider. This
+      // keeps the default CPU fusion behavior unchanged and prevents MUSA from
+      // taking patterns before partitioning.
+      transformers.emplace_back(std::make_unique<GemmActivationFusion>(musa_ep));
       transformers.emplace_back(std::make_unique<MatMulIntegerToFloatFusion>(cpu_dml_acl_eps));
       transformers.emplace_back(std::make_unique<DynamicQuantizeMatMulFusion>(cpu_acl_eps));
 

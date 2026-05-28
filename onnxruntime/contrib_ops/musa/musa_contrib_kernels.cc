@@ -16,11 +16,15 @@ namespace musa {
 // Forward declarations
 class MUSA_MS_OP_TYPED_CLASS_NAME(1, float, QuickGelu);
 class MUSA_MS_OP_TYPED_CLASS_NAME(1, MLFloat16, QuickGelu);
+class MUSA_MS_OP_TYPED_CLASS_NAME(1, float, FusedGemm);
+class MUSA_MS_OP_TYPED_CLASS_NAME(1, MLFloat16, FusedGemm);
 
 Status RegisterMusaContribKernels(KernelRegistry& kernel_registry) {
   static const BuildKernelCreateInfoFn function_table[] = {
       BuildKernelCreateInfo<MUSA_MS_OP_TYPED_CLASS_NAME(1, float, QuickGelu)>,
       BuildKernelCreateInfo<MUSA_MS_OP_TYPED_CLASS_NAME(1, MLFloat16, QuickGelu)>,
+      BuildKernelCreateInfo<MUSA_MS_OP_TYPED_CLASS_NAME(1, float, FusedGemm)>,
+      BuildKernelCreateInfo<MUSA_MS_OP_TYPED_CLASS_NAME(1, MLFloat16, FusedGemm)>,
   };
 
   for (auto& function_table_entry : function_table) {

@@ -36,6 +36,14 @@ bool IsFusableActivation(const Node& node) {
 #endif
          IsSupportedOptypeVersionAndDomain(node, "ThresholdedRelu", {1, 10, 22}, kOnnxDomain);
 }
+
+bool IsMusaFusableActivation(const Node& node) {
+  return IsSupportedOptypeVersionAndDomain(node, "LeakyRelu", {6, 16}, kOnnxDomain) ||
+         IsSupportedOptypeVersionAndDomain(node, "Relu", {6, 13, 14}, kOnnxDomain) ||
+         IsSupportedOptypeVersionAndDomain(node, "Sigmoid", {6, 13}, kOnnxDomain) ||
+         IsSupportedOptypeVersionAndDomain(node, "Softplus", {1, 22}, kOnnxDomain) ||
+         IsSupportedOptypeVersionAndDomain(node, "Tanh", {6, 13}, kOnnxDomain);
+}
 }  // namespace
 
 Status GemmActivationFusion::ApplyImpl(Graph& graph, bool& modified, int graph_level,
@@ -58,13 +66,26 @@ Status GemmActivationFusion::ApplyImpl(Graph& graph, bool& modified, int graph_l
 
     NodeArg* node_output = node.MutableOutputDefs()[0];
     auto data_type = node_output->TypeAsProto()->tensor_type().elem_type();
-    if (data_type != ONNX_NAMESPACE::TensorProto_DataType_FLOAT) {
-      // FusedGemm is only registered for float data type in fused_gemm.cc!
+    const bool musa_node = node.GetExecutionProviderType() == kMusaExecutionProvider;
+    if (data_type != ONNX_NAMESPACE::TensorProto_DataType_FLOAT &&
+        !(musa_node && data_type == ONNX_NAMESPACE::TensorProto_DataType_FLOAT16)) {
       continue;
     }
 
     const Node& next_node = *(node.OutputNodesBegin());
-    if (!IsFusableActivation(next_node) || next_node.GetExecutionProviderType() != node.GetExecutionProviderType()) {
+    if (next_node.GetExecutionProviderType() != node.GetExecutionProviderType()) {
+      continue;
+    }
+
+    // MUSA is added to this Level2 transformer only for nodes that have already
+    // been assigned to the MUSA EP. Keep its activation allowlist aligned with
+    // the MUSA FusedGemm kernel so the generic ORT fusion rules do not create
+    // patterns that MUSA cannot execute.
+    if (musa_node) {
+      if (!IsMusaFusableActivation(next_node)) {
+        continue;
+      }
+    } else if (!IsFusableActivation(next_node)) {
       continue;
     }
 

@@ -63,11 +63,80 @@ Status GemmZeroK(musaStream_t stream, const MusaExecutionProvider* ep, const Ten
 }
 
 template <typename T>
-Status Gemm<T>::Prepare(OpKernelContext *ctx, MusaPreparation &prepare, int M, int N, int K) const {
+Status Gemm<T>::ApplyActivationInPlace(MusaPreparation& prepare) const {
+  if (activation_.empty()) {
+    return Status::OK();
+  }
+
+  if (prepare.outputTensors.empty()) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT,
+                           "FusedGemm activation missing output tensor");
+  }
+
+  ::musa::dnn::Unary::Mode mode;
+  if (activation_ == "Relu") {
+    mode = ::musa::dnn::Unary::Mode::RELU;
+  } else if (activation_ == "Tanh") {
+    mode = ::musa::dnn::Unary::Mode::TANH;
+  } else if (activation_ == "Sigmoid") {
+    mode = ::musa::dnn::Unary::Mode::SIGMOID;
+  } else if (activation_ == "LeakyRelu") {
+    mode = ::musa::dnn::Unary::Mode::LEAKY_RELU;
+  } else if (activation_ == "Softplus") {
+    mode = ::musa::dnn::Unary::Mode::SOFTPLUS;
+  } else {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT,
+                           "Unsupported MUSA FusedGemm activation: ", activation_);
+  }
+
+  ::musa::dnn::Unary unary_op;
+  auto status = unary_op.SetMode(mode);
+  if (status != ::musa::dnn::Status::SUCCESS) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                           "Failed to set FusedGemm activation mode, status: ",
+                           static_cast<int>(status));
+  }
+
+  if (activation_ == "LeakyRelu") {
+    status = unary_op.SetAlpha(static_cast<double>(activation_alpha_));
+    if (status != ::musa::dnn::Status::SUCCESS) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "Failed to set FusedGemm LeakyRelu alpha, status: ",
+                             static_cast<int>(status));
+    }
+  } else if (activation_ == "Softplus") {
+    status = unary_op.SetAlpha(activation_alpha_ == 0.0f ? 1.0 : static_cast<double>(activation_alpha_));
+    if (status != ::musa::dnn::Status::SUCCESS) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "Failed to set FusedGemm Softplus alpha, status: ",
+                             static_cast<int>(status));
+    }
+    status = unary_op.SetBeta(activation_beta_ == 0.0f ? 20.0 : static_cast<double>(activation_beta_));
+    if (status != ::musa::dnn::Status::SUCCESS) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "Failed to set FusedGemm Softplus beta, status: ",
+                             static_cast<int>(status));
+    }
+  }
+
+  status = unary_op.Run(prepare.GetHandle(),
+                        const_cast<::musa::dnn::Tensor&>(prepare.outputTensors[0]),
+                        prepare.outputTensors[0]);
+  if (status != ::musa::dnn::Status::SUCCESS) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                           "mudnn FusedGemm activation failed, status: ",
+                           static_cast<int>(status));
+  }
+
+  return Status::OK();
+}
+
+template <typename T>
+Status Gemm<T>::Prepare(OpKernelContext* ctx, MusaPreparation& prepare, int M, int N, int K) const {
   // 1. Get input tensors A, B and optional C (bias)
-  const Tensor *A = ctx->Input<Tensor>(0);
-  const Tensor *B = ctx->Input<Tensor>(1);
-  const Tensor *C = ctx->Input<Tensor>(2);  // bias, can be nullptr
+  const Tensor* A = ctx->Input<Tensor>(0);
+  const Tensor* B = ctx->Input<Tensor>(1);
+  const Tensor* C = ctx->Input<Tensor>(2);  // bias, can be nullptr
 
   if (!A || !B) {
     return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT,
@@ -75,7 +144,7 @@ Status Gemm<T>::Prepare(OpKernelContext *ctx, MusaPreparation &prepare, int M, i
   }
 
   // 2. Create output tensor
-  Tensor *Y = ctx->Output(0, {M, N});
+  Tensor* Y = ctx->Output(0, {M, N});
   if (!Y) {
     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to create output tensor");
   }
@@ -133,7 +202,7 @@ Status Gemm<T>::Prepare(OpKernelContext *ctx, MusaPreparation &prepare, int M, i
     // Setup output tensor Y
     ORT_RETURN_IF_ERROR(SetupMusaTensor(prepare.outputTensors[0], Y, musaType, &prepare));
   }
-  ORT_CATCH(const std::exception &e) {
+  ORT_CATCH(const std::exception& e) {
     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, e.what());
   }
 
@@ -141,7 +210,7 @@ Status Gemm<T>::Prepare(OpKernelContext *ctx, MusaPreparation &prepare, int M, i
 }
 
 template <typename T>
-Status Gemm<T>::ComputeInternal(OpKernelContext *ctx) const {
+Status Gemm<T>::ComputeInternal(OpKernelContext* ctx) const {
   const auto* X = ctx->Input<Tensor>(0);
   const auto* W = ctx->Input<Tensor>(1);
   const auto* B = ctx->Input<Tensor>(2);
@@ -160,7 +229,24 @@ Status Gemm<T>::ComputeInternal(OpKernelContext *ctx) const {
   if (K == 0) {
     const auto* ep = static_cast<const MusaExecutionProvider*>(
         Info().GetExecutionProvider());
-    return GemmZeroK<T>(Stream(ctx), ep, B, Y, B != nullptr ? beta_ : 0.0f);
+    ORT_RETURN_IF_ERROR(GemmZeroK<T>(Stream(ctx), ep, B, Y, B != nullptr ? beta_ : 0.0f));
+    if (activation_.empty()) {
+      return Status::OK();
+    }
+
+    MusaPreparation activation_prepare(ep);
+    if (activation_prepare.handle && Stream(ctx)) {
+      auto status = activation_prepare.handle->SetStream(Stream(ctx));
+      if (status != ::musa::dnn::Status::SUCCESS) {
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                               "Failed to set MUSA stream for FusedGemm K=0 activation, status: ",
+                               static_cast<int>(status));
+      }
+    }
+    activation_prepare.outputTensors.resize(1);
+    ORT_RETURN_IF_ERROR(SetupMusaTensor(activation_prepare.outputTensors[0],
+                                        Y, GetMusaDataType<T>(), &activation_prepare));
+    return ApplyActivationInPlace(activation_prepare);
   }
 
   /* Prepare MUSA operation */
@@ -224,10 +310,10 @@ Status Gemm<T>::ComputeInternal(OpKernelContext *ctx) const {
       status = matmul_op.RunWithBiasAdd(
           prepare.GetHandle(),
           const_cast<::musa::dnn::Tensor&>(prepare.outputTensors[0]),  // d (output)
-          prepare.inputTensors[0],   // a
-          prepare.inputTensors[1],   // b
-          prepare.inputTensors[2],   // c = bias (full shape, scaled by beta)
-          empty_tensor,              // bias (empty, no gamma term)
+          prepare.inputTensors[0],                                     // a
+          prepare.inputTensors[1],                                     // b
+          prepare.inputTensors[2],                                     // c = bias (full shape, scaled by beta)
+          empty_tensor,                                                // bias (empty, no gamma term)
           memory_allocator);
     } else if (bias_shape.NumDimensions() == 1 && bias_shape[0] > 1) {
       // Case 2: 1D bias (N,) where N > 1
@@ -240,10 +326,10 @@ Status Gemm<T>::ComputeInternal(OpKernelContext *ctx) const {
       status = matmul_op.RunWithBiasAdd(
           prepare.GetHandle(),
           const_cast<::musa::dnn::Tensor&>(prepare.outputTensors[0]),  // d (output)
-          prepare.inputTensors[0],   // a
-          prepare.inputTensors[1],   // b
-          prepare.outputTensors[0],  // c (output, beta=0 so ignored)
-          prepare.inputTensors[2],   // bias (1D)
+          prepare.inputTensors[0],                                     // a
+          prepare.inputTensors[1],                                     // b
+          prepare.outputTensors[0],                                    // c (output, beta=0 so ignored)
+          prepare.inputTensors[2],                                     // bias (1D)
           memory_allocator);
     } else {
       // Case 3: Scalar bias (1,) or other shapes
@@ -257,7 +343,7 @@ Status Gemm<T>::ComputeInternal(OpKernelContext *ctx) const {
       if (status != ::musa::dnn::Status::SUCCESS) {
         return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
                                "mudnn MatMul operation failed in scalar bias path, status: " +
-                               std::to_string(static_cast<int>(status)));
+                                   std::to_string(static_cast<int>(status)));
       }
 
       // Add scaled bias: Y = Y + beta * C using Binary ADD_ALPHA
@@ -274,15 +360,15 @@ Status Gemm<T>::ComputeInternal(OpKernelContext *ctx) const {
       bin_status = binary_op.Run(
           prepare.GetHandle(),
           const_cast<::musa::dnn::Tensor&>(prepare.outputTensors[0]),  // out = Y
-          prepare.outputTensors[0],  // a = Y (matmul result)
-          prepare.inputTensors[2]);  // b = C (bias, to be scaled by alpha=beta)
+          prepare.outputTensors[0],                                    // a = Y (matmul result)
+          prepare.inputTensors[2]);                                    // b = C (bias, to be scaled by alpha=beta)
       if (bin_status != ::musa::dnn::Status::SUCCESS) {
         return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
                                "mudnn Binary ADD_ALPHA failed for scalar bias, status: " +
-                               std::to_string(static_cast<int>(bin_status)));
+                                   std::to_string(static_cast<int>(bin_status)));
       }
       // Already handled, skip the common status check below
-      return Status::OK();
+      return ApplyActivationInPlace(prepare);
     }
   } else {
     // No bias case
@@ -297,30 +383,30 @@ Status Gemm<T>::ComputeInternal(OpKernelContext *ctx) const {
   if (status != ::musa::dnn::Status::SUCCESS) {
     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
                            "mudnn MatMul operation failed, status: " +
-                           std::to_string(static_cast<int>(status)));
+                               std::to_string(static_cast<int>(status)));
   }
 
-  return Status::OK();
+  return ApplyActivationInPlace(prepare);
 }
 
 // Macro for registering typed kernel
-#define REGISTER_MUSA_GEMM_TYPED_KERNEL(ver, T)                          \
-  ONNX_OPERATOR_TYPED_KERNEL_EX(                                         \
-      Gemm, kOnnxDomain, ver, T, kMusaExecutionProvider,                 \
-      (*KernelDefBuilder::Create())                                      \
-          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>()),        \
+#define REGISTER_MUSA_GEMM_TYPED_KERNEL(ver, T)                   \
+  ONNX_OPERATOR_TYPED_KERNEL_EX(                                  \
+      Gemm, kOnnxDomain, ver, T, kMusaExecutionProvider,          \
+      (*KernelDefBuilder::Create())                               \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>()), \
       Gemm<T>);
 
-#define REGISTER_MUSA_GEMM_VERSIONED_TYPED_KERNEL(startver, endver, T)    \
-  ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_EX(                               \
-      Gemm, kOnnxDomain, startver, endver, T, kMusaExecutionProvider,     \
-      (*KernelDefBuilder::Create())                                      \
-          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>()),        \
+#define REGISTER_MUSA_GEMM_VERSIONED_TYPED_KERNEL(startver, endver, T) \
+  ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_EX(                             \
+      Gemm, kOnnxDomain, startver, endver, T, kMusaExecutionProvider,  \
+      (*KernelDefBuilder::Create())                                    \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>()),      \
       Gemm<T>);
 
 // Combined macro for both kernel and compute registration
-#define REGISTER_MUSA_GEMM_TYPED(ver, T)                                  \
-  REGISTER_MUSA_GEMM_TYPED_KERNEL(ver, T)                                \
+#define REGISTER_MUSA_GEMM_TYPED(ver, T) \
+  REGISTER_MUSA_GEMM_TYPED_KERNEL(ver, T)
 
 // Register operations for versions 11-12
 REGISTER_MUSA_GEMM_VERSIONED_TYPED_KERNEL(11, 12, float)
@@ -332,5 +418,5 @@ REGISTER_MUSA_GEMM_TYPED(13, MLFloat16)
 REGISTER_MUSA_GEMM_TYPED(14, float)
 REGISTER_MUSA_GEMM_TYPED(14, MLFloat16)
 
-} // namespace musa
-} // namespace onnxruntime
+}  // namespace musa
+}  // namespace onnxruntime
