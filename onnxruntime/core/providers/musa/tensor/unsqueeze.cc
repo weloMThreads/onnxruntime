@@ -86,6 +86,10 @@ Status Unsqueeze<T>::Prepare(OpKernelContext* ctx, MusaPreparation& prepare) con
   prepare.input_a_shape = input_tensor->Shape();
   prepare.output_shape = output_tensor->Shape();
 
+  if (prepare.output_size == 0) {
+    return Status::OK();
+  }
+
   if (prepare.input_a_ptr == nullptr || prepare.output_ptr == nullptr) {
     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Invalid tensor data pointers");
   }
@@ -135,6 +139,10 @@ Status Unsqueeze<T>::ComputeInternal(OpKernelContext* ctx) const {
       Info().GetExecutionProvider());
   MusaPreparation prepare(ep);
   ORT_RETURN_IF_ERROR(Prepare(ctx, prepare));
+
+  if (prepare.output_size == 0) {
+    return Status::OK();
+  }
 
   // Call MUSA device unsqueeze operation using prepared data
   musaStream_t stream = Stream(ctx);
@@ -215,6 +223,24 @@ REGISTER_MUSA_UNSQUEEZE_TYPED_KERNEL_WITH_INPUT(13, int64_t)
 REGISTER_MUSA_UNSQUEEZE_TYPED_KERNEL_WITH_INPUT(13, MLFloat16)
 REGISTER_MUSA_UNSQUEEZE_TYPED_KERNEL_WITH_INPUT(13, float)
 REGISTER_MUSA_UNSQUEEZE_TYPED_KERNEL_WITH_INPUT(13, bool)
+
+#define REGISTER_MUSA_EXPAND_DIMS_TYPED_KERNEL(ver, T)                    \
+  ONNX_OPERATOR_TYPED_KERNEL_EX(                                          \
+      ExpandDims, kOnnxDomain, ver, T, kMusaExecutionProvider,            \
+      (*KernelDefBuilder::Create())                                       \
+          .Alias(0, 0)                                                    \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>())        \
+          .TypeConstraint("Tdim", DataTypeImpl::GetTensorType<int64_t>()) \
+          .InputMemoryType(OrtMemTypeCPUInput, 1),                        \
+      Unsqueeze<T>);
+
+REGISTER_MUSA_EXPAND_DIMS_TYPED_KERNEL(1, float)
+REGISTER_MUSA_EXPAND_DIMS_TYPED_KERNEL(1, int32_t)
+REGISTER_MUSA_EXPAND_DIMS_TYPED_KERNEL(1, int64_t)
+REGISTER_MUSA_EXPAND_DIMS_TYPED_KERNEL(1, MLFloat16)
+REGISTER_MUSA_EXPAND_DIMS_TYPED_KERNEL(1, bool)
+
+#undef REGISTER_MUSA_EXPAND_DIMS_TYPED_KERNEL
 
 // Register compute implementations for all supported types (only once to avoid duplication)
 REGISTER_MUSA_UNSQUEEZE_TYPED_COMPUTE(uint8_t)

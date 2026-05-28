@@ -533,8 +533,16 @@ if (onnxruntime_USE_MUSA AND NOT onnxruntime_MINIMAL_BUILD AND NOT onnxruntime_R
   file(GLOB onnxruntime_test_providers_musa_src CONFIGURE_DEPENDS
     "${TEST_SRC_DIR}/providers/musa/musa_basic_test.cc"
     "${TEST_SRC_DIR}/providers/musa/musa_comparison_elementwise_test.cc"
+    "${TEST_SRC_DIR}/providers/musa/musa_gather_nd_test.cc"
     "${TEST_SRC_DIR}/providers/musa/musa_matmul_test.cc"
     "${TEST_SRC_DIR}/providers/musa/musa_reduce_test.cc"
+    "${TEST_SRC_DIR}/providers/musa/musa_random_log1p_test.cc"
+    "${TEST_SRC_DIR}/providers/musa/musa_identity_dropout_test.cc"
+    "${TEST_SRC_DIR}/providers/musa/musa_nonzero_test.cc"
+    "${TEST_SRC_DIR}/providers/musa/musa_scatter_nd_test.cc"
+    "${TEST_SRC_DIR}/providers/musa/musa_size_test.cc"
+    "${TEST_SRC_DIR}/providers/musa/musa_topk_test.cc"
+    "${TEST_SRC_DIR}/providers/musa/musa_unique_test.cc"
     "${TEST_SRC_DIR}/providers/musa/musa_unary_elementwise_test.cc"
     )
   list(APPEND onnxruntime_test_providers_src ${onnxruntime_test_providers_musa_src})

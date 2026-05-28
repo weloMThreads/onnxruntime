@@ -98,4 +98,27 @@ class IdentityOp final : public OpKernel {
   }
 };
 
+class IdentityNOp final : public OpKernel {
+ public:
+  explicit IdentityNOp(const OpKernelInfo& info) : OpKernel(info) {}
+
+  Status Compute(OpKernelContext* context) const override {
+    const size_t input_count = static_cast<size_t>(context->InputCount());
+    const size_t output_count = static_cast<size_t>(context->OutputCount());
+    ORT_RETURN_IF_NOT(input_count == output_count,
+                      "IdentityN: input and output counts must match");
+
+    for (size_t i = 0; i < input_count; ++i) {
+      const Tensor* input = context->Input<Tensor>(static_cast<int>(i));
+      ORT_RETURN_IF_NOT(input != nullptr, "IdentityN: input tensor is null");
+
+      Tensor* output = context->Output(static_cast<int>(i), input->Shape());
+      ORT_RETURN_IF_NOT(output != nullptr, "IdentityN: output tensor is null");
+      CopyCpuTensor(input, output);
+    }
+
+    return Status::OK();
+  }
+};
+
 }  // namespace onnxruntime

@@ -181,12 +181,28 @@ template class BitwiseAnd<uint16_t>;
 template class BitwiseAnd<uint32_t>;
 template class BitwiseAnd<uint64_t>;
 
+#define REGISTER_MUSA_VERSIONED_BITWISE_AND_TYPED_KERNEL(T)                  \
+  ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_EX(                                   \
+      BitwiseAnd, kOnnxDomain, 1, 17, T, kMusaExecutionProvider,             \
+      (*KernelDefBuilder::Create())                                          \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>()),            \
+      BitwiseAnd<T>);
+
 #define REGISTER_MUSA_BITWISE_AND_TYPED_KERNEL(T)                            \
   ONNX_OPERATOR_TYPED_KERNEL_EX(                                             \
       BitwiseAnd, kOnnxDomain, 18, T, kMusaExecutionProvider,                \
       (*KernelDefBuilder::Create())                                          \
           .TypeConstraint("T", DataTypeImpl::GetTensorType<T>()),            \
       BitwiseAnd<T>);
+
+REGISTER_MUSA_VERSIONED_BITWISE_AND_TYPED_KERNEL(int8_t)
+REGISTER_MUSA_VERSIONED_BITWISE_AND_TYPED_KERNEL(int16_t)
+REGISTER_MUSA_VERSIONED_BITWISE_AND_TYPED_KERNEL(int32_t)
+REGISTER_MUSA_VERSIONED_BITWISE_AND_TYPED_KERNEL(int64_t)
+REGISTER_MUSA_VERSIONED_BITWISE_AND_TYPED_KERNEL(uint8_t)
+REGISTER_MUSA_VERSIONED_BITWISE_AND_TYPED_KERNEL(uint16_t)
+REGISTER_MUSA_VERSIONED_BITWISE_AND_TYPED_KERNEL(uint32_t)
+REGISTER_MUSA_VERSIONED_BITWISE_AND_TYPED_KERNEL(uint64_t)
 
 REGISTER_MUSA_BITWISE_AND_TYPED_KERNEL(int8_t)
 REGISTER_MUSA_BITWISE_AND_TYPED_KERNEL(int16_t)

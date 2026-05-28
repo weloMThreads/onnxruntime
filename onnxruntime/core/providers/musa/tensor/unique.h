@@ -1,24 +1,24 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// Copyright (c) Moore Threads. All rights reserved.
 // Licensed under the MIT License.
 
 #pragma once
 
-#include "core/providers/shared_library/provider_api.h"
 #include "core/providers/musa/musa_kernel.h"
-#include "core/providers/musa/musa_utils.h"
 
 namespace onnxruntime {
 namespace musa {
 
 template <typename T>
-class Reciprocal : public MusaKernel {
+class Unique final : public MusaKernel {
  public:
-  explicit Reciprocal(const OpKernelInfo& info) : MusaKernel(info) {}
+  explicit Unique(const OpKernelInfo& info);
+
   Status ComputeInternal(OpKernelContext* ctx) const override;
 
- protected:
-  Status Prepare(OpKernelContext* ctx, MusaPreparation& prepare) const;
+ private:
+  bool sorted_{true};
+  bool flatten_{false};
+  int64_t axis_{0};
 };
 
 }  // namespace musa

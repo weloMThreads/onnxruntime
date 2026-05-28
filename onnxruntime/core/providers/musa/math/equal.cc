@@ -17,7 +17,11 @@ namespace musa {
 
 // MUSA device-based implementation using MusaPreparation and mudnn library
 template <typename T>
-Status SimpleMusaEqualOp(const MusaPreparation& prepare, size_t size) {
+Status SimpleMusaEqualOp(const MusaPreparation& prepare, size_t size, bool not_equal = false) {
+  if (prepare.output_size == 0) {
+    return Status::OK();
+  }
+
   // Get tensor data from prepared MUSA tensors
   const T* input_a = reinterpret_cast<const T*>(prepare.input_a_ptr);
   const T* input_b = reinterpret_cast<const T*>(prepare.input_b_ptr);
@@ -39,11 +43,11 @@ Status SimpleMusaEqualOp(const MusaPreparation& prepare, size_t size) {
     // Create mudnn Binary operation
     ::musa::dnn::Binary binary_op;
 
-    // Set the operation mode to EQ (Equal)
-    auto status = binary_op.SetMode(::musa::dnn::Binary::Mode::EQ);
+    const auto mode = not_equal ? ::musa::dnn::Binary::Mode::NE : ::musa::dnn::Binary::Mode::EQ;
+    auto status = binary_op.SetMode(mode);
     if (status != ::musa::dnn::Status::SUCCESS) {
       return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
-                             "Failed to set mudnn Binary mode to EQ");
+                             "Failed to set mudnn Binary comparison mode");
     }
 
     // Run the binary operation directly on device with automatic broadcasting
@@ -54,13 +58,15 @@ Status SimpleMusaEqualOp(const MusaPreparation& prepare, size_t size) {
 
     if (status != ::musa::dnn::Status::SUCCESS) {
       return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
-                             "mudnn Binary Equal operation failed, status: " +
+                             (not_equal ? "mudnn Binary NotEqual operation failed, status: "
+                                        : "mudnn Binary Equal operation failed, status: ") +
                              std::to_string(static_cast<int>(status)));
     }
 
   } catch (const std::exception& e) {
     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
-                           "Exception in mudnn Binary Equal operation: " +
+                           (not_equal ? "Exception in mudnn Binary NotEqual operation: "
+                                      : "Exception in mudnn Binary Equal operation: ") +
                            std::string(e.what()));
   }
 
@@ -141,7 +147,8 @@ Status Equal<T>::Prepare(OpKernelContext* ctx, MusaPreparation& prepare) const {
         Info().GetExecutionProvider());                                        \
     MusaPreparation prepare(ep);                                               \
     ORT_RETURN_IF_ERROR(Prepare<T>(ctx, prepare));                            \
-    ORT_RETURN_IF_ERROR(SimpleMusaEqualOp<T>(prepare, prepare.output_size));  \
+    const bool not_equal = Node().OpType() == "NotEqual";                           \
+    ORT_RETURN_IF_ERROR(SimpleMusaEqualOp<T>(prepare, prepare.output_size, not_equal));  \
     return Status::OK();                                                       \
   }
 
@@ -238,6 +245,20 @@ REGISTER_MUSA_EQUAL_TYPED_KERNEL_ONLY(19, int64_t)
 // REGISTER_MUSA_EQUAL_TYPED_KERNEL_ONLY(19, uint64_t)  // MUDNN NOT_SUPPORTED
 REGISTER_MUSA_EQUAL_TYPED_KERNEL_ONLY(19, MLFloat16)
 REGISTER_MUSA_EQUAL_TYPED_KERNEL_ONLY(19, float)
+
+#define REGISTER_MUSA_NOT_EQUAL_TYPED_KERNEL(ver, T)                          \
+  ONNX_OPERATOR_TYPED_KERNEL_EX(                                              \
+      NotEqual, kOnnxDomain, ver, T, kMusaExecutionProvider,                  \
+      (*KernelDefBuilder::Create())                                           \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>())              \
+          .TypeConstraint("T1", DataTypeImpl::GetTensorType<bool>()),         \
+      Equal<T>);
+
+REGISTER_MUSA_NOT_EQUAL_TYPED_KERNEL(1, bool)
+REGISTER_MUSA_NOT_EQUAL_TYPED_KERNEL(1, int32_t)
+REGISTER_MUSA_NOT_EQUAL_TYPED_KERNEL(1, int64_t)
+REGISTER_MUSA_NOT_EQUAL_TYPED_KERNEL(1, MLFloat16)
+REGISTER_MUSA_NOT_EQUAL_TYPED_KERNEL(1, float)
 
 // Register ComputeInternal implementations (only once per type)
 REGISTER_MUSA_EQUAL_TYPED_COMPUTE(bool)

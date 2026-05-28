@@ -55,6 +55,14 @@ ONNX_CPU_OPERATOR_KERNEL(
         .TypeConstraint("indices", DataTypeImpl::GetTensorType<int64_t>()),
     GatherND);
 
+ONNX_CPU_OPERATOR_KERNEL(
+    GatherNd,
+    1,
+    KernelDefBuilder()
+        .TypeConstraint("T", DataTypeImpl::AllTensorTypes())
+        .TypeConstraint("Tindices", DataTypeImpl::GetTensorType<int64_t>()),
+    GatherND);
+
 template <typename Tind>
 Status GatherNDBase::PrepareForCompute(const TensorShape& input_shape, const Tensor* indices_tensor,
                                        const int64_t bytes_per_value, Prepare& p, concurrency::ThreadPool* tp) const {

@@ -6,6 +6,8 @@
 #include "core/providers/cpu/tensor/utils.h"
 #include "core/providers/musa/musa_kernel.h"
 
+#include <string>
+
 
 namespace onnxruntime {
 namespace musa {
@@ -26,6 +28,22 @@ public:
   Status ComputeInternal(OpKernelContext *ctx) const override;
 };
 
+template <typename T> class BiasAdd final : public MusaKernel {
+public:
+  BiasAdd(const OpKernelInfo &info) : MusaKernel(info) {
+    std::string data_format;
+    if (info.GetAttr<std::string>("data_format", &data_format).IsOK()) {
+      data_format_ = data_format;
+    }
+    ORT_ENFORCE(data_format_ == "NHWC" || data_format_ == "NCHW",
+                "BiasAdd only supports NHWC and NCHW data_format, got ", data_format_);
+  }
+  Status ComputeInternal(OpKernelContext *ctx) const override;
+
+private:
+  std::string data_format_{"NHWC"};
+};
+
 template <typename T> class Sub final : public BinaryElementwise {
 public:
   Sub(const OpKernelInfo &info) : BinaryElementwise(info) {}
@@ -41,6 +59,30 @@ public:
 template <typename T> class Div final : public BinaryElementwise {
 public:
   Div(const OpKernelInfo &info) : BinaryElementwise(info) {}
+  Status ComputeInternal(OpKernelContext *ctx) const override;
+};
+
+template <typename T> class DivNoNan final : public BinaryElementwise {
+public:
+  DivNoNan(const OpKernelInfo &info) : BinaryElementwise(info) {}
+  Status ComputeInternal(OpKernelContext *ctx) const override;
+};
+
+template <typename T> class SquaredDifference final : public BinaryElementwise {
+public:
+  SquaredDifference(const OpKernelInfo &info) : BinaryElementwise(info) {}
+  Status ComputeInternal(OpKernelContext *ctx) const override;
+};
+
+template <typename T> class FloorDiv final : public BinaryElementwise {
+public:
+  FloorDiv(const OpKernelInfo &info) : BinaryElementwise(info) {}
+  Status ComputeInternal(OpKernelContext *ctx) const override;
+};
+
+template <typename T> class FloorMod final : public BinaryElementwise {
+public:
+  FloorMod(const OpKernelInfo &info) : BinaryElementwise(info) {}
   Status ComputeInternal(OpKernelContext *ctx) const override;
 };
 

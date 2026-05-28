@@ -18,6 +18,10 @@ namespace musa {
 // MUSA device-based implementation using MusaPreparation and mudnn library
 template <typename T>
 Status SimpleMusaLessOrEqualOp(const MusaPreparation& prepare, size_t size) {
+  if (prepare.output_size == 0) {
+    return Status::OK();
+  }
+
   // Get tensor data from prepared MUSA tensors
   const T* input_a = reinterpret_cast<const T*>(prepare.input_a_ptr);
   const T* input_b = reinterpret_cast<const T*>(prepare.input_b_ptr);
@@ -196,6 +200,19 @@ REGISTER_MUSA_LESS_OR_EQUAL_TYPED_KERNEL_ONLY(16, int32_t)
 REGISTER_MUSA_LESS_OR_EQUAL_TYPED_KERNEL_ONLY(16, int64_t)
 REGISTER_MUSA_LESS_OR_EQUAL_TYPED_KERNEL_ONLY(16, MLFloat16)
 REGISTER_MUSA_LESS_OR_EQUAL_TYPED_KERNEL_ONLY(16, float)
+
+#define REGISTER_MUSA_LESS_EQUAL_TYPED_KERNEL(ver, T)                         \
+  ONNX_OPERATOR_TYPED_KERNEL_EX(                                             \
+      LessEqual, kOnnxDomain, ver, T, kMusaExecutionProvider,                 \
+      (*KernelDefBuilder::Create())                                          \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>())             \
+          .TypeConstraint("T1", DataTypeImpl::GetTensorType<bool>()),        \
+      LessOrEqual<T>);
+
+REGISTER_MUSA_LESS_EQUAL_TYPED_KERNEL(1, int32_t)
+REGISTER_MUSA_LESS_EQUAL_TYPED_KERNEL(1, int64_t)
+REGISTER_MUSA_LESS_EQUAL_TYPED_KERNEL(1, MLFloat16)
+REGISTER_MUSA_LESS_EQUAL_TYPED_KERNEL(1, float)
 
 // Register ComputeInternal implementations (only once per type)
 REGISTER_MUSA_LESS_OR_EQUAL_TYPED_COMPUTE(bool)

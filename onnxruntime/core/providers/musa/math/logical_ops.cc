@@ -184,9 +184,20 @@ template class LogicalBinary<LogicalOpType::Xor>;
           .TypeConstraint("T", DataTypeImpl::GetTensorType<bool>()),          \
       Impl);
 
+#define REGISTER_MUSA_LOGICAL_BINARY_COMPAT_TYPED_KERNEL(OpName, Impl)        \
+  ONNX_OPERATOR_TYPED_KERNEL_EX(                                              \
+      OpName, kOnnxDomain, 1, bool, kMusaExecutionProvider,                   \
+      (*KernelDefBuilder::Create())                                           \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<bool>()),        \
+      Impl);
+
 REGISTER_MUSA_LOGICAL_BINARY_TYPED_KERNEL(And, LogicalAnd)
 REGISTER_MUSA_LOGICAL_BINARY_TYPED_KERNEL(Or, LogicalOr)
 REGISTER_MUSA_LOGICAL_BINARY_TYPED_KERNEL(Xor, LogicalXor)
+REGISTER_MUSA_LOGICAL_BINARY_COMPAT_TYPED_KERNEL(LogicalAnd, LogicalAnd)
+REGISTER_MUSA_LOGICAL_BINARY_COMPAT_TYPED_KERNEL(LogicalOr, LogicalOr)
+
+#undef REGISTER_MUSA_LOGICAL_BINARY_COMPAT_TYPED_KERNEL
 
 }  // namespace musa
 }  // namespace onnxruntime

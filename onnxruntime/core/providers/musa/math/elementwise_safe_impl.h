@@ -33,11 +33,69 @@ void LaunchPowSameTypeKernelHalf(musaStream_t stream,
                                  void* output_data,
                                  const PowSameTypeParams& params);
 
+template <typename T>
+void LaunchDivNoNanSameTypeKernel(musaStream_t stream,
+                                  const T* lhs_data,
+                                  const T* rhs_data,
+                                  T* output_data,
+                                  const PowSameTypeParams& params);
+
+void LaunchDivNoNanSameTypeKernelHalf(musaStream_t stream,
+                                      const void* lhs_data,
+                                      const void* rhs_data,
+                                      void* output_data,
+                                      const PowSameTypeParams& params);
+
+template <typename T>
+void LaunchSquaredDifferenceSameTypeKernel(musaStream_t stream,
+                                           const T* lhs_data,
+                                           const T* rhs_data,
+                                           T* output_data,
+                                           const PowSameTypeParams& params);
+
+void LaunchSquaredDifferenceSameTypeKernelHalf(musaStream_t stream,
+                                               const void* lhs_data,
+                                               const void* rhs_data,
+                                               void* output_data,
+                                               const PowSameTypeParams& params);
+
+template <typename T>
+void LaunchFloorDivSameTypeKernel(musaStream_t stream,
+                                  const T* lhs_data,
+                                  const T* rhs_data,
+                                  T* output_data,
+                                  const PowSameTypeParams& params);
+
+void LaunchFloorDivSameTypeKernelHalf(musaStream_t stream,
+                                      const void* lhs_data,
+                                      const void* rhs_data,
+                                      void* output_data,
+                                      const PowSameTypeParams& params);
+
+template <typename T>
+void LaunchFloorModSameTypeKernel(musaStream_t stream,
+                                  const T* lhs_data,
+                                  const T* rhs_data,
+                                  T* output_data,
+                                  const PowSameTypeParams& params);
+
+void LaunchFloorModSameTypeKernelHalf(musaStream_t stream,
+                                      const void* lhs_data,
+                                      const void* rhs_data,
+                                      void* output_data,
+                                      const PowSameTypeParams& params);
+
 extern template void LaunchPowSameTypeKernel<float>(musaStream_t,
                                                     const float*,
                                                     const float*,
                                                     float*,
                                                     const PowSameTypeParams&);
+
+extern template void LaunchPowSameTypeKernel<double>(musaStream_t,
+                                                     const double*,
+                                                     const double*,
+                                                     double*,
+                                                     const PowSameTypeParams&);
 
 extern template void LaunchPowSameTypeKernel<int32_t>(musaStream_t,
                                                       const int32_t*,
@@ -50,6 +108,102 @@ extern template void LaunchPowSameTypeKernel<int64_t>(musaStream_t,
                                                       const int64_t*,
                                                       int64_t*,
                                                       const PowSameTypeParams&);
+
+extern template void LaunchDivNoNanSameTypeKernel<float>(musaStream_t,
+                                                         const float*,
+                                                         const float*,
+                                                         float*,
+                                                         const PowSameTypeParams&);
+
+extern template void LaunchDivNoNanSameTypeKernel<double>(musaStream_t,
+                                                          const double*,
+                                                          const double*,
+                                                          double*,
+                                                          const PowSameTypeParams&);
+
+extern template void LaunchDivNoNanSameTypeKernel<int32_t>(musaStream_t,
+                                                           const int32_t*,
+                                                           const int32_t*,
+                                                           int32_t*,
+                                                           const PowSameTypeParams&);
+
+extern template void LaunchDivNoNanSameTypeKernel<int64_t>(musaStream_t,
+                                                           const int64_t*,
+                                                           const int64_t*,
+                                                           int64_t*,
+                                                           const PowSameTypeParams&);
+
+extern template void LaunchSquaredDifferenceSameTypeKernel<float>(musaStream_t,
+                                                                  const float*,
+                                                                  const float*,
+                                                                  float*,
+                                                                  const PowSameTypeParams&);
+
+extern template void LaunchSquaredDifferenceSameTypeKernel<double>(musaStream_t,
+                                                                   const double*,
+                                                                   const double*,
+                                                                   double*,
+                                                                   const PowSameTypeParams&);
+
+extern template void LaunchSquaredDifferenceSameTypeKernel<int32_t>(musaStream_t,
+                                                                    const int32_t*,
+                                                                    const int32_t*,
+                                                                    int32_t*,
+                                                                    const PowSameTypeParams&);
+
+extern template void LaunchSquaredDifferenceSameTypeKernel<int64_t>(musaStream_t,
+                                                                    const int64_t*,
+                                                                    const int64_t*,
+                                                                    int64_t*,
+                                                                    const PowSameTypeParams&);
+
+extern template void LaunchFloorDivSameTypeKernel<float>(musaStream_t,
+                                                         const float*,
+                                                         const float*,
+                                                         float*,
+                                                         const PowSameTypeParams&);
+
+extern template void LaunchFloorDivSameTypeKernel<double>(musaStream_t,
+                                                          const double*,
+                                                          const double*,
+                                                          double*,
+                                                          const PowSameTypeParams&);
+
+extern template void LaunchFloorDivSameTypeKernel<int32_t>(musaStream_t,
+                                                           const int32_t*,
+                                                           const int32_t*,
+                                                           int32_t*,
+                                                           const PowSameTypeParams&);
+
+extern template void LaunchFloorDivSameTypeKernel<int64_t>(musaStream_t,
+                                                           const int64_t*,
+                                                           const int64_t*,
+                                                           int64_t*,
+                                                           const PowSameTypeParams&);
+
+extern template void LaunchFloorModSameTypeKernel<float>(musaStream_t,
+                                                         const float*,
+                                                         const float*,
+                                                         float*,
+                                                         const PowSameTypeParams&);
+
+extern template void LaunchFloorModSameTypeKernel<double>(musaStream_t,
+                                                          const double*,
+                                                          const double*,
+                                                          double*,
+                                                          const PowSameTypeParams&);
+
+extern template void LaunchFloorModSameTypeKernel<int32_t>(musaStream_t,
+                                                           const int32_t*,
+                                                           const int32_t*,
+                                                           int32_t*,
+                                                           const PowSameTypeParams&);
+
+extern template void LaunchFloorModSameTypeKernel<int64_t>(musaStream_t,
+                                                           const int64_t*,
+                                                           const int64_t*,
+                                                           int64_t*,
+                                                           const PowSameTypeParams&);
 
 }  // namespace musa
 }  // namespace onnxruntime

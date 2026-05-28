@@ -72,6 +72,32 @@ class ReduceProdAddLogTester : public CompareOpTester {
   }
 };
 
+
+class ReduceMaxAddLogTester : public CompareOpTester {
+ public:
+  ReduceMaxAddLogTester() : CompareOpTester("ReduceMaxAddLog", 17) {}
+
+  void AddNodes(onnxruntime::Graph& graph,
+                std::vector<onnxruntime::NodeArg*>& graph_input_defs,
+                std::vector<onnxruntime::NodeArg*>& graph_output_defs,
+                std::vector<std::function<void(onnxruntime::Node& node)>>& add_attribute_funcs) override {
+    (void)add_attribute_funcs;
+
+    auto reduced_tensor = MakeTensorType(ONNX_NAMESPACE::TensorProto_DataType_FLOAT, {2, 1});
+    auto& reduced_arg = graph.GetOrCreateNodeArg("ReducedMax", &reduced_tensor);
+    auto& sum_arg = graph.GetOrCreateNodeArg("MaxPlusBias", &reduced_tensor);
+
+    auto& reduce_node = graph.AddNode("reducemax_node", "ReduceMax", "ReduceMax node",
+                                      {graph_input_defs[0]}, {&reduced_arg});
+    reduce_node.AddAttribute("axes", std::vector<int64_t>{1});
+    reduce_node.AddAttribute("keepdims", int64_t{1});
+    graph.AddNode("add_node", "Add", "Add node",
+                  {&reduced_arg, graph_input_defs[1]}, {&sum_arg});
+    graph.AddNode("log_node", "Log", "Log node",
+                  {&sum_arg}, {graph_output_defs[0]});
+  }
+};
+
 }  // namespace
 
 TEST(MusaReduceTest, ReduceMeanBceHiddenFp16NoCpuFallback) {
@@ -260,6 +286,41 @@ TEST(MusaTensorTest, FlattenNoCpuFallback) {
            {},
            nullptr,
            &execution_providers);
+}
+
+
+TEST(MusaReduceTest, ReduceMaxFloatOpset17NoCpuFallback) {
+  CompareOpTester test("ReduceMax", 17);
+  test.AddAttribute("axes", std::vector<int64_t>{2});
+  test.AddAttribute("keepdims", int64_t{0});
+  test.AddInput<float>("data", {1, 2, 2, 1}, {1.0f, 3.0f, 2.0f, 4.0f});
+  test.AddOutput<float>("reduced", {1, 2, 1}, {3.0f, 4.0f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaReduceTest, ReduceMaxFloat16Opset17NoCpuFallback) {
+  CompareOpTester test("ReduceMax", 17);
+  test.AddAttribute("axes", std::vector<int64_t>{1});
+  test.AddAttribute("keepdims", int64_t{1});
+  test.AddInput<MLFloat16>("data", {2, 3}, ToFloat16({1.0f, 5.0f, 3.0f, -2.0f, -4.0f, -1.0f}));
+  test.AddOutput<MLFloat16>("reduced", {2, 1}, ToFloat16({5.0f, -1.0f}));
+  CompareWithMusaNoFallback(test, true, 1e-3, 1e-3);
+}
+
+TEST(MusaReduceTest, ReduceMaxScalarOpset17NoCpuFallback) {
+  CompareOpTester test("ReduceMax", 17);
+  test.AddAttribute("keepdims", int64_t{0});
+  test.AddInput<float>("data", {}, {2.5f});
+  test.AddOutput<float>("reduced", {}, {2.5f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaReduceTest, ReduceMaxAddLogMultiOpOpset17NoCpuFallback) {
+  ReduceMaxAddLogTester test;
+  test.AddInput<float>("data", {2, 3}, {1.0f, 5.0f, 3.0f, 2.0f, 4.0f, 6.0f});
+  test.AddInput<float>("bias", {2, 1}, {1.0f, 2.0f});
+  test.AddOutput<float>("log_out", {2, 1}, {1.79175949f, 2.07944154f});
+  CompareWithMusaNoFallback(test);
 }
 
 TEST(MusaReduceTest, ReduceProdFloatNoCpuFallback) {

@@ -296,5 +296,21 @@ REGISTER_MUSA_EXPAND_TYPED_KERNEL(13, int32_t)
 REGISTER_MUSA_EXPAND_TYPED_KERNEL(13, int64_t)
 REGISTER_MUSA_EXPAND_TYPED_KERNEL(13, MLFloat16)
 
+#define REGISTER_MUSA_BROADCAST_TO_TYPED_KERNEL(ver, T)                      \
+  ONNX_OPERATOR_TYPED_KERNEL_EX(                                             \
+      BroadcastTo, kOnnxDomain, ver, T, kMusaExecutionProvider,              \
+      (*KernelDefBuilder::Create())                                          \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>())          \
+          .TypeConstraint("Tshape", DataTypeImpl::GetTensorType<int64_t>()) \
+          .InputMemoryType(OrtMemTypeCPUInput, 1),                           \
+      Expand<T>);
+
+REGISTER_MUSA_BROADCAST_TO_TYPED_KERNEL(1, float)
+REGISTER_MUSA_BROADCAST_TO_TYPED_KERNEL(1, int32_t)
+REGISTER_MUSA_BROADCAST_TO_TYPED_KERNEL(1, int64_t)
+REGISTER_MUSA_BROADCAST_TO_TYPED_KERNEL(1, MLFloat16)
+
+#undef REGISTER_MUSA_BROADCAST_TO_TYPED_KERNEL
+
 }  // namespace musa
 }  // namespace onnxruntime

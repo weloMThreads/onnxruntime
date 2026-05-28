@@ -59,6 +59,28 @@ WHERE_TYPED_KERNEL_WITH_TYPE_NAME(std::string, string)
 #undef WHERE_TYPED_KERNEL_WITH_TYPE_NAME
 #undef WHERE_TYPED_KERNEL
 
+#define TF_SELECT_TYPED_KERNEL(op, type, type_name)                              \
+  ONNX_CPU_OPERATOR_TYPED_KERNEL(                                                \
+      op,                                                                        \
+      1,                                                                         \
+      type_name,                                                                 \
+      KernelDefBuilder()                                                         \
+          .TypeConstraint("B", DataTypeImpl::GetTensorType<bool>())             \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<type>()),             \
+      Where<type>)
+
+#define TF_SELECT_KERNELS(op)             \
+  TF_SELECT_TYPED_KERNEL(op, float, float) \
+  TF_SELECT_TYPED_KERNEL(op, double, double) \
+  TF_SELECT_TYPED_KERNEL(op, int32_t, int32_t) \
+  TF_SELECT_TYPED_KERNEL(op, int64_t, int64_t)
+
+TF_SELECT_KERNELS(Select)
+TF_SELECT_KERNELS(SelectV2)
+
+#undef TF_SELECT_KERNELS
+#undef TF_SELECT_TYPED_KERNEL
+
 namespace {
 
 template <typename T, typename R>

@@ -59,6 +59,843 @@ ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
                         "Constrain input and output types to float tensors.")
         .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
 
+constexpr const char* Log1p_ver1_doc = R"DOC(
+Log1p takes one input data (Tensor<T>) and produces one output data
+(Tensor<T>) where y = log(1 + x) is applied elementwise. This schema is kept
+for TensorFlow-converted models that emit Log1p in the ONNX domain.
+)DOC";
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    Log1p, 1,
+    OpSchema()
+        .SetDoc(Log1p_ver1_doc)
+        .Input(0, "X", "Input tensor", "T")
+        .Output(0, "Y", "Output tensor", "T")
+        .TypeConstraint("T", {"tensor(float16)", "tensor(float)", "tensor(double)"},
+                        "Constrain input and output types to float tensors.")
+        .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
+
+constexpr const char* Expm1_ver1_doc = R"DOC(
+Expm1 takes one input data (Tensor<T>) and produces one output data
+(Tensor<T>) where y = exp(x) - 1 is applied elementwise. This schema is kept
+for TensorFlow-converted models that emit Expm1 in the ONNX domain.
+)DOC";
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    Expm1, 1,
+    OpSchema()
+        .SetDoc(Expm1_ver1_doc)
+        .Input(0, "X", "Input tensor", "T")
+        .Output(0, "Y", "Output tensor", "T")
+        .TypeConstraint("T", {"tensor(float16)", "tensor(float)", "tensor(double)"},
+                        "Constrain input and output types to float tensors.")
+        .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
+
+constexpr const char* Square_ver1_doc = R"DOC(
+Square takes one input data (Tensor<T>) and produces one output data
+(Tensor<T>) where y = x * x is applied elementwise. This schema is kept
+for TensorFlow-converted models that emit Square in the ONNX domain.
+)DOC";
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    Square, 1,
+    OpSchema()
+        .SetDoc(Square_ver1_doc)
+        .Input(0, "X", "Input tensor", "T")
+        .Output(0, "Y", "Output tensor", "T")
+        .TypeConstraint("T", {"tensor(float16)", "tensor(float)", "tensor(double)",
+                              "tensor(int32)", "tensor(int64)"},
+                        "Constrain input and output tensor types.")
+        .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
+
+constexpr const char* Rsqrt_ver1_doc = R"DOC(
+Rsqrt takes one input data (Tensor<T>) and produces one output data
+(Tensor<T>) where y = 1 / sqrt(x) is applied elementwise. This schema is kept
+for TensorFlow-converted models that emit Rsqrt in the ONNX domain.
+)DOC";
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    Rsqrt, 1,
+    OpSchema()
+        .SetDoc(Rsqrt_ver1_doc)
+        .Input(0, "X", "Input tensor", "T")
+        .Output(0, "Y", "Output tensor", "T")
+        .TypeConstraint("T", {"tensor(float16)", "tensor(float)", "tensor(double)"},
+                        "Constrain input and output types to float tensors.")
+        .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
+
+constexpr const char* Select_ver1_doc = R"DOC(
+Select takes a bool condition tensor and two value tensors, and returns values
+from X where condition is true and Y where condition is false. Numpy-style
+broadcasting is supported. This schema is kept for TensorFlow-converted models
+that emit Select in the ONNX domain.
+)DOC";
+
+constexpr const char* SelectV2_ver1_doc = R"DOC(
+SelectV2 takes a bool condition tensor and two value tensors, and returns values
+from X where condition is true and Y where condition is false. Numpy-style
+broadcasting is supported. This schema is kept for TensorFlow-converted models
+that emit SelectV2 in the ONNX domain.
+)DOC";
+
+#define ONNX_DEPRECATED_SELECT_SCHEMA(OpName, Doc)                                            \
+  ONNX_CONTRIB_OPERATOR_SET_SCHEMA(                                                           \
+      OpName, 1,                                                                               \
+      OpSchema()                                                                               \
+          .SetDoc(Doc)                                                                         \
+          .Input(0, "condition", "Condition tensor", "B")                                \
+          .Input(1, "X", "Tensor selected when condition is true", "T")                  \
+          .Input(2, "Y", "Tensor selected when condition is false", "T")                 \
+          .Output(0, "Z", "Output tensor", "T")                                          \
+          .TypeConstraint("B", {"tensor(bool)"}, "Constrain condition to bool tensor.") \
+          .TypeConstraint("T", {"tensor(float16)", "tensor(float)", "tensor(double)",  \
+                                "tensor(int32)", "tensor(int64)", "tensor(bool)"},       \
+                          "Constrain value tensor types.")                                  \
+          .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {           \
+            ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 1, 0);                     \
+            if (ONNX_NAMESPACE::hasNInputShapes(ctx, 3)) {                                     \
+              ONNX_NAMESPACE::TensorShapeProto cond_x_shape;                                   \
+              ONNX_NAMESPACE::bidirectionalBroadcastShapeInference(                            \
+                  ctx.getInputType(0)->tensor_type().shape(),                                  \
+                  ctx.getInputType(1)->tensor_type().shape(), cond_x_shape);                   \
+              ONNX_NAMESPACE::bidirectionalBroadcastShapeInference(                            \
+                  cond_x_shape, ctx.getInputType(2)->tensor_type().shape(),                    \
+                  *ctx.getOutputType(0)->mutable_tensor_type()->mutable_shape());               \
+            }                                                                                  \
+          }));
+
+ONNX_DEPRECATED_SELECT_SCHEMA(Select, Select_ver1_doc)
+ONNX_DEPRECATED_SELECT_SCHEMA(SelectV2, SelectV2_ver1_doc)
+#undef ONNX_DEPRECATED_SELECT_SCHEMA
+
+constexpr const char* AddV2_ver1_doc = R"DOC(
+AddV2 takes two input tensors and produces one output tensor where
+y = x1 + x2 elementwise with Numpy-style broadcasting. This schema is kept
+for TensorFlow-converted models that emit AddV2 in the ONNX domain.
+)DOC";
+
+constexpr const char* BiasAdd_ver1_doc = R"DOC(
+BiasAdd adds a 1D bias tensor to the channel dimension of value. The channel
+axis is the last dimension for NHWC and dimension 1 for NCHW. This schema is
+kept for TensorFlow-converted models that emit BiasAdd in the ONNX domain.
+)DOC";
+
+constexpr const char* BiasAddV1_ver1_doc = R"DOC(
+BiasAddV1 adds a 1D bias tensor to the channel dimension of value. The channel
+axis is the last dimension for NHWC and dimension 1 for NCHW. This schema is
+kept for TensorFlow-converted models that emit BiasAddV1 in the ONNX domain.
+)DOC";
+
+constexpr const char* SubV2_ver1_doc = R"DOC(
+SubV2 takes two input tensors and produces one output tensor where
+y = x1 - x2 elementwise with Numpy-style broadcasting. This schema is kept
+for TensorFlow-converted models that emit SubV2 in the ONNX domain.
+)DOC";
+
+constexpr const char* RealDiv_ver1_doc = R"DOC(
+RealDiv takes two input tensors and produces one output tensor where
+y = x1 / x2 elementwise with Numpy-style broadcasting. This schema is kept
+for TensorFlow-converted models that emit RealDiv in the ONNX domain.
+)DOC";
+
+constexpr const char* AddN_ver1_doc = R"DOC(
+AddN takes one or more input tensors and produces their elementwise sum. This
+schema supports Numpy-style broadcasting and is kept for TensorFlow-converted
+models that emit AddN in the ONNX domain.
+)DOC";
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    AddN, 1,
+    OpSchema()
+        .SetDoc(AddN_ver1_doc)
+        .Input(0, "inputs", "Input tensors", "T", OpSchema::Variadic, false)
+        .Output(0, "sum", "Output tensor", "T")
+        .TypeConstraint("T", {"tensor(float16)", "tensor(float)", "tensor(double)",
+                              "tensor(int32)", "tensor(int64)"},
+                        "Constrain input and output tensor types.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);
+          if (ctx.getNumInputs() > 0 && ctx.getInputType(0) != nullptr &&
+              ctx.getInputType(0)->has_tensor_type() &&
+              ctx.getInputType(0)->tensor_type().has_shape()) {
+            ONNX_NAMESPACE::TensorShapeProto accumulated_shape =
+                ctx.getInputType(0)->tensor_type().shape();
+            for (size_t i = 1; i < ctx.getNumInputs(); ++i) {
+              if (ctx.getInputType(i) == nullptr ||
+                  !ctx.getInputType(i)->has_tensor_type() ||
+                  !ctx.getInputType(i)->tensor_type().has_shape()) {
+                return;
+              }
+              ONNX_NAMESPACE::TensorShapeProto next_shape;
+              ONNX_NAMESPACE::bidirectionalBroadcastShapeInference(
+                  accumulated_shape, ctx.getInputType(i)->tensor_type().shape(), next_shape);
+              accumulated_shape = std::move(next_shape);
+            }
+            *ctx.getOutputType(0)->mutable_tensor_type()->mutable_shape() = accumulated_shape;
+          }
+        }));
+
+constexpr const char* DivNoNan_ver1_doc = R"DOC(
+DivNoNan takes two input tensors and produces one output tensor where
+y = x1 / x2 if x2 is non-zero, and y = 0 if x2 is zero. This schema is kept
+for TensorFlow-converted models that emit DivNoNan in the ONNX domain.
+)DOC";
+
+constexpr const char* SquaredDifference_ver1_doc = R"DOC(
+SquaredDifference takes two input tensors and produces one output tensor where
+y = (x1 - x2) * (x1 - x2) elementwise with Numpy-style broadcasting. This schema
+is kept for TensorFlow-converted models that emit SquaredDifference in the ONNX domain.
+)DOC";
+
+constexpr const char* FloorDiv_ver1_doc = R"DOC(
+FloorDiv takes two input tensors and produces one output tensor where
+y = floor(x1 / x2) elementwise with Numpy-style broadcasting. This schema is
+kept for TensorFlow-converted models that emit FloorDiv in the ONNX domain.
+)DOC";
+
+constexpr const char* FloorMod_ver1_doc = R"DOC(
+FloorMod takes two input tensors and produces one output tensor where
+y = x1 - floor(x1 / x2) * x2 elementwise with Numpy-style broadcasting. This
+schema is kept for TensorFlow-converted models that emit FloorMod in the ONNX domain.
+)DOC";
+
+constexpr const char* Maximum_ver1_doc = R"DOC(
+Maximum takes two input tensors and produces one output tensor where
+y = max(x1, x2) elementwise with Numpy-style broadcasting. This schema is kept
+for TensorFlow-converted models that emit Maximum in the ONNX domain.
+)DOC";
+
+constexpr const char* Minimum_ver1_doc = R"DOC(
+Minimum takes two input tensors and produces one output tensor where
+y = min(x1, x2) elementwise with Numpy-style broadcasting. This schema is kept
+for TensorFlow-converted models that emit Minimum in the ONNX domain.
+)DOC";
+
+constexpr const char* GreaterEqual_ver1_doc = R"DOC(
+GreaterEqual takes two input tensors and produces one bool output tensor where
+y = x1 >= x2 elementwise with Numpy-style broadcasting. This schema is kept
+for TensorFlow-converted models that emit GreaterEqual in the ONNX domain.
+)DOC";
+
+constexpr const char* LessEqual_ver1_doc = R"DOC(
+LessEqual takes two input tensors and produces one bool output tensor where
+y = x1 <= x2 elementwise with Numpy-style broadcasting. This schema is kept
+for TensorFlow-converted models that emit LessEqual in the ONNX domain.
+)DOC";
+
+constexpr const char* NotEqual_ver1_doc = R"DOC(
+NotEqual takes two input tensors and produces one bool output tensor where
+y = x1 != x2 elementwise with Numpy-style broadcasting. This schema is kept
+for TensorFlow-converted models that emit NotEqual in the ONNX domain.
+)DOC";
+
+constexpr const char* ZerosLike_ver1_doc = R"DOC(
+ZerosLike takes one input tensor and produces an output tensor with the same
+shape and type, filled with zero values. This schema is kept for
+TensorFlow-converted models that emit ZerosLike in the ONNX domain.
+)DOC";
+
+constexpr const char* IdentityN_ver1_doc = R"DOC(
+IdentityN forwards each input tensor to the matching output tensor. This schema
+is kept for TensorFlow-converted models that emit IdentityN in the ONNX domain.
+)DOC";
+
+constexpr const char* ShapeN_ver1_doc = R"DOC(
+ShapeN returns one shape tensor for each input tensor. The output element type
+is selected by the out_type attribute. This schema is kept for
+TensorFlow-converted models that emit ShapeN in the ONNX domain.
+)DOC";
+
+constexpr const char* ConcatV2_ver1_doc = R"DOC(
+ConcatV2 concatenates one or more tensors along the scalar axis provided as the
+last input. This schema is kept for TensorFlow-converted models that emit
+ConcatV2 in the ONNX domain.
+)DOC";
+
+constexpr const char* SplitV_ver1_doc = R"DOC(
+SplitV splits a tensor along split_dim using size_splits. One size may be -1,
+in which case it is inferred from the input dimension. This schema is kept for
+TensorFlow-converted models that emit SplitV in the ONNX domain.
+)DOC";
+
+constexpr const char* ReverseV2_ver1_doc = R"DOC(
+ReverseV2 reverses a tensor along the axes provided by a 1D axis tensor. This
+schema is kept for TensorFlow-converted models that emit ReverseV2 in the ONNX
+domain.
+)DOC";
+
+constexpr const char* InvertPermutation_ver1_doc = R"DOC(
+InvertPermutation computes the inverse of a 1D permutation tensor. This schema
+is kept for TensorFlow-converted models that emit InvertPermutation in the ONNX
+domain.
+)DOC";
+
+constexpr const char* BroadcastGradientArgs_ver1_doc = R"DOC(
+BroadcastGradientArgs returns the reduction axes needed to map a broadcasted
+gradient back to two input shapes. This schema is kept for TensorFlow-converted
+models that emit BroadcastGradientArgs in the ONNX domain.
+)DOC";
+
+constexpr const char* ConcatOffset_ver1_doc = R"DOC(
+ConcatOffset returns one offset vector per input shape for a TensorFlow-style
+Concat along concat_dim. This schema is kept for TensorFlow-converted models
+that emit ConcatOffset in the ONNX domain.
+)DOC";
+
+static const std::vector<std::string> tf_compat_float_types = {
+    "tensor(float16)", "tensor(float)", "tensor(double)"};
+
+static const std::vector<std::string> tf_compat_numeric_types = {
+    "tensor(float16)", "tensor(float)", "tensor(double)",
+    "tensor(int32)", "tensor(int64)"};
+
+static const std::vector<std::string> tf_compat_compare_types = {
+    "tensor(float16)", "tensor(float)", "tensor(double)",
+    "tensor(int32)", "tensor(int64)"};
+
+static const std::vector<std::string> tf_compat_not_equal_types = {
+    "tensor(float16)", "tensor(float)", "tensor(double)",
+    "tensor(int32)", "tensor(int64)", "tensor(bool)"};
+
+static const std::vector<std::string> tf_compat_zeros_like_types = {
+    "tensor(float16)", "tensor(float)", "tensor(double)",
+    "tensor(int32)", "tensor(int64)", "tensor(bool)"};
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    IdentityN, 1,
+    OpSchema()
+        .SetDoc(IdentityN_ver1_doc)
+        .Input(0, "inputs", "Input tensors", "T", OpSchema::Variadic, false, 1)
+        .Output(0, "outputs", "Output tensors", "T", OpSchema::Variadic, false, 1)
+        .TypeConstraint("T", OpSchema::all_tensor_types(),
+                        "Constrain inputs and outputs to tensor types.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          if (ctx.getNumInputs() != ctx.getNumOutputs()) {
+            fail_type_inference("IdentityN input and output counts must match.");
+          }
+          for (size_t i = 0; i < ctx.getNumInputs(); ++i) {
+            ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, i, i);
+            if (ctx.getInputType(i) != nullptr && ctx.getInputType(i)->has_tensor_type() &&
+                ctx.getInputType(i)->tensor_type().has_shape()) {
+              *ctx.getOutputType(i)->mutable_tensor_type()->mutable_shape() =
+                  ctx.getInputType(i)->tensor_type().shape();
+            }
+          }
+        }));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    ShapeN, 1,
+    OpSchema()
+        .SetDoc(ShapeN_ver1_doc)
+        .Attr("out_type", "Shape output tensor element type.",
+              AttributeProto::INT, static_cast<int64_t>(TensorProto_DataType_INT32))
+        .Input(0, "inputs", "Input tensors", "T", OpSchema::Variadic, false, 1)
+        .Output(0, "outputs", "Shape tensors", "T1", OpSchema::Variadic, false, 1)
+        .TypeConstraint("T", OpSchema::all_tensor_types(),
+                        "Constrain inputs to tensor types.")
+        .TypeConstraint("T1", {"tensor(int32)", "tensor(int64)", "tensor(float16)",
+                                "tensor(float)", "tensor(double)"},
+                        "Constrain shape output tensor types.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          if (ctx.getNumInputs() != ctx.getNumOutputs()) {
+            fail_type_inference("ShapeN input and output counts must match.");
+          }
+
+          int64_t out_type = TensorProto_DataType_INT32;
+          if (const auto* out_type_attr = ctx.getAttribute("out_type")) {
+            out_type = out_type_attr->i();
+          }
+
+          for (size_t i = 0; i < ctx.getNumOutputs(); ++i) {
+            ONNX_NAMESPACE::updateOutputElemType(ctx, i, static_cast<int32_t>(out_type));
+            auto* output_shape = ctx.getOutputType(i)->mutable_tensor_type()->mutable_shape();
+            auto* rank_dim = output_shape->add_dim();
+            if (i < ctx.getNumInputs() && ctx.getInputType(i) != nullptr &&
+                ctx.getInputType(i)->has_tensor_type() &&
+                ctx.getInputType(i)->tensor_type().has_shape()) {
+              rank_dim->set_dim_value(ctx.getInputType(i)->tensor_type().shape().dim_size());
+            }
+          }
+        }));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    ConcatV2, 1,
+    OpSchema()
+        .SetDoc(ConcatV2_ver1_doc)
+        .Input(0, "inputs", "Input tensors followed by scalar axis tensor", "T",
+               OpSchema::Variadic, false, 2)
+        .Output(0, "concat", "Concatenated tensor", "T")
+        .TypeConstraint("T", tf_compat_zeros_like_types,
+                        "Constrain input and output tensor types.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          if (ctx.getNumInputs() < 2) {
+            fail_type_inference("ConcatV2 requires at least one value input and one axis input.");
+          }
+          ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);
+        }));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    SplitV, 1,
+    OpSchema()
+        .SetDoc(SplitV_ver1_doc)
+        .Input(0, "value", "Input tensor", "T")
+        .Input(1, "size_splits", "1D split size tensor", "Tlen")
+        .Input(2, "split_dim", "Scalar split axis tensor", "Taxis")
+        .Output(0, "outputs", "Split output tensors", "T", OpSchema::Variadic, false, 1)
+        .TypeConstraint("T", tf_compat_zeros_like_types,
+                        "Constrain input and output tensor types.")
+        .TypeConstraint("Tlen", {"tensor(int32)", "tensor(int64)"},
+                        "Constrain split sizes to int32 or int64.")
+        .TypeConstraint("Taxis", {"tensor(int32)", "tensor(int64)"},
+                        "Constrain split axis to int32 or int64.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          for (size_t i = 0; i < ctx.getNumOutputs(); ++i) {
+            ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, i);
+          }
+        }));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    ReverseV2, 1,
+    OpSchema()
+        .SetDoc(ReverseV2_ver1_doc)
+        .Input(0, "tensor", "Input tensor", "T")
+        .Input(1, "axis", "1D axis tensor", "Tidx")
+        .Output(0, "output", "Reversed tensor", "T")
+        .TypeConstraint("T", tf_compat_zeros_like_types,
+                        "Constrain input and output tensor types.")
+        .TypeConstraint("Tidx", {"tensor(int32)", "tensor(int64)"},
+                        "Constrain axis tensor to int32 or int64.")
+        .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    InvertPermutation, 1,
+    OpSchema()
+        .SetDoc(InvertPermutation_ver1_doc)
+        .Input(0, "x", "1D permutation tensor", "T")
+        .Output(0, "y", "Inverse permutation tensor", "T")
+        .TypeConstraint("T", {"tensor(int32)", "tensor(int64)"},
+                        "Constrain input and output to int32 or int64.")
+        .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    BroadcastGradientArgs, 1,
+    OpSchema()
+        .SetDoc(BroadcastGradientArgs_ver1_doc)
+        .Input(0, "s0", "First input shape tensor", "T")
+        .Input(1, "s1", "Second input shape tensor", "T")
+        .Output(0, "r0", "Reduction axes for the first input", "T")
+        .Output(1, "r1", "Reduction axes for the second input", "T")
+        .TypeConstraint("T", {"tensor(int32)", "tensor(int64)"},
+                        "Constrain shape and axes tensors to int32 or int64.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);
+          ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 1);
+          ctx.getOutputType(0)->mutable_tensor_type()->mutable_shape()->add_dim();
+          ctx.getOutputType(1)->mutable_tensor_type()->mutable_shape()->add_dim();
+        }));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    ConcatOffset, 1,
+    OpSchema()
+        .SetDoc(ConcatOffset_ver1_doc)
+        .Input(0, "concat_dim", "Scalar concat axis", "T")
+        .Input(1, "shape", "Input shape tensors", "T", OpSchema::Variadic, false, 1)
+        .Output(0, "offset", "Offset tensors", "T", OpSchema::Variadic, false, 1)
+        .TypeConstraint("T", {"tensor(int32)", "tensor(int64)"},
+                        "Constrain concat_dim, shapes, and offsets to int32 or int64.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          for (size_t i = 0; i < ctx.getNumOutputs(); ++i) {
+            ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, i);
+            const size_t shape_input = i + 1;
+            if (shape_input < ctx.getNumInputs() && ctx.getInputType(shape_input) != nullptr &&
+                ctx.getInputType(shape_input)->has_tensor_type() &&
+                ctx.getInputType(shape_input)->tensor_type().has_shape()) {
+              *ctx.getOutputType(i)->mutable_tensor_type()->mutable_shape() =
+                  ctx.getInputType(shape_input)->tensor_type().shape();
+            }
+          }
+        }));
+
+#define ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA(OpName, Doc, TypeList)                         \
+  ONNX_CONTRIB_OPERATOR_SET_SCHEMA(                                                            \
+      OpName, 1,                                                                                \
+      OpSchema()                                                                                \
+          .SetDoc(Doc)                                                                          \
+          .Input(0, "A", "First input tensor", "T")                                      \
+          .Input(1, "B", "Second input tensor", "T")                                     \
+          .Output(0, "C", "Output tensor", "T")                                          \
+          .TypeConstraint("T", TypeList, "Constrain input and output tensor types.")         \
+          .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {            \
+            ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);                      \
+            if (ONNX_NAMESPACE::hasNInputShapes(ctx, 2)) {                                      \
+              ONNX_NAMESPACE::bidirectionalBroadcastShapeInference(                             \
+                  ctx.getInputType(0)->tensor_type().shape(),                                   \
+                  ctx.getInputType(1)->tensor_type().shape(),                                   \
+                  *ctx.getOutputType(0)->mutable_tensor_type()->mutable_shape());                \
+            }                                                                                   \
+          }));
+
+ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA(AddV2, AddV2_ver1_doc, tf_compat_numeric_types)
+
+#define ONNX_DEPRECATED_BIAS_ADD_SCHEMA(OpName, Doc)                                \
+  ONNX_CONTRIB_OPERATOR_SET_SCHEMA(                                                 \
+      OpName, 1,                                                                    \
+      OpSchema()                                                                    \
+          .SetDoc(Doc)                                                              \
+          .Attr("data_format", "TensorFlow data format: NHWC or NCHW.",          \
+                AttributeProto::STRING, std::string("NHWC"))                       \
+          .Input(0, "value", "Input tensor", "T")                              \
+          .Input(1, "bias", "1D bias tensor", "T")                             \
+          .Output(0, "output", "Output tensor", "T")                           \
+          .TypeConstraint("T", tf_compat_numeric_types,                            \
+                          "Constrain input, bias, and output tensor types.")       \
+          .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {\
+            ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);          \
+            if (ctx.getNumInputs() > 0 && ctx.getInputType(0) != nullptr &&         \
+                ctx.getInputType(0)->has_tensor_type() &&                           \
+                ctx.getInputType(0)->tensor_type().has_shape()) {                   \
+              *ctx.getOutputType(0)->mutable_tensor_type()->mutable_shape() =        \
+                  ctx.getInputType(0)->tensor_type().shape();                       \
+            }                                                                       \
+          }));
+
+ONNX_DEPRECATED_BIAS_ADD_SCHEMA(BiasAdd, BiasAdd_ver1_doc)
+ONNX_DEPRECATED_BIAS_ADD_SCHEMA(BiasAddV1, BiasAddV1_ver1_doc)
+#undef ONNX_DEPRECATED_BIAS_ADD_SCHEMA
+
+ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA(SubV2, SubV2_ver1_doc, tf_compat_numeric_types)
+ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA(RealDiv, RealDiv_ver1_doc, tf_compat_float_types)
+ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA(DivNoNan, DivNoNan_ver1_doc, tf_compat_float_types)
+ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA(SquaredDifference, SquaredDifference_ver1_doc, tf_compat_numeric_types)
+ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA(FloorDiv, FloorDiv_ver1_doc, tf_compat_numeric_types)
+ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA(FloorMod, FloorMod_ver1_doc, tf_compat_numeric_types)
+ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA(Maximum, Maximum_ver1_doc, tf_compat_numeric_types)
+ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA(Minimum, Minimum_ver1_doc, tf_compat_numeric_types)
+
+#define ONNX_DEPRECATED_COMPARISON_BROADCAST_SCHEMA(OpName, Doc, TypeList)                         \
+  ONNX_CONTRIB_OPERATOR_SET_SCHEMA(                                                                \
+      OpName, 1,                                                                                    \
+      OpSchema()                                                                                    \
+          .SetDoc(Doc)                                                                              \
+          .Input(0, "A", "First input tensor", "T")                                          \
+          .Input(1, "B", "Second input tensor", "T")                                         \
+          .Output(0, "C", "Output bool tensor", "T1")                                        \
+          .TypeConstraint("T", TypeList, "Constrain input tensor types.")                       \
+          .TypeConstraint("T1", {"tensor(bool)"}, "Constrain output tensor type to bool.")    \
+          .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {                \
+            ONNX_NAMESPACE::updateOutputElemType(ctx, 0, ONNX_NAMESPACE::TensorProto_DataType_BOOL); \
+            if (ONNX_NAMESPACE::hasNInputShapes(ctx, 2)) {                                          \
+              ONNX_NAMESPACE::bidirectionalBroadcastShapeInference(                                 \
+                  ctx.getInputType(0)->tensor_type().shape(),                                       \
+                  ctx.getInputType(1)->tensor_type().shape(),                                       \
+                  *ctx.getOutputType(0)->mutable_tensor_type()->mutable_shape());                    \
+            }                                                                                       \
+          }));
+
+ONNX_DEPRECATED_COMPARISON_BROADCAST_SCHEMA(GreaterEqual, GreaterEqual_ver1_doc, tf_compat_compare_types)
+ONNX_DEPRECATED_COMPARISON_BROADCAST_SCHEMA(LessEqual, LessEqual_ver1_doc, tf_compat_compare_types)
+ONNX_DEPRECATED_COMPARISON_BROADCAST_SCHEMA(NotEqual, NotEqual_ver1_doc, tf_compat_not_equal_types)
+
+#undef ONNX_DEPRECATED_BINARY_BROADCAST_SCHEMA
+#undef ONNX_DEPRECATED_COMPARISON_BROADCAST_SCHEMA
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    ZerosLike, 1,
+    OpSchema()
+        .SetDoc(ZerosLike_ver1_doc)
+        .Input(0, "X", "Input tensor", "T")
+        .Output(0, "Y", "Output tensor", "T")
+        .TypeConstraint("T", tf_compat_zeros_like_types,
+                        "Constrain input and output tensor types.")
+        .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
+
+constexpr const char* Fill_ver1_doc = R"DOC(
+Fill creates a tensor with shape from dims and fills it with a scalar value.
+This schema is kept for TensorFlow-converted models that emit Fill in the ONNX
+domain.
+)DOC";
+
+constexpr const char* BroadcastTo_ver1_doc = R"DOC(
+BroadcastTo takes an input tensor and a target shape tensor, then broadcasts
+the input to that shape. This schema is kept for TensorFlow-converted models
+that emit BroadcastTo in the ONNX domain.
+)DOC";
+
+constexpr const char* GatherNd_ver1_doc = R"DOC(
+GatherNd gathers slices from params according to indices. This schema is kept
+for TensorFlow-converted models that emit GatherNd in the ONNX domain.
+)DOC";
+
+constexpr const char* GatherV2_ver1_doc = R"DOC(
+GatherV2 gathers slices from params according to indices along a scalar axis
+input, with TensorFlow batch_dims semantics. This schema is kept for
+TensorFlow-converted models that emit GatherV2 in the ONNX domain.
+)DOC";
+
+constexpr const char* IsNan_ver1_doc = R"DOC(
+IsNan takes a floating-point tensor and returns a bool tensor that marks NaN
+elements. This schema is kept for TensorFlow-converted models that emit IsNan
+in the ONNX domain.
+)DOC";
+
+constexpr const char* LogicalAnd_ver1_doc = R"DOC(
+LogicalAnd takes two bool tensors and produces their elementwise logical AND
+with Numpy-style broadcasting. This schema is kept for TensorFlow-converted
+models that emit LogicalAnd in the ONNX domain.
+)DOC";
+
+constexpr const char* LogicalOr_ver1_doc = R"DOC(
+LogicalOr takes two bool tensors and produces their elementwise logical OR
+with Numpy-style broadcasting. This schema is kept for TensorFlow-converted
+models that emit LogicalOr in the ONNX domain.
+)DOC";
+
+constexpr const char* LogicalNot_ver1_doc = R"DOC(
+LogicalNot takes one bool tensor and produces its elementwise logical negation.
+This schema is kept for TensorFlow-converted models that emit LogicalNot in the
+ONNX domain.
+)DOC";
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    Fill, 1,
+    OpSchema()
+        .SetDoc(Fill_ver1_doc)
+        .Input(0, "dims", "Output shape tensor", "index_type")
+        .Input(1, "value", "Scalar value tensor", "T")
+        .Output(0, "output", "Output tensor", "T")
+        .TypeConstraint("T", tf_compat_zeros_like_types,
+                        "Constrain value and output tensor types.")
+        .TypeConstraint("index_type", {"tensor(int32)", "tensor(int64)"},
+                        "Constrain dims tensor type to int32 or int64.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 1, 0);
+        }));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    BroadcastTo, 1,
+    OpSchema()
+        .SetDoc(BroadcastTo_ver1_doc)
+        .Input(0, "X", "Input tensor", "T")
+        .Input(1, "shape", "Target shape tensor", "Tshape")
+        .Output(0, "Y", "Output tensor", "T")
+        .TypeConstraint("T", tf_compat_numeric_types,
+                        "Constrain input and output tensor types.")
+        .TypeConstraint("Tshape", {"tensor(int64)"},
+                        "Constrain shape tensor type to int64.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);
+        }));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    GatherNd, 1,
+    OpSchema()
+        .SetDoc(GatherNd_ver1_doc)
+        .Input(0, "params", "Input tensor", "T")
+        .Input(1, "indices", "Index tensor", "Tindices")
+        .Output(0, "output", "Output tensor", "T")
+        .TypeConstraint("T", tf_compat_zeros_like_types,
+                        "Constrain input and output tensor types.")
+        .TypeConstraint("Tindices", {"tensor(int64)"},
+                        "Constrain indices tensor type to int64.")
+        .Attr("batch_dims", "The number of batch dimensions.",
+              AttributeProto::INT, static_cast<int64_t>(0))
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);
+        }));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    GatherV2, 1,
+    OpSchema()
+        .SetDoc(GatherV2_ver1_doc)
+        .Attr("batch_dims", "Number of leading batch dimensions.",
+              AttributeProto::INT, static_cast<int64_t>(0))
+        .Input(0, "params", "Input tensor", "Tparams")
+        .Input(1, "indices", "Index tensor", "Tindices")
+        .Input(2, "axis", "Scalar axis tensor", "Taxis")
+        .Output(0, "output", "Output tensor", "Tparams")
+        .TypeConstraint("Tparams", tf_compat_zeros_like_types,
+                        "Constrain params and output tensor types.")
+        .TypeConstraint("Tindices", {"tensor(int32)", "tensor(int64)"},
+                        "Constrain indices tensor type to int32 or int64.")
+        .TypeConstraint("Taxis", {"tensor(int32)", "tensor(int64)"},
+                        "Constrain axis tensor type to int32 or int64.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);
+        }));
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    IsNan, 1,
+    OpSchema()
+        .SetDoc(IsNan_ver1_doc)
+        .Input(0, "X", "Input tensor", "T1")
+        .Output(0, "Y", "Output bool tensor", "T2")
+        .TypeConstraint("T1", tf_compat_float_types,
+                        "Constrain input to floating-point tensors.")
+        .TypeConstraint("T2", {"tensor(bool)"},
+                        "Constrain output tensor type to bool.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          ONNX_NAMESPACE::updateOutputElemType(ctx, 0, ONNX_NAMESPACE::TensorProto_DataType_BOOL);
+          if (ctx.getInputType(0) != nullptr && ctx.getInputType(0)->has_tensor_type() &&
+              ctx.getInputType(0)->tensor_type().has_shape()) {
+            *ctx.getOutputType(0)->mutable_tensor_type()->mutable_shape() =
+                ctx.getInputType(0)->tensor_type().shape();
+          }
+        }));
+
+#define ONNX_DEPRECATED_LOGICAL_BINARY_SCHEMA(OpName, Doc)                              \
+  ONNX_CONTRIB_OPERATOR_SET_SCHEMA(                                                     \
+      OpName, 1,                                                                         \
+      OpSchema()                                                                         \
+          .SetDoc(Doc)                                                                   \
+          .Input(0, "A", "First bool tensor", "T")                          \
+          .Input(1, "B", "Second bool tensor", "T")                         \
+          .Output(0, "C", "Output bool tensor", "T")                        \
+          .TypeConstraint("T", {"tensor(bool)"}, "Constrain tensors to bool.") \
+          .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {     \
+            ONNX_NAMESPACE::updateOutputElemType(ctx, 0, ONNX_NAMESPACE::TensorProto_DataType_BOOL); \
+            if (ONNX_NAMESPACE::hasNInputShapes(ctx, 2)) {                                \
+              ONNX_NAMESPACE::bidirectionalBroadcastShapeInference(                       \
+                  ctx.getInputType(0)->tensor_type().shape(),                             \
+                  ctx.getInputType(1)->tensor_type().shape(),                             \
+                  *ctx.getOutputType(0)->mutable_tensor_type()->mutable_shape());          \
+            }                                                                             \
+          }));
+
+ONNX_DEPRECATED_LOGICAL_BINARY_SCHEMA(LogicalAnd, LogicalAnd_ver1_doc)
+ONNX_DEPRECATED_LOGICAL_BINARY_SCHEMA(LogicalOr, LogicalOr_ver1_doc)
+#undef ONNX_DEPRECATED_LOGICAL_BINARY_SCHEMA
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    LogicalNot, 1,
+    OpSchema()
+        .SetDoc(LogicalNot_ver1_doc)
+        .Input(0, "X", "Input bool tensor", "T")
+        .Output(0, "Y", "Output bool tensor", "T")
+        .TypeConstraint("T", {"tensor(bool)"}, "Constrain tensors to bool.")
+        .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
+
+constexpr const char* PadV2_ver11_doc = R"DOC(
+PadV2 pads an input tensor using a pads tensor and scalar constant value. This
+schema is kept for TensorFlow-converted models that emit PadV2 in the ONNX
+domain. It uses the dynamic-input Pad signature introduced by ONNX Pad-11.
+)DOC";
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    PadV2, 11,
+    OpSchema()
+        .SetDoc(PadV2_ver11_doc)
+        .Attr("mode", "Supported values are constant, reflect, edge and wrap.",
+              AttributeProto::STRING, std::string("constant"))
+        .Input(0, "data", "Input tensor", "T")
+        .Input(1, "pads", "Padding for the beginning and ending of each axis.", "Tpads")
+        .Input(2, "constant_value", "Scalar padding value.", "T", OpSchema::Optional)
+        .Output(0, "output", "Padded tensor", "T")
+        .TypeConstraint("T", tf_compat_zeros_like_types,
+                        "Constrain input and output tensor types.")
+        .TypeConstraint("Tpads", {"tensor(int64)"},
+                        "Constrain pads tensor type to int64.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);
+        }));
+
+constexpr const char* ExpandDims_ver1_doc = R"DOC(
+ExpandDims inserts a dimension of size 1 at the axis provided by the dim input.
+This schema is kept for TensorFlow-converted models that emit ExpandDims in the
+ONNX domain.
+)DOC";
+
+constexpr const char* StopGradient_ver1_doc = R"DOC(
+StopGradient forwards its input tensor unchanged for inference. This schema is
+kept for TensorFlow-converted models that emit StopGradient in the ONNX domain.
+)DOC";
+
+constexpr const char* Snapshot_ver1_doc = R"DOC(
+Snapshot forwards its input tensor unchanged for inference. This schema is kept
+for TensorFlow-converted models that emit Snapshot in the ONNX domain.
+)DOC";
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    ExpandDims, 1,
+    OpSchema()
+        .SetDoc(ExpandDims_ver1_doc)
+        .Input(0, "input", "Input tensor", "T")
+        .Input(1, "dim", "Scalar or 1-D axis tensor", "Tdim")
+        .Output(0, "output", "Output tensor", "T")
+        .TypeConstraint("T", tf_compat_zeros_like_types,
+                        "Constrain input and output tensor types.")
+        .TypeConstraint("Tdim", {"tensor(int64)"},
+                        "Constrain axis tensor type to int64.")
+        .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {
+          ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);
+        }));
+
+#define ONNX_DEPRECATED_IDENTITY_SCHEMA(OpName, Doc)                                    \
+  ONNX_CONTRIB_OPERATOR_SET_SCHEMA(                                                     \
+      OpName, 1,                                                                         \
+      OpSchema()                                                                         \
+          .SetDoc(Doc)                                                                   \
+          .Input(0, "input", "Input tensor", "T")                             \
+          .Output(0, "output", "Output tensor", "T")                          \
+          .TypeConstraint("T", tf_compat_zeros_like_types,                           \
+                          "Constrain input and output tensor types.")                 \
+          .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
+
+ONNX_DEPRECATED_IDENTITY_SCHEMA(StopGradient, StopGradient_ver1_doc)
+ONNX_DEPRECATED_IDENTITY_SCHEMA(Snapshot, Snapshot_ver1_doc)
+#undef ONNX_DEPRECATED_IDENTITY_SCHEMA
+
+constexpr const char* BitwiseBinary_ver1_doc = R"DOC(
+Applies a bitwise binary operation elementwise with Numpy-style broadcasting.
+This schema keeps TensorFlow-converted opset 17 models that emitted ONNX-domain
+Bitwise* nodes loadable on ORT versions where the official schema starts later.
+)DOC";
+
+constexpr const char* BitwiseNot_ver1_doc = R"DOC(
+Applies bitwise not elementwise. This schema keeps TensorFlow-converted opset
+17 models that emitted ONNX-domain BitwiseNot loadable on ORT versions where
+the official schema starts later.
+)DOC";
+
+static const std::vector<std::string> bitwise_integer_types = {
+    "tensor(int8)", "tensor(int16)", "tensor(int32)", "tensor(int64)",
+    "tensor(uint8)", "tensor(uint16)", "tensor(uint32)", "tensor(uint64)"};
+
+#define ONNX_DEPRECATED_BITWISE_BINARY_SCHEMA(OpName)                                      \
+  ONNX_CONTRIB_OPERATOR_SET_SCHEMA(                                                        \
+      OpName, 1,                                                                            \
+      OpSchema()                                                                            \
+          .SetDoc(BitwiseBinary_ver1_doc)                                                   \
+          .Input(0, "A", "First input tensor", "T")                                  \
+          .Input(1, "B", "Second input tensor", "T")                                 \
+          .Output(0, "C", "Output tensor", "T")                                      \
+          .TypeConstraint("T", bitwise_integer_types,                                      \
+                          "Constrain input and output types to integer tensors.")          \
+          .TypeAndShapeInferenceFunction([](ONNX_NAMESPACE::InferenceContext& ctx) {        \
+            ONNX_NAMESPACE::propagateElemTypeFromInputToOutput(ctx, 0, 0);                  \
+            if (ONNX_NAMESPACE::hasNInputShapes(ctx, 2)) {                                  \
+              ONNX_NAMESPACE::bidirectionalBroadcastShapeInference(                         \
+                  ctx.getInputType(0)->tensor_type().shape(),                               \
+                  ctx.getInputType(1)->tensor_type().shape(),                               \
+                  *ctx.getOutputType(0)->mutable_tensor_type()->mutable_shape());            \
+            }                                                                                \
+          }));
+
+ONNX_DEPRECATED_BITWISE_BINARY_SCHEMA(BitwiseAnd)
+ONNX_DEPRECATED_BITWISE_BINARY_SCHEMA(BitwiseOr)
+ONNX_DEPRECATED_BITWISE_BINARY_SCHEMA(BitwiseXor)
+
+#undef ONNX_DEPRECATED_BITWISE_BINARY_SCHEMA
+
+ONNX_CONTRIB_OPERATOR_SET_SCHEMA(
+    BitwiseNot, 1,
+    OpSchema()
+        .SetDoc(BitwiseNot_ver1_doc)
+        .Input(0, "X", "Input tensor", "T")
+        .Output(0, "Y", "Output tensor", "T")
+        .TypeConstraint("T", bitwise_integer_types,
+                        "Constrain input and output types to integer tensors.")
+        .TypeAndShapeInferenceFunction(ONNX_NAMESPACE::propagateShapeAndTypeFromFirstInput));
+
 constexpr const char* ImageScaler_ver1_doc =
     R"DOC(Scale and bias the input image. Bias values are stored in
 the same ordering as the image pixel format.)DOC";

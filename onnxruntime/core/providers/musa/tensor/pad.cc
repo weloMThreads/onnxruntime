@@ -117,7 +117,7 @@ Status Pad<T>::ValidatePadding(const TensorShape& input_shape,
     int64_t start_pad = pads[i];
     int64_t end_pad = pads[i + rank];
     int64_t output_dim = input_dims[i] + start_pad + end_pad;
-    if (output_dim <= 0) {
+    if (output_dim < 0) {
       return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT,
                              "Output dimension would be non-positive for axis ", i,
                              ". Input dim: ", input_dims[i],
@@ -459,11 +459,24 @@ REGISTER_MUSA_PAD_VERSIONED_KERNEL(2, 10, float)
 REGISTER_MUSA_PAD_VERSIONED_KERNEL(2, 10, MLFloat16)
 #endif
 
+#define REGISTER_MUSA_PADV2_DYNAMIC_KERNEL(start_ver, end_ver, T)        \
+  ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_EX(                               \
+      PadV2, kOnnxDomain, start_ver, end_ver, T, kMusaExecutionProvider, \
+      (*KernelDefBuilder::Create())                                      \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>())       \
+          .InputMemoryType(OrtMemTypeCPUInput, 1)                        \
+          .InputMemoryType(OrtMemTypeCPUInput, 2),                       \
+      Pad<T>);
+
 // Register for version 11-17 (dynamic parameters)
 REGISTER_MUSA_PAD_DYNAMIC_KERNEL(11, 17, float)
+REGISTER_MUSA_PADV2_DYNAMIC_KERNEL(11, 17, float)
 #if defined(MUDNN_VERSION) && (MUDNN_VERSION >= 3100)
 REGISTER_MUSA_PAD_DYNAMIC_KERNEL(11, 17, MLFloat16)
+REGISTER_MUSA_PADV2_DYNAMIC_KERNEL(11, 17, MLFloat16)
 #endif
+
+#undef REGISTER_MUSA_PADV2_DYNAMIC_KERNEL
 
 // Register for version 18+ (with axes support)
 REGISTER_MUSA_PAD_LATEST_KERNEL(18, float)

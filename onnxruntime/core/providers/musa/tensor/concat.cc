@@ -17,6 +17,128 @@ namespace onnxruntime {
 
 namespace musa {
 
+namespace {
+
+Status ReadConcatV2Axis(const Tensor& tensor, musaStream_t stream, int64_t& value) {
+  ORT_RETURN_IF_NOT(tensor.Shape().Size() == 1, "ConcatV2 axis must be a scalar tensor.");
+  if (tensor.IsDataType<int32_t>()) {
+    int32_t scalar = 0;
+    if (tensor.Location().device.UsesCpuMemory()) {
+      scalar = *tensor.Data<int32_t>();
+    } else {
+      MUSA_RETURN_IF_ERROR(musaMemcpyAsync(&scalar, tensor.DataRaw(), sizeof(scalar), musaMemcpyDeviceToHost, stream));
+      MUSA_RETURN_IF_ERROR(musaStreamSynchronize(stream));
+    }
+    value = static_cast<int64_t>(scalar);
+    return Status::OK();
+  }
+  if (tensor.IsDataType<int64_t>()) {
+    int64_t scalar = 0;
+    if (tensor.Location().device.UsesCpuMemory()) {
+      scalar = *tensor.Data<int64_t>();
+    } else {
+      MUSA_RETURN_IF_ERROR(musaMemcpyAsync(&scalar, tensor.DataRaw(), sizeof(scalar), musaMemcpyDeviceToHost, stream));
+      MUSA_RETURN_IF_ERROR(musaStreamSynchronize(stream));
+    }
+    value = scalar;
+    return Status::OK();
+  }
+  return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT, "ConcatV2 axis must be int32 or int64.");
+}
+
+Status PrepareConcatV2(OpKernelContext* ctx, musaStream_t stream, int64_t& axis,
+                       TensorShapeVector& output_dims, std::vector<const Tensor*>& inputs) {
+  const int input_count = ctx->InputCount();
+  ORT_RETURN_IF_NOT(input_count >= 2, "ConcatV2 requires at least one value input and one axis input.");
+
+  const Tensor* axis_tensor = ctx->Input<Tensor>(input_count - 1);
+  ORT_RETURN_IF_NOT(axis_tensor != nullptr, "ConcatV2 axis input is null.");
+  ORT_RETURN_IF_ERROR(ReadConcatV2Axis(*axis_tensor, stream, axis));
+
+  const int value_count = input_count - 1;
+  inputs.reserve(static_cast<size_t>(value_count));
+  const Tensor* first = ctx->Input<Tensor>(0);
+  ORT_RETURN_IF_NOT(first != nullptr, "ConcatV2 first value input is null.");
+  ORT_RETURN_IF_NOT(first->Shape().NumDimensions() > 0, "ConcatV2 cannot concatenate scalar tensors.");
+  const auto rank = first->Shape().NumDimensions();
+  axis = HandleNegativeAxis(axis, gsl::narrow_cast<int64_t>(rank));
+  output_dims = first->Shape().AsShapeVector();
+  output_dims[onnxruntime::narrow<size_t>(axis)] = 0;
+
+  for (int i = 0; i < value_count; ++i) {
+    const Tensor* input = ctx->Input<Tensor>(i);
+    ORT_RETURN_IF_NOT(input != nullptr, "ConcatV2 value input is null.");
+    ORT_RETURN_IF_NOT(input->DataType() == first->DataType(), "ConcatV2 value input data types must match.");
+    ORT_RETURN_IF_NOT(input->Shape().NumDimensions() == rank, "ConcatV2 value input ranks must match.");
+    const auto& dims = input->Shape().GetDims();
+    for (size_t d = 0; d < rank; ++d) {
+      if (d == static_cast<size_t>(axis)) {
+        continue;
+      }
+      ORT_RETURN_IF_NOT(dims[d] == output_dims[d], "ConcatV2 non-concat dimensions must match.");
+    }
+    output_dims[onnxruntime::narrow<size_t>(axis)] += dims[onnxruntime::narrow<size_t>(axis)];
+    inputs.push_back(input);
+  }
+
+  return Status::OK();
+}
+
+class ConcatV2 final : public MusaKernel {
+ public:
+  explicit ConcatV2(const OpKernelInfo& info) : MusaKernel(info) {}
+
+  Status ComputeInternal(OpKernelContext* ctx) const override {
+    int64_t axis = 0;
+    TensorShapeVector output_dims;
+    std::vector<const Tensor*> inputs;
+    ORT_RETURN_IF_ERROR(PrepareConcatV2(ctx, Stream(ctx), axis, output_dims, inputs));
+
+    Tensor* output = ctx->Output(0, TensorShape{output_dims});
+    ORT_RETURN_IF_NOT(output != nullptr, "ConcatV2 output tensor is null.");
+    if (output->Shape().Size() == 0) {
+      return Status::OK();
+    }
+
+    const size_t element_size = inputs.front()->DataType()->Size();
+    const size_t axis_index = onnxruntime::narrow<size_t>(axis);
+    const int64_t outer = inputs.front()->Shape().SizeToDimension(axis_index);
+    const int64_t inner = (axis_index + 1 == output_dims.size())
+                              ? 1
+                              : inputs.front()->Shape().SizeFromDimension(axis_index + 1);
+    const int64_t output_axis = output_dims[axis_index];
+    auto* dst_base = static_cast<uint8_t*>(output->MutableDataRaw());
+
+    for (int64_t outer_idx = 0; outer_idx < outer; ++outer_idx) {
+      int64_t dst_axis_offset = 0;
+      for (const Tensor* input : inputs) {
+        const int64_t input_axis = input->Shape()[axis_index];
+        const size_t bytes = onnxruntime::narrow<size_t>(input_axis * inner) * element_size;
+        if (bytes > 0) {
+          const auto* src = static_cast<const uint8_t*>(input->DataRaw()) +
+                            onnxruntime::narrow<size_t>(outer_idx * input_axis * inner) * element_size;
+          auto* dst = dst_base +
+                      onnxruntime::narrow<size_t>((outer_idx * output_axis + dst_axis_offset) * inner) * element_size;
+          MUSA_RETURN_IF_ERROR(musaMemcpyAsync(dst, src, bytes, musaMemcpyDeviceToDevice, Stream(ctx)));
+        }
+        dst_axis_offset += input_axis;
+      }
+    }
+
+    return Status::OK();
+  }
+};
+
+}  // namespace
+
+ONNX_OPERATOR_KERNEL_EX(
+    ConcatV2,
+    kOnnxDomain,
+    1,
+    kMusaExecutionProvider,
+    (*KernelDefBuilder::Create()).TypeConstraint("T", DataTypeImpl::AllFixedSizeTensorTypes()),
+    ConcatV2);
+
 // MUSA device-based implementation using MusaPreparation and mudnn Concat class
 template <typename T>
 Status SimpleMusaConcatOp(const MusaPreparation& prepare, const Prepare& p) {

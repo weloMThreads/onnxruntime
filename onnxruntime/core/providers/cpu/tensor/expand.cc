@@ -28,6 +28,24 @@ REG_EXPAND_KERNEL(int8_t)
 REG_EXPAND_KERNEL(int16_t)
 REG_EXPAND_KERNEL(int32_t)
 REG_EXPAND_KERNEL(int64_t)
+
+#define REG_BROADCAST_TO_KERNEL(TYPE)                                             \
+  ONNX_CPU_OPERATOR_TYPED_KERNEL(                                                 \
+      BroadcastTo,                                                                \
+      1,                                                                          \
+      TYPE,                                                                       \
+      KernelDefBuilder()                                                          \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<TYPE>())            \
+          .TypeConstraint("Tshape", DataTypeImpl::GetTensorType<int64_t>()),   \
+      Expand<TYPE>);
+
+REG_BROADCAST_TO_KERNEL(float)
+REG_BROADCAST_TO_KERNEL(int32_t)
+REG_BROADCAST_TO_KERNEL(int64_t)
+REG_BROADCAST_TO_KERNEL(MLFloat16)
+
+#undef REG_BROADCAST_TO_KERNEL
+
 REG_EXPAND_KERNEL(uint8_t)
 REG_EXPAND_KERNEL(uint16_t)
 REG_EXPAND_KERNEL(uint32_t)

@@ -31,5 +31,16 @@ class Cast final : public MusaKernel {
   bool saturate_;
 };
 
+class CastStringToInt32 final : public MusaKernel {
+ public:
+  explicit CastStringToInt32(const OpKernelInfo& info) : MusaKernel(info) {
+    int64_t to;
+    ORT_ENFORCE(info.GetAttr("to", &to).IsOK(), "Attribute to is not set.");
+    ORT_ENFORCE(to == ONNX_NAMESPACE::TensorProto_DataType_INT32, "Only string to int32 Cast is supported.");
+  }
+
+  Status ComputeInternal(OpKernelContext* context) const override;
+};
+
 }  // namespace musa
 }  // namespace onnxruntime

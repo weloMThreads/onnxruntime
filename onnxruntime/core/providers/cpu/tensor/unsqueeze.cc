@@ -77,6 +77,15 @@ ONNX_CPU_OPERATOR_KERNEL(
         .TypeConstraint("T", DataTypeImpl::AllTensorTypes()),
     Unsqueeze);
 
+ONNX_CPU_OPERATOR_KERNEL(
+    ExpandDims,
+    1,
+    KernelDefBuilder()
+        .Alias(0, 0)
+        .TypeConstraint("T", DataTypeImpl::AllTensorTypes())
+        .TypeConstraint("Tdim", DataTypeImpl::GetTensorType<int64_t>()),
+    Unsqueeze);
+
 Status Unsqueeze::Compute(OpKernelContext* ctx) const {
   Prepare p;
   ORT_RETURN_IF_ERROR(PrepareCompute(ctx, p));

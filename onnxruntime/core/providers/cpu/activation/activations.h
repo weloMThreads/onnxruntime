@@ -103,6 +103,52 @@ struct Softplus : public ElementWiseRangedTransform<T> {
 };
 
 template <typename T>
+struct Log1p : public ElementWiseRangedTransform<T> {
+  Status Init(const onnxruntime::NodeAttributes&) {
+    return Status::OK();
+  }
+  GSL_SUPPRESS(r.11)
+  ElementWiseRangedTransform<T>* Copy() const {
+    using T1 = typename std::remove_pointer<decltype(this)>::type;
+    using T2 = typename std::remove_const<T1>::type;
+    return new T2(*this);
+  }
+  float Cost() const final {
+    return 5.0f;
+  }
+  void operator()(std::ptrdiff_t first, std::ptrdiff_t last) const final {
+    ptrdiff_t len = last - first;
+    T* output_ptr = this->output + first;
+    ConstEigenVectorArrayMap<T> xm(this->input + first, len);
+    EigenVectorArrayMap<T> ym(output_ptr, len);
+    ym = xm.log1p();
+  }
+};
+
+template <typename T>
+struct Expm1 : public ElementWiseRangedTransform<T> {
+  Status Init(const onnxruntime::NodeAttributes&) {
+    return Status::OK();
+  }
+  GSL_SUPPRESS(r.11)
+  ElementWiseRangedTransform<T>* Copy() const {
+    using T1 = typename std::remove_pointer<decltype(this)>::type;
+    using T2 = typename std::remove_const<T1>::type;
+    return new T2(*this);
+  }
+  float Cost() const final {
+    return 5.0f;
+  }
+  void operator()(std::ptrdiff_t first, std::ptrdiff_t last) const final {
+    ptrdiff_t len = last - first;
+    T* output_ptr = this->output + first;
+    ConstEigenVectorArrayMap<T> xm(this->input + first, len);
+    EigenVectorArrayMap<T> ym(output_ptr, len);
+    ym = xm.exp() - static_cast<T>(1);
+  }
+};
+
+template <typename T>
 struct Relu : public ElementWiseRangedTransform<T> {
   Status Init(const onnxruntime::NodeAttributes&) {
     return Status::OK();
@@ -239,6 +285,8 @@ DEFINE_ELE_KERNEL(Elu);
 DEFINE_ELE_KERNEL(HardSigmoid);
 DEFINE_ELE_KERNEL(LeakyRelu);
 DEFINE_ELE_KERNEL(Softplus);
+DEFINE_ELE_KERNEL(Log1p);
+DEFINE_ELE_KERNEL(Expm1);
 DEFINE_ELE_KERNEL(Relu);
 DEFINE_ELE_KERNEL(Sigmoid);
 DEFINE_ELE_KERNEL(Softsign);

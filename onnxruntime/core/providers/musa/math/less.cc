@@ -18,6 +18,10 @@ namespace musa {
 // MUSA device-based implementation using MusaPreparation and mudnn library
 template <typename T>
 Status SimpleMusaLessOp(const MusaPreparation& prepare, size_t size) {
+  if (prepare.output_size == 0) {
+    return Status::OK();
+  }
+
   // Get tensor data from prepared MUSA tensors
   const T* input_a = reinterpret_cast<const T*>(prepare.input_a_ptr);
   const T* input_b = reinterpret_cast<const T*>(prepare.input_b_ptr);

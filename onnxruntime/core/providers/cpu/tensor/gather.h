@@ -16,4 +16,16 @@ class Gather : public OpKernel, public GatherBase {
 
   Status Compute(OpKernelContext* context) const override;
 };
+
+class GatherV2 : public OpKernel {
+ public:
+  explicit GatherV2(const OpKernelInfo& info) : OpKernel(info) {
+    info.GetAttrOrDefault<int64_t>("batch_dims", &batch_dims_, 0);
+  }
+
+  Status Compute(OpKernelContext* context) const override;
+
+ private:
+  int64_t batch_dims_ = 0;
+};
 }  // namespace onnxruntime

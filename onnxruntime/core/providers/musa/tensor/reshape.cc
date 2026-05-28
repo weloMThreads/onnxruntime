@@ -6,7 +6,9 @@
 #include "core/providers/common.h"
 #include "core/providers/musa/musa_fwd.h"
 #include <musa_runtime.h>
+#include <algorithm>
 #include <mudnn.h>
+#include <string>
 
 using onnxruntime::common::Status;
 namespace onnxruntime {
@@ -73,8 +75,16 @@ Status Reshape::ExecuteMusaReshape(OpKernelContext* ctx, const Tensor* input,
     return Status::OK();
   }
   
-  // Alias mechanism failed - need to copy data manually
-  // Use standard ORT memory copy mechanism
+  // Alias mechanism failed - need to copy data manually.
+  if (input->IsDataTypeString()) {
+    const auto count = input->Shape().Size();
+    const auto* src = reinterpret_cast<const std::string*>(input->DataRaw());
+    auto* dst = reinterpret_cast<std::string*>(output->MutableDataRaw());
+    std::copy(src, src + count, dst);
+    return Status::OK();
+  }
+
+  // Use standard ORT memory copy mechanism.
   auto* data_transfer = Info().GetDataTransferManager().GetDataTransfer(
       input->Location().device, output->Location().device);
   
@@ -147,35 +157,53 @@ Status Reshape_1::ComputeInternal(OpKernelContext* ctx) const {
             .TypeConstraint("T", DataTypeImpl::GetTensorType<T>()), \
         Reshape_1);
 
+#define REGISTER_MUSA_RESHAPE_STRING_KERNEL(ver_start, ver_end) \
+    ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_EX( \
+        Reshape, kOnnxDomain, ver_start, ver_end, string, kMusaExecutionProvider, \
+        (*KernelDefBuilder::Create()) \
+            .Alias(0, 0) \
+            .TypeConstraint("T", DataTypeImpl::GetTensorTypeFromOnnxType(ONNX_NAMESPACE::TensorProto_DataType_STRING)) \
+            .TypeConstraint("shape", DataTypeImpl::GetTensorType<int64_t>()) \
+            .InputMemoryType(OrtMemTypeCPUInput, 0) \
+            .InputMemoryType(OrtMemTypeCPUInput, 1) \
+            .OutputMemoryType(OrtMemTypeCPUOutput, 0), \
+        Reshape);
+
 // Register for ONNX v1-4 (Reshape_1)
 REGISTER_MUSA_RESHAPE_1_TYPED_KERNEL(1, 4, int32_t)
 REGISTER_MUSA_RESHAPE_1_TYPED_KERNEL(1, 4, int64_t)
 REGISTER_MUSA_RESHAPE_1_TYPED_KERNEL(1, 4, MLFloat16)
 REGISTER_MUSA_RESHAPE_1_TYPED_KERNEL(1, 4, float)
+REGISTER_MUSA_RESHAPE_1_TYPED_KERNEL(1, 4, bool)
 
 // Register for ONNX v5-12
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(5, 12, int32_t)
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(5, 12, int64_t)
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(5, 12, MLFloat16)
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(5, 12, float)
+REGISTER_MUSA_RESHAPE_TYPED_KERNEL(5, 12, bool)
 
 // Register for ONNX v13
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(13, 13, int32_t)
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(13, 13, int64_t)
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(13, 13, MLFloat16)
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(13, 13, float)
+REGISTER_MUSA_RESHAPE_TYPED_KERNEL(13, 13, bool)
 
 // Register for ONNX v14-18
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(14, 18, int32_t)
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(14, 18, int64_t)
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(14, 18, MLFloat16)
 REGISTER_MUSA_RESHAPE_TYPED_KERNEL(14, 18, float)
+REGISTER_MUSA_RESHAPE_TYPED_KERNEL(14, 18, bool)
+REGISTER_MUSA_RESHAPE_STRING_KERNEL(14, 18)
 
 // Register for ONNX v19+ (latest)
 REGISTER_MUSA_RESHAPE_LATEST_TYPED_KERNEL(19, int32_t)
 REGISTER_MUSA_RESHAPE_LATEST_TYPED_KERNEL(19, int64_t)
 REGISTER_MUSA_RESHAPE_LATEST_TYPED_KERNEL(19, MLFloat16)
 REGISTER_MUSA_RESHAPE_LATEST_TYPED_KERNEL(19, float)
+REGISTER_MUSA_RESHAPE_LATEST_TYPED_KERNEL(19, bool)
 
 } // namespace musa
 } // namespace onnxruntime

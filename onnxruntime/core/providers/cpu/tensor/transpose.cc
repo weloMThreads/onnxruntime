@@ -3,12 +3,15 @@
 
 #include "core/providers/cpu/tensor/transpose.h"
 
+#include <algorithm>
 #include <memory>
+#include <cstring>
 #include "core/framework/element_type_lists.h"
 #include "core/framework/utils.h"
 #include "core/framework/transpose_helper.h"
 #include "core/framework/op_kernel_type_control_utils.h"
 #include "core/mlas/inc/mlas.h"
+#include "core/providers/common.h"
 #include "core/providers/op_kernel_type_control.h"
 #include "utils.h"
 
@@ -458,6 +461,125 @@ Status TransposeBase::DoTranspose(const gsl::span<const size_t>& permutations, c
   return TransposeImpl(permutations, input, output, input_shape_override, tp);
 }
 
+namespace {
+
+Status ReadAxisVector(const Tensor& axis_tensor, int64_t rank, std::vector<bool>& reverse_axes) {
+  ORT_RETURN_IF_NOT(axis_tensor.Shape().NumDimensions() == 1, "ReverseV2 axis input must be a 1D tensor.");
+  reverse_axes.assign(static_cast<size_t>(rank), false);
+  const int64_t axis_count = axis_tensor.Shape()[0];
+  for (int64_t i = 0; i < axis_count; ++i) {
+    int64_t axis = 0;
+    if (axis_tensor.IsDataType<int32_t>()) {
+      axis = static_cast<int64_t>(axis_tensor.Data<int32_t>()[i]);
+    } else if (axis_tensor.IsDataType<int64_t>()) {
+      axis = axis_tensor.Data<int64_t>()[i];
+    } else {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT, "ReverseV2 axis input must be int32 or int64.");
+    }
+    axis = HandleNegativeAxis(axis, rank);
+    ORT_RETURN_IF_NOT(!reverse_axes[onnxruntime::narrow<size_t>(axis)], "ReverseV2 axis values must be unique.");
+    reverse_axes[onnxruntime::narrow<size_t>(axis)] = true;
+  }
+  return Status::OK();
+}
+
+void ReverseRawBuffer(const uint8_t* input, uint8_t* output, const TensorShape& shape,
+                      const std::vector<bool>& reverse_axes, size_t element_size) {
+  const auto dims = shape.GetDims();
+  const size_t rank = dims.size();
+  const int64_t element_count = shape.Size();
+  TensorShapeVector strides(rank, 1);
+  for (size_t i = rank; i-- > 1;) {
+    strides[i - 1] = strides[i] * dims[i];
+  }
+
+  for (int64_t linear = 0; linear < element_count; ++linear) {
+    int64_t remaining = linear;
+    int64_t source_index = 0;
+    for (size_t axis = 0; axis < rank; ++axis) {
+      const int64_t coord = strides[axis] == 0 ? 0 : remaining / strides[axis];
+      remaining = strides[axis] == 0 ? 0 : remaining % strides[axis];
+      const int64_t source_coord = reverse_axes[axis] ? dims[axis] - 1 - coord : coord;
+      source_index += source_coord * strides[axis];
+    }
+    std::memcpy(output + onnxruntime::narrow<size_t>(linear) * element_size,
+                input + onnxruntime::narrow<size_t>(source_index) * element_size,
+                element_size);
+  }
+}
+
+class ReverseV2 final : public OpKernel {
+ public:
+  explicit ReverseV2(const OpKernelInfo& info) : OpKernel(info) {}
+
+  Status Compute(OpKernelContext* ctx) const override {
+    const Tensor* input = ctx->Input<Tensor>(0);
+    const Tensor* axis = ctx->Input<Tensor>(1);
+    ORT_RETURN_IF_NOT(input != nullptr && axis != nullptr, "ReverseV2 inputs must not be null.");
+
+    std::vector<bool> reverse_axes;
+    ORT_RETURN_IF_ERROR(ReadAxisVector(*axis, gsl::narrow_cast<int64_t>(input->Shape().NumDimensions()), reverse_axes));
+    Tensor* output = ctx->Output(0, input->Shape());
+    ORT_RETURN_IF_NOT(output != nullptr, "ReverseV2 output tensor is null.");
+
+    const size_t bytes = input->SizeInBytes();
+    if (bytes == 0) {
+      return Status::OK();
+    }
+
+    const bool need_reverse = std::any_of(reverse_axes.begin(), reverse_axes.end(), [](bool v) { return v; });
+    if (!need_reverse) {
+      if (input->DataRaw() != output->MutableDataRaw()) {
+        std::memcpy(output->MutableDataRaw(), input->DataRaw(), bytes);
+      }
+      return Status::OK();
+    }
+
+    ReverseRawBuffer(static_cast<const uint8_t*>(input->DataRaw()),
+                     static_cast<uint8_t*>(output->MutableDataRaw()),
+                     input->Shape(), reverse_axes, input->DataType()->Size());
+    return Status::OK();
+  }
+};
+
+template <typename T>
+Status ComputeInvertPermutationTyped(const Tensor& input, Tensor& output) {
+  ORT_RETURN_IF_NOT(input.Shape().NumDimensions() == 1, "InvertPermutation input must be a 1D tensor.");
+  const int64_t n = input.Shape().Size();
+  const T* src = input.Data<T>();
+  T* dst = output.MutableData<T>();
+  std::vector<bool> seen(static_cast<size_t>(n), false);
+  for (int64_t i = 0; i < n; ++i) {
+    const int64_t value = static_cast<int64_t>(src[i]);
+    ORT_RETURN_IF_NOT(value >= 0 && value < n, "InvertPermutation value out of range.");
+    ORT_RETURN_IF_NOT(!seen[onnxruntime::narrow<size_t>(value)], "InvertPermutation input contains duplicates.");
+    seen[onnxruntime::narrow<size_t>(value)] = true;
+    dst[onnxruntime::narrow<size_t>(value)] = static_cast<T>(i);
+  }
+  return Status::OK();
+}
+
+class InvertPermutation final : public OpKernel {
+ public:
+  explicit InvertPermutation(const OpKernelInfo& info) : OpKernel(info) {}
+
+  Status Compute(OpKernelContext* ctx) const override {
+    const Tensor* input = ctx->Input<Tensor>(0);
+    ORT_RETURN_IF_NOT(input != nullptr, "InvertPermutation input is null.");
+    Tensor* output = ctx->Output(0, input->Shape());
+    ORT_RETURN_IF_NOT(output != nullptr, "InvertPermutation output tensor is null.");
+    if (input->IsDataType<int32_t>()) {
+      return ComputeInvertPermutationTyped<int32_t>(*input, *output);
+    }
+    if (input->IsDataType<int64_t>()) {
+      return ComputeInvertPermutationTyped<int64_t>(*input, *output);
+    }
+    return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT, "InvertPermutation input must be int32 or int64.");
+  }
+};
+
+}  // namespace
+
 Status Transpose::Compute(OpKernelContext* ctx) const {
   const auto* input_tensor_ptr = ctx->Input<Tensor>(0);
   ORT_ENFORCE(input_tensor_ptr != nullptr);
@@ -482,6 +604,20 @@ Status Transpose::Compute(OpKernelContext* ctx) const {
 
   return DoTranspose(*p_perm, X, Y, nullptr, ctx->GetOperatorThreadPool());
 }
+
+ONNX_CPU_OPERATOR_KERNEL(
+    ReverseV2,
+    1,
+    KernelDefBuilder()
+        .TypeConstraint("T", DataTypeImpl::AllFixedSizeTensorTypes())
+        .TypeConstraint("Tidx", BuildKernelDefConstraints<int32_t, int64_t>()),
+    ReverseV2);
+
+ONNX_CPU_OPERATOR_KERNEL(
+    InvertPermutation,
+    1,
+    KernelDefBuilder().TypeConstraint("T", BuildKernelDefConstraints<int32_t, int64_t>()),
+    InvertPermutation);
 
 ONNX_CPU_OPERATOR_VERSIONED_KERNEL(
     Transpose,

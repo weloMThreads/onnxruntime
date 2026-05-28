@@ -39,6 +39,46 @@ void FillInputStrides(const std::vector<int64_t>& dims,
   }
 }
 
+::musa::dnn::Tensor::Format GetMusaFormatForRank(size_t rank) {
+  if (rank == 0 || rank == 1 || rank == 3) {
+    return ::musa::dnn::Tensor::Format::NCW;
+  }
+  if (rank == 5) {
+    return ::musa::dnn::Tensor::Format::NCDHW;
+  }
+  return ::musa::dnn::Tensor::Format::NCHW;
+}
+
+Status GetBiasAddChannelDim(const TensorShape& value_shape,
+                            const TensorShape& bias_shape,
+                            const std::string& data_format,
+                            int64_t& channel_dim) {
+  ORT_RETURN_IF_NOT(bias_shape.NumDimensions() == 1,
+                    "BiasAdd bias must be 1D, got shape ", bias_shape.ToString());
+
+  const int64_t rank = static_cast<int64_t>(value_shape.NumDimensions());
+  if (rank == 0) {
+    channel_dim = 0;
+    ORT_RETURN_IF_NOT(bias_shape.Size() == 1,
+                      "BiasAdd scalar input requires bias with one element, got shape ",
+                      bias_shape.ToString());
+    return Status::OK();
+  }
+
+  if (data_format == "NCHW" && rank > 1) {
+    channel_dim = 1;
+  } else {
+    channel_dim = rank - 1;
+  }
+
+  ORT_RETURN_IF_NOT(bias_shape[0] == value_shape[channel_dim],
+                    "BiasAdd bias dimension ", bias_shape[0],
+                    " does not match channel dimension ", value_shape[channel_dim],
+                    " for input shape ", value_shape.ToString(),
+                    " and data_format ", data_format);
+  return Status::OK();
+}
+
 Status BuildPowSameTypeParams(const TensorShape& lhs_shape,
                               const TensorShape& rhs_shape,
                               const TensorShape& output_shape,
@@ -146,6 +186,216 @@ Status LaunchPowSameType(const MusaPreparation& prepare,
 
   MUSA_RETURN_IF_ERROR(musaGetLastError());
   // Sync before freeing temp buffers (kernel uses them asynchronously)
+  if (temp_a || temp_b) {
+    MUSA_RETURN_IF_ERROR(musaStreamSynchronize(stream));
+  }
+  cleanup();
+  return Status::OK();
+}
+
+template <typename T>
+Status LaunchDivNoNanSameType(const MusaPreparation& prepare,
+                              musaStream_t stream) {
+  PowSameTypeParams params{};
+  ORT_RETURN_IF_ERROR(BuildPowSameTypeParams(prepare.input_a_shape,
+                                             prepare.input_b_shape,
+                                             prepare.output_shape,
+                                             &params));
+
+  const void* gpu_a = prepare.input_a_ptr;
+  const void* gpu_b = prepare.input_b_ptr;
+  void* temp_a = nullptr;
+  void* temp_b = nullptr;
+
+  auto cleanup = [&]() {
+    if (temp_a) musaFree(temp_a);
+    if (temp_b) musaFree(temp_b);
+  };
+
+  if (IsHostPointer(prepare.input_a_ptr)) {
+    size_t bytes = prepare.input_a_shape.Size() * sizeof(T);
+    MUSA_RETURN_IF_ERROR(musaMalloc(&temp_a, bytes));
+    MUSA_RETURN_IF_ERROR(musaMemcpyAsync(temp_a, prepare.input_a_ptr, bytes,
+                                         musaMemcpyHostToDevice, stream));
+    gpu_a = temp_a;
+  }
+  if (IsHostPointer(prepare.input_b_ptr)) {
+    size_t bytes = prepare.input_b_shape.Size() * sizeof(T);
+    MUSA_RETURN_IF_ERROR(musaMalloc(&temp_b, bytes));
+    MUSA_RETURN_IF_ERROR(musaMemcpyAsync(temp_b, prepare.input_b_ptr, bytes,
+                                         musaMemcpyHostToDevice, stream));
+    gpu_b = temp_b;
+  }
+
+  if constexpr (std::is_same_v<T, MLFloat16>) {
+    LaunchDivNoNanSameTypeKernelHalf(stream, gpu_a, gpu_b,
+                                     prepare.output_ptr, params);
+  } else {
+    LaunchDivNoNanSameTypeKernel<T>(stream,
+                                    reinterpret_cast<const T*>(gpu_a),
+                                    reinterpret_cast<const T*>(gpu_b),
+                                    reinterpret_cast<T*>(prepare.output_ptr),
+                                    params);
+  }
+
+  MUSA_RETURN_IF_ERROR(musaGetLastError());
+  if (temp_a || temp_b) {
+    MUSA_RETURN_IF_ERROR(musaStreamSynchronize(stream));
+  }
+  cleanup();
+  return Status::OK();
+}
+
+template <typename T>
+Status LaunchSquaredDifferenceSameType(const MusaPreparation& prepare,
+                                       musaStream_t stream) {
+  PowSameTypeParams params{};
+  ORT_RETURN_IF_ERROR(BuildPowSameTypeParams(prepare.input_a_shape,
+                                             prepare.input_b_shape,
+                                             prepare.output_shape,
+                                             &params));
+
+  const void* gpu_a = prepare.input_a_ptr;
+  const void* gpu_b = prepare.input_b_ptr;
+  void* temp_a = nullptr;
+  void* temp_b = nullptr;
+
+  auto cleanup = [&]() {
+    if (temp_a) musaFree(temp_a);
+    if (temp_b) musaFree(temp_b);
+  };
+
+  if (IsHostPointer(prepare.input_a_ptr)) {
+    size_t bytes = prepare.input_a_shape.Size() * sizeof(T);
+    MUSA_RETURN_IF_ERROR(musaMalloc(&temp_a, bytes));
+    MUSA_RETURN_IF_ERROR(musaMemcpyAsync(temp_a, prepare.input_a_ptr, bytes,
+                                         musaMemcpyHostToDevice, stream));
+    gpu_a = temp_a;
+  }
+  if (IsHostPointer(prepare.input_b_ptr)) {
+    size_t bytes = prepare.input_b_shape.Size() * sizeof(T);
+    MUSA_RETURN_IF_ERROR(musaMalloc(&temp_b, bytes));
+    MUSA_RETURN_IF_ERROR(musaMemcpyAsync(temp_b, prepare.input_b_ptr, bytes,
+                                         musaMemcpyHostToDevice, stream));
+    gpu_b = temp_b;
+  }
+
+  if constexpr (std::is_same_v<T, MLFloat16>) {
+    LaunchSquaredDifferenceSameTypeKernelHalf(stream, gpu_a, gpu_b,
+                                              prepare.output_ptr, params);
+  } else {
+    LaunchSquaredDifferenceSameTypeKernel<T>(stream,
+                                             reinterpret_cast<const T*>(gpu_a),
+                                             reinterpret_cast<const T*>(gpu_b),
+                                             reinterpret_cast<T*>(prepare.output_ptr),
+                                             params);
+  }
+
+  MUSA_RETURN_IF_ERROR(musaGetLastError());
+  if (temp_a || temp_b) {
+    MUSA_RETURN_IF_ERROR(musaStreamSynchronize(stream));
+  }
+  cleanup();
+  return Status::OK();
+}
+
+template <typename T>
+Status LaunchFloorDivSameType(const MusaPreparation& prepare,
+                              musaStream_t stream) {
+  PowSameTypeParams params{};
+  ORT_RETURN_IF_ERROR(BuildPowSameTypeParams(prepare.input_a_shape,
+                                             prepare.input_b_shape,
+                                             prepare.output_shape,
+                                             &params));
+
+  const void* gpu_a = prepare.input_a_ptr;
+  const void* gpu_b = prepare.input_b_ptr;
+  void* temp_a = nullptr;
+  void* temp_b = nullptr;
+
+  auto cleanup = [&]() {
+    if (temp_a) musaFree(temp_a);
+    if (temp_b) musaFree(temp_b);
+  };
+
+  if (IsHostPointer(prepare.input_a_ptr)) {
+    size_t bytes = prepare.input_a_shape.Size() * sizeof(T);
+    MUSA_RETURN_IF_ERROR(musaMalloc(&temp_a, bytes));
+    MUSA_RETURN_IF_ERROR(musaMemcpyAsync(temp_a, prepare.input_a_ptr, bytes,
+                                         musaMemcpyHostToDevice, stream));
+    gpu_a = temp_a;
+  }
+  if (IsHostPointer(prepare.input_b_ptr)) {
+    size_t bytes = prepare.input_b_shape.Size() * sizeof(T);
+    MUSA_RETURN_IF_ERROR(musaMalloc(&temp_b, bytes));
+    MUSA_RETURN_IF_ERROR(musaMemcpyAsync(temp_b, prepare.input_b_ptr, bytes,
+                                         musaMemcpyHostToDevice, stream));
+    gpu_b = temp_b;
+  }
+
+  if constexpr (std::is_same_v<T, MLFloat16>) {
+    LaunchFloorDivSameTypeKernelHalf(stream, gpu_a, gpu_b, prepare.output_ptr, params);
+  } else {
+    LaunchFloorDivSameTypeKernel<T>(stream,
+                                    reinterpret_cast<const T*>(gpu_a),
+                                    reinterpret_cast<const T*>(gpu_b),
+                                    reinterpret_cast<T*>(prepare.output_ptr),
+                                    params);
+  }
+
+  MUSA_RETURN_IF_ERROR(musaGetLastError());
+  if (temp_a || temp_b) {
+    MUSA_RETURN_IF_ERROR(musaStreamSynchronize(stream));
+  }
+  cleanup();
+  return Status::OK();
+}
+
+template <typename T>
+Status LaunchFloorModSameType(const MusaPreparation& prepare,
+                              musaStream_t stream) {
+  PowSameTypeParams params{};
+  ORT_RETURN_IF_ERROR(BuildPowSameTypeParams(prepare.input_a_shape,
+                                             prepare.input_b_shape,
+                                             prepare.output_shape,
+                                             &params));
+
+  const void* gpu_a = prepare.input_a_ptr;
+  const void* gpu_b = prepare.input_b_ptr;
+  void* temp_a = nullptr;
+  void* temp_b = nullptr;
+
+  auto cleanup = [&]() {
+    if (temp_a) musaFree(temp_a);
+    if (temp_b) musaFree(temp_b);
+  };
+
+  if (IsHostPointer(prepare.input_a_ptr)) {
+    size_t bytes = prepare.input_a_shape.Size() * sizeof(T);
+    MUSA_RETURN_IF_ERROR(musaMalloc(&temp_a, bytes));
+    MUSA_RETURN_IF_ERROR(musaMemcpyAsync(temp_a, prepare.input_a_ptr, bytes,
+                                         musaMemcpyHostToDevice, stream));
+    gpu_a = temp_a;
+  }
+  if (IsHostPointer(prepare.input_b_ptr)) {
+    size_t bytes = prepare.input_b_shape.Size() * sizeof(T);
+    MUSA_RETURN_IF_ERROR(musaMalloc(&temp_b, bytes));
+    MUSA_RETURN_IF_ERROR(musaMemcpyAsync(temp_b, prepare.input_b_ptr, bytes,
+                                         musaMemcpyHostToDevice, stream));
+    gpu_b = temp_b;
+  }
+
+  if constexpr (std::is_same_v<T, MLFloat16>) {
+    LaunchFloorModSameTypeKernelHalf(stream, gpu_a, gpu_b, prepare.output_ptr, params);
+  } else {
+    LaunchFloorModSameTypeKernel<T>(stream,
+                                    reinterpret_cast<const T*>(gpu_a),
+                                    reinterpret_cast<const T*>(gpu_b),
+                                    reinterpret_cast<T*>(prepare.output_ptr),
+                                    params);
+  }
+
+  MUSA_RETURN_IF_ERROR(musaGetLastError());
   if (temp_a || temp_b) {
     MUSA_RETURN_IF_ERROR(musaStreamSynchronize(stream));
   }
@@ -358,11 +608,19 @@ static ::musa::dnn::Binary::Mode GetBinaryMode(const std::string &op_name) {
     return ::musa::dnn::Binary::Mode::MUL;
   } else if (op_name == "Div") {
     return ::musa::dnn::Binary::Mode::DIV;
+  } else if (op_name == "DivNoNan") {
+    return ::musa::dnn::Binary::Mode::DIVNONAN;
+  } else if (op_name == "SquaredDifference") {
+    return ::musa::dnn::Binary::Mode::SQUARED_DIFF;
+  } else if (op_name == "FloorDiv") {
+    return ::musa::dnn::Binary::Mode::DIV;
+  } else if (op_name == "FloorMod") {
+    return ::musa::dnn::Binary::Mode::SUB;
   } else if (op_name == "Pow") {
     return ::musa::dnn::Binary::Mode::POW;
-  } else if (op_name == "Min") {
+  } else if (op_name == "Min" || op_name == "Minimum") {
     return ::musa::dnn::Binary::Mode::MIN;
-  } else if (op_name == "Max") {
+  } else if (op_name == "Max" || op_name == "Maximum") {
     return ::musa::dnn::Binary::Mode::MAX;
   } else if (op_name == "PRelu") {
     return ::musa::dnn::Binary::Mode::PRELU;
@@ -379,7 +637,10 @@ Status SimpleMusaBinaryOp(const MusaPreparation &prepare, size_t size,
                           const std::string &op_name) {
   // Support Add, Sub, Mul, Div, Pow, Min, Max, PRelu operations
   if (op_name != "Add" && op_name != "Sub" && op_name != "Mul" && op_name != "Div" &&
-      op_name != "Pow" && op_name != "Min" && op_name != "Max" && op_name != "PRelu") {
+      op_name != "DivNoNan" && op_name != "SquaredDifference" &&
+      op_name != "FloorDiv" && op_name != "FloorMod" &&
+      op_name != "Pow" && op_name != "Min" && op_name != "Max" &&
+      op_name != "Minimum" && op_name != "Maximum" && op_name != "PRelu") {
     return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT,
                            "Unsupported operation: " + op_name);
   }
@@ -407,6 +668,18 @@ Status SimpleMusaBinaryOp(const MusaPreparation &prepare, size_t size,
 
   if (op_name == "Pow") {
     return LaunchPowSameType<T>(prepare, stream);
+  }
+  if (op_name == "DivNoNan") {
+    return LaunchDivNoNanSameType<T>(prepare, stream);
+  }
+  if (op_name == "SquaredDifference") {
+    return LaunchSquaredDifferenceSameType<T>(prepare, stream);
+  }
+  if (op_name == "FloorDiv") {
+    return LaunchFloorDivSameType<T>(prepare, stream);
+  }
+  if (op_name == "FloorMod") {
+    return LaunchFloorModSameType<T>(prepare, stream);
   }
 
   // Use mudnn Binary class for device computation with broadcasting support
@@ -444,6 +717,85 @@ Status SimpleMusaBinaryOp(const MusaPreparation &prepare, size_t size,
   }
 
   return Status::OK();
+}
+
+template <typename T>
+Status BiasAdd<T>::ComputeInternal(OpKernelContext* ctx) const {
+  const Tensor* value = ctx->Input<Tensor>(0);
+  const Tensor* bias = ctx->Input<Tensor>(1);
+  ORT_RETURN_IF_NOT(value != nullptr && bias != nullptr, "BiasAdd inputs must not be null");
+
+  int64_t channel_dim = 0;
+  ORT_RETURN_IF_ERROR(GetBiasAddChannelDim(value->Shape(), bias->Shape(), data_format_, channel_dim));
+
+  Tensor* output = ctx->Output(0, value->Shape());
+  ORT_RETURN_IF_NOT(output != nullptr, "BiasAdd failed to allocate output tensor");
+
+  const int64_t output_size = value->Shape().Size();
+  if (output_size == 0) {
+    return Status::OK();
+  }
+
+  const auto* ep = static_cast<const MusaExecutionProvider*>(Info().GetExecutionProvider());
+  MusaPreparation prepare(ep);
+  prepare.input_a_ptr = value->DataRaw();
+  prepare.input_b_ptr = bias->DataRaw();
+  prepare.output_ptr = output->MutableDataRaw();
+  prepare.output_size = output_size;
+  prepare.input_a_shape = value->Shape();
+  prepare.input_b_shape = bias->Shape();
+  prepare.output_shape = value->Shape();
+
+  ORT_RETURN_IF_NOT(prepare.input_a_ptr != nullptr && prepare.input_b_ptr != nullptr &&
+                        prepare.output_ptr != nullptr,
+                    "BiasAdd tensor data pointers must not be null for non-empty tensors");
+
+  const auto musa_type = GetMusaDataType<T>();
+  ORT_TRY {
+    if (prepare.handle) {
+      auto* stream = Stream(ctx);
+      if (stream) {
+        auto status = prepare.handle->SetStream(stream);
+        if (status != ::musa::dnn::Status::SUCCESS) {
+          return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                                 "Failed to set MUSA stream, status: ",
+                                 static_cast<int>(status));
+        }
+      }
+    }
+
+    prepare.inputTensors.resize(2);
+    prepare.outputTensors.resize(1);
+    ORT_RETURN_IF_ERROR(SetupMusaTensor(prepare.inputTensors[0], value, musa_type, &prepare));
+    ORT_RETURN_IF_ERROR(SetupMusaTensor(prepare.inputTensors[1], bias, musa_type, &prepare));
+    ORT_RETURN_IF_ERROR(SetupMusaTensor(prepare.outputTensors[0], output, musa_type, &prepare));
+
+    const int64_t rank = static_cast<int64_t>(value->Shape().NumDimensions());
+    const int64_t tensor_rank = std::max<int64_t>(rank, 1);
+    std::vector<int64_t> bias_dims(static_cast<size_t>(tensor_rank), 1);
+    std::vector<int64_t> bias_strides(static_cast<size_t>(tensor_rank), 0);
+    bias_dims[static_cast<size_t>(channel_dim)] = bias->Shape()[0];
+    bias_strides[static_cast<size_t>(channel_dim)] = 1;
+
+    auto status = prepare.inputTensors[1].SetFormat(GetMusaFormatForRank(static_cast<size_t>(tensor_rank)));
+    if (status != ::musa::dnn::Status::SUCCESS) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "Failed to set MUSA BiasAdd bias tensor format, status: ",
+                             static_cast<int>(status));
+    }
+    status = prepare.inputTensors[1].SetNdInfo(static_cast<int>(tensor_rank),
+                                               bias_dims.data(), bias_strides.data());
+    if (status != ::musa::dnn::Status::SUCCESS) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "Failed to set MUSA BiasAdd bias tensor shape info, status: ",
+                             static_cast<int>(status));
+    }
+  }
+  ORT_CATCH(const std::exception& e) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, e.what());
+  }
+
+  return SimpleMusaBinaryOp<T>(prepare, prepare.output_size, Stream(ctx), "Add");
 }
 
 template <typename T>
@@ -584,6 +936,13 @@ Status DispatchOnFirstArg(OpKernelContext* ctx,
 #define REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL(x, ver, T)                      \
   REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL_IN_DOMAIN(x, kOnnxDomain, ver, T)
 
+#define REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(OpName, KernelClass, ver, T) \
+  ONNX_OPERATOR_TYPED_KERNEL_EX(                                                   \
+      OpName, kOnnxDomain, ver, T, kMusaExecutionProvider,                         \
+      (*KernelDefBuilder::Create())                                                \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>()),                  \
+      KernelClass<T>);
+
 // Macro for registering versioned typed kernel
 #define REGISTER_MUSA_ELEMENTWISE_VERSIONED_TYPED_KERNEL_IN_DOMAIN(x, domain, startver, endver, T) \
   ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_EX(                                     \
@@ -622,9 +981,27 @@ Status DispatchOnFirstArg(OpKernelContext* ctx,
 REGISTER_MUSA_ELEMENTWISE_VERSIONED_ILHFD(Add, 7, 13)
 REGISTER_MUSA_ELEMENTWISE_ILHFD(Add, 14)
 
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(AddV2, Add, 1, int32_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(AddV2, Add, 1, int64_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(AddV2, Add, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(AddV2, Add, 1, float)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(BiasAdd, BiasAdd, 1, int32_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(BiasAdd, BiasAdd, 1, int64_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(BiasAdd, BiasAdd, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(BiasAdd, BiasAdd, 1, float)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(BiasAddV1, BiasAdd, 1, int32_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(BiasAddV1, BiasAdd, 1, int64_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(BiasAddV1, BiasAdd, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(BiasAddV1, BiasAdd, 1, float)
+
 // Register Sub operations
 REGISTER_MUSA_ELEMENTWISE_VERSIONED_ILHFD(Sub, 7, 13)
 REGISTER_MUSA_ELEMENTWISE_ILHFD(Sub, 14)
+
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(SubV2, Sub, 1, int32_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(SubV2, Sub, 1, int64_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(SubV2, Sub, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(SubV2, Sub, 1, float)
 
 // Register Mul operations
 REGISTER_MUSA_ELEMENTWISE_VERSIONED_ILHFD(Mul, 7, 13)
@@ -653,6 +1030,41 @@ REGISTER_MUSA_ELEMENTWISE_TYPED_KERNEL_IN_DOMAIN(Mul, kMSInternalNHWCDomain, 14,
 // Register Div operations
 REGISTER_MUSA_ELEMENTWISE_VERSIONED_ILHFD(Div, 7, 13)
 REGISTER_MUSA_ELEMENTWISE_ILHFD(Div, 14)
+
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(RealDiv, Div, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(RealDiv, Div, 1, float)
+
+// Register TensorFlow compatibility binary math operations
+REGISTER_MUSA_ELEMENTWISE_TYPED(DivNoNan, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_TYPED(DivNoNan, 1, float)
+REGISTER_MUSA_ELEMENTWISE_TYPED(DivNoNan, 1, double)
+
+REGISTER_MUSA_ELEMENTWISE_TYPED(SquaredDifference, 1, int32_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED(SquaredDifference, 1, int64_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED(SquaredDifference, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_TYPED(SquaredDifference, 1, float)
+REGISTER_MUSA_ELEMENTWISE_TYPED(SquaredDifference, 1, double)
+
+REGISTER_MUSA_ELEMENTWISE_TYPED(FloorDiv, 1, int32_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED(FloorDiv, 1, int64_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED(FloorDiv, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_TYPED(FloorDiv, 1, float)
+REGISTER_MUSA_ELEMENTWISE_TYPED(FloorDiv, 1, double)
+
+REGISTER_MUSA_ELEMENTWISE_TYPED(FloorMod, 1, int32_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED(FloorMod, 1, int64_t)
+REGISTER_MUSA_ELEMENTWISE_TYPED(FloorMod, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_TYPED(FloorMod, 1, float)
+REGISTER_MUSA_ELEMENTWISE_TYPED(FloorMod, 1, double)
+
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(Maximum, Max, 1, int32_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(Maximum, Max, 1, int64_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(Maximum, Max, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(Maximum, Max, 1, float)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(Minimum, Min, 1, int32_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(Minimum, Min, 1, int64_t)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(Minimum, Min, 1, MLFloat16)
+REGISTER_MUSA_ELEMENTWISE_ALIAS_TYPED_KERNEL(Minimum, Min, 1, float)
 
 // Register Pow operations (version 7 to 11 are versioned with same type constraint, 12+ support multi-type)
 // Note: We only need one ComputeInternal per type, so use versioned registration for kernels only

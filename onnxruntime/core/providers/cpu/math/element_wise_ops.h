@@ -10,6 +10,8 @@
 #include "core/util/math_cpuonly.h"
 #include "core/providers/cpu/element_wise_ranged_transform.h"
 
+#include <string>
+
 namespace onnxruntime {
 namespace functors {
 // TODO: fix the warnings
@@ -201,6 +203,52 @@ struct Exp final : public ElementWiseRangedTransform<T> {
     ym = xm.exp();
   }
 };
+
+template <typename T>
+struct Square final : public ElementWiseRangedTransform<T> {
+  Status Init(const onnxruntime::NodeAttributes) {
+    return Status::OK();
+  }
+
+  ElementWiseRangedTransform<T>* Copy() const {
+    using T1 = typename std::remove_pointer<decltype(this)>::type;
+    using T2 = typename std::remove_const<T1>::type;
+    return new T2(*this);
+  }
+
+  float Cost() const final { return 1.0f; }
+
+  void operator()(std::ptrdiff_t first, std::ptrdiff_t last) const {
+    ptrdiff_t len = last - first;
+    T* output_ptr = this->output + first;
+    ConstEigenVectorArrayMap<T> xm(this->input + first, len);
+    EigenVectorArrayMap<T> ym(output_ptr, len);
+    ym = xm * xm;
+  }
+};
+
+template <typename T>
+struct Rsqrt final : public ElementWiseRangedTransform<T> {
+  Status Init(const onnxruntime::NodeAttributes) {
+    return Status::OK();
+  }
+
+  ElementWiseRangedTransform<T>* Copy() const {
+    using T1 = typename std::remove_pointer<decltype(this)>::type;
+    using T2 = typename std::remove_const<T1>::type;
+    return new T2(*this);
+  }
+
+  float Cost() const final { return 3.0f; }
+
+  void operator()(std::ptrdiff_t first, std::ptrdiff_t last) const {
+    ptrdiff_t len = last - first;
+    T* output_ptr = this->output + first;
+    ConstEigenVectorArrayMap<T> xm(this->input + first, len);
+    EigenVectorArrayMap<T> ym(output_ptr, len);
+    ym = xm.sqrt().inverse();
+  }
+};
 }  // namespace functors
 
 DEFINE_ELE_KERNEL(Log)
@@ -211,6 +259,8 @@ DEFINE_ELE_KERNEL(Ceil)
 DEFINE_ELE_KERNEL(Reciprocal)
 DEFINE_ELE_KERNEL(Sqrt)
 DEFINE_ELE_KERNEL(Exp)
+DEFINE_ELE_KERNEL(Square)
+DEFINE_ELE_KERNEL(Rsqrt)
 
 template <typename T>
 class Add final : public OpKernel {
@@ -219,6 +269,24 @@ class Add final : public OpKernel {
   }
 
   Status Compute(OpKernelContext* context) const override;
+};
+
+template <typename T>
+class BiasAdd final : public OpKernel {
+ public:
+  BiasAdd(const OpKernelInfo& info) : OpKernel(info) {
+    std::string data_format;
+    if (info.GetAttr<std::string>("data_format", &data_format).IsOK()) {
+      data_format_ = data_format;
+    }
+    ORT_ENFORCE(data_format_ == "NHWC" || data_format_ == "NCHW",
+                "BiasAdd only supports NHWC and NCHW data_format, got ", data_format_);
+  }
+
+  Status Compute(OpKernelContext* context) const override;
+
+ private:
+  std::string data_format_{"NHWC"};
 };
 
 template <typename T>
@@ -262,6 +330,75 @@ class Div final : public OpKernel {
 
  private:
   bool divisor_is_validated_constant_{false};
+};
+
+template <typename T>
+class DivNoNan final : public OpKernel {
+ public:
+  DivNoNan(const OpKernelInfo& info) : OpKernel(info) {
+  }
+
+  Status Compute(OpKernelContext* context) const override;
+};
+
+template <typename T>
+class SquaredDifference final : public OpKernel {
+ public:
+  SquaredDifference(const OpKernelInfo& info) : OpKernel(info) {
+  }
+
+  Status Compute(OpKernelContext* context) const override;
+};
+
+template <typename T>
+class FloorDiv final : public OpKernel {
+ public:
+  FloorDiv(const OpKernelInfo& info) : OpKernel(info) {
+  }
+
+  Status Compute(OpKernelContext* context) const override;
+};
+
+template <typename T>
+class FloorMod final : public OpKernel {
+ public:
+  FloorMod(const OpKernelInfo& info) : OpKernel(info) {
+  }
+
+  Status Compute(OpKernelContext* context) const override;
+};
+
+class Maximum final : public OpKernel {
+ public:
+  Maximum(const OpKernelInfo& info) : OpKernel(info) {
+  }
+
+  Status Compute(OpKernelContext* context) const override;
+
+ private:
+  template <typename T>
+  struct ComputeImpl;
+};
+
+class Minimum final : public OpKernel {
+ public:
+  Minimum(const OpKernelInfo& info) : OpKernel(info) {
+  }
+
+  Status Compute(OpKernelContext* context) const override;
+
+ private:
+  template <typename T>
+  struct ComputeImpl;
+};
+
+template <typename T>
+class ZerosLike final : public OpKernel {
+ public:
+  ZerosLike(const OpKernelInfo& info) : OpKernel(info) {
+  }
+
+  Status Compute(OpKernelContext* context) const override;
 };
 
 class Pow final : public OpKernel {

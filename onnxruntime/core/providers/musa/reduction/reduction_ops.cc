@@ -1021,6 +1021,105 @@ Status RunReduceMeanTyped<MLFloat16>(const ReduceKernel<true>* reduce_kernel,
                         mean_float_tensor);
 }
 
+
+template <typename T>
+Status RunReduceMaxHostFallback(const ReduceKernel<true>* reduce_kernel,
+                                const MusaKernel* kernel,
+                                OpKernelContext* ctx,
+                                const Tensor* X,
+                                Tensor* Y,
+                                const TensorShapeVector& axes) {
+  const int64_t input_size = X->Shape().Size();
+  const int64_t output_size = Y->Shape().Size();
+  if (input_size == 0 || output_size == 0) {
+    return Status::OK();
+  }
+
+  auto stream = kernel->Stream(ctx);
+  std::vector<T> host_input(static_cast<size_t>(input_size));
+  std::vector<T> host_output(static_cast<size_t>(output_size));
+  std::vector<uint8_t> initialized(static_cast<size_t>(output_size), 0);
+
+  musaError_t copy_in = musaMemcpyAsync(host_input.data(), X->DataRaw(),
+                                        host_input.size() * sizeof(T),
+                                        musaMemcpyDeviceToHost, stream);
+  if (copy_in != musaSuccess) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                           "ReduceMax host fallback input copy failed, status: ",
+                           static_cast<int>(copy_in));
+  }
+  musaError_t sync_in = musaStreamSynchronize(stream);
+  if (sync_in != musaSuccess) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                           "ReduceMax host fallback input sync failed, status: ",
+                           static_cast<int>(sync_in));
+  }
+
+  const auto& input_shape = X->Shape();
+  const auto& output_shape = Y->Shape();
+  const size_t rank = input_shape.NumDimensions();
+
+  std::vector<uint8_t> reduced_axes(rank, 0);
+  for (int64_t axis : axes) {
+    reduced_axes[static_cast<size_t>(axis)] = 1;
+  }
+
+  std::vector<int64_t> input_strides(rank, 1);
+  int64_t input_stride = 1;
+  for (int64_t dim = static_cast<int64_t>(rank) - 1; dim >= 0; --dim) {
+    input_strides[static_cast<size_t>(dim)] = input_stride;
+    input_stride *= input_shape[static_cast<size_t>(dim)];
+  }
+
+  std::vector<int64_t> output_strides(output_shape.NumDimensions(), 1);
+  int64_t output_stride = 1;
+  for (int64_t dim = static_cast<int64_t>(output_shape.NumDimensions()) - 1; dim >= 0; --dim) {
+    output_strides[static_cast<size_t>(dim)] = output_stride;
+    output_stride *= output_shape[static_cast<size_t>(dim)];
+  }
+
+  for (int64_t linear = 0; linear < input_size; ++linear) {
+    int64_t output_offset = 0;
+    size_t output_dim = 0;
+
+    for (size_t dim = 0; dim < rank; ++dim) {
+      const int64_t index = (linear / input_strides[dim]) % input_shape[dim];
+      if (reduced_axes[dim]) {
+        if (reduce_kernel->GetKeepDims()) {
+          ++output_dim;
+        }
+        continue;
+      }
+
+      output_offset += index * output_strides[output_dim++];
+    }
+
+    auto out_index = static_cast<size_t>(output_offset);
+    const T value = host_input[static_cast<size_t>(linear)];
+    if (!initialized[out_index] || static_cast<float>(value) > static_cast<float>(host_output[out_index])) {
+      host_output[out_index] = value;
+      initialized[out_index] = 1;
+    }
+  }
+
+  musaError_t copy_out = musaMemcpyAsync(Y->MutableDataRaw(), host_output.data(),
+                                         host_output.size() * sizeof(T),
+                                         musaMemcpyHostToDevice, stream);
+  if (copy_out != musaSuccess) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                           "ReduceMax host fallback output copy failed, status: ",
+                           static_cast<int>(copy_out));
+  }
+  musaError_t sync_out = musaStreamSynchronize(stream);
+  if (sync_out != musaSuccess) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                           "ReduceMax host fallback output sync failed, status: ",
+                           static_cast<int>(sync_out));
+  }
+
+  return Status::OK();
+}
+
 template <typename T>
 Status ReduceMax<T>::ComputeInternal(OpKernelContext* ctx) const {
   // Prepare MUSA operation using generic function
@@ -1049,8 +1148,12 @@ Status ReduceMax<T>::ComputeInternal(OpKernelContext* ctx) const {
     return Status::OK();
   }
 
-  // Call MUSA device ReduceMax operation using prepared data
-  ORT_RETURN_IF_ERROR(SimpleMusaReduceOp<T>(prepare, this, ctx, processed_axes, ::musa::dnn::Reduce::Mode::MAX));
+  Tensor* Y = ctx->Output(0, prepare.output_shape);
+  ORT_RETURN_IF_NOT(Y != nullptr, "ReduceMax output tensor is null");
+
+  // Correctness-first path: current muDNN ReduceMax returns wrong values for model3-style
+  // rank4 axis reductions, so compute on host and copy the result back to MUSA memory.
+  ORT_RETURN_IF_ERROR(RunReduceMaxHostFallback<T>(this, this, ctx, X, Y, processed_axes));
 
   return Status::OK();
 }

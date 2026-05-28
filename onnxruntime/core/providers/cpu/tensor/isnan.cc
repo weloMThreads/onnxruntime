@@ -52,6 +52,22 @@ ADD_TYPED_ISNAN_OP(double);
 ADD_TYPED_ISNAN_OP(MLFloat16);
 ADD_TYPED_ISNAN_OP(BFloat16);
 
+#define ADD_TYPED_ISNAN_COMPAT_OP(data_type)                              \
+  ONNX_CPU_OPERATOR_TYPED_KERNEL(                                         \
+      IsNan,                                                              \
+      1,                                                                  \
+      data_type,                                                          \
+      KernelDefBuilder()                                                  \
+          .TypeConstraint("T1", DataTypeImpl::GetTensorType<data_type>()) \
+          .TypeConstraint("T2", DataTypeImpl::GetTensorType<bool>()),     \
+      IsNaN<data_type>);
+
+ADD_TYPED_ISNAN_COMPAT_OP(float);
+ADD_TYPED_ISNAN_COMPAT_OP(double);
+ADD_TYPED_ISNAN_COMPAT_OP(MLFloat16);
+
+#undef ADD_TYPED_ISNAN_COMPAT_OP
+
 #if !defined(DISABLE_FLOAT8_TYPES)
 ADD_TYPED_ISNAN_OP(Float8E4M3FN);
 ADD_TYPED_ISNAN_OP(Float8E4M3FNUZ);

@@ -11,7 +11,10 @@
 #include "core/util/math.h"
 #include "core/mlas/inc/mlas.h"
 
+#include <algorithm>
 #include <cmath>
+#include <type_traits>
+#include <vector>
 
 namespace onnxruntime {
 // Supported types for operators that have type reduction enabled
@@ -154,6 +157,34 @@ void Exp<float>::operator()(std::ptrdiff_t first, std::ptrdiff_t last) const {
           .TypeConstraint("T1", T2_CONSTRAINTS),                                                 \
       KERNEL_CLASS);
 
+REG_ELEMENTWISE_TYPED_KERNEL(AddV2, 1, float, Add);
+REG_ELEMENTWISE_TYPED_KERNEL(AddV2, 1, double, Add);
+REG_ELEMENTWISE_TYPED_KERNEL(AddV2, 1, int32_t, Add);
+REG_ELEMENTWISE_TYPED_KERNEL(AddV2, 1, int64_t, Add);
+REG_ELEMENTWISE_TYPED_KERNEL(AddV2, 1, MLFloat16, Add);
+REG_ELEMENTWISE_TYPED_KERNEL(BiasAdd, 1, float, BiasAdd);
+REG_ELEMENTWISE_TYPED_KERNEL(BiasAdd, 1, double, BiasAdd);
+REG_ELEMENTWISE_TYPED_KERNEL(BiasAdd, 1, int32_t, BiasAdd);
+REG_ELEMENTWISE_TYPED_KERNEL(BiasAdd, 1, int64_t, BiasAdd);
+REG_ELEMENTWISE_TYPED_KERNEL(BiasAdd, 1, MLFloat16, BiasAdd);
+REG_ELEMENTWISE_TYPED_KERNEL(BiasAddV1, 1, float, BiasAdd);
+REG_ELEMENTWISE_TYPED_KERNEL(BiasAddV1, 1, double, BiasAdd);
+REG_ELEMENTWISE_TYPED_KERNEL(BiasAddV1, 1, int32_t, BiasAdd);
+REG_ELEMENTWISE_TYPED_KERNEL(BiasAddV1, 1, int64_t, BiasAdd);
+REG_ELEMENTWISE_TYPED_KERNEL(BiasAddV1, 1, MLFloat16, BiasAdd);
+REG_ELEMENTWISE_TYPED_KERNEL(SubV2, 1, float, Sub);
+REG_ELEMENTWISE_TYPED_KERNEL(SubV2, 1, double, Sub);
+REG_ELEMENTWISE_TYPED_KERNEL(SubV2, 1, int32_t, Sub);
+REG_ELEMENTWISE_TYPED_KERNEL(SubV2, 1, int64_t, Sub);
+REG_ELEMENTWISE_TYPED_KERNEL(SubV2, 1, MLFloat16, Sub);
+REG_ELEMENTWISE_TYPED_KERNEL(RealDiv, 1, float, Div);
+REG_ELEMENTWISE_TYPED_KERNEL(RealDiv, 1, double, Div);
+REG_ELEMENTWISE_TYPED_KERNEL(RealDiv, 1, MLFloat16, Div);
+REG_ELEMENTWISE_TYPED_KERNEL(AddN, 1, float, Sum_8);
+REG_ELEMENTWISE_TYPED_KERNEL(AddN, 1, double, Sum_8);
+REG_ELEMENTWISE_TYPED_KERNEL(AddN, 1, int32_t, Sum_8);
+REG_ELEMENTWISE_TYPED_KERNEL(AddN, 1, int64_t, Sum_8);
+
 REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(Add, 7, 12, float, Add);
 REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(Add, 7, 12, double, Add);
 REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(Add, 7, 12, int32_t, Add);
@@ -250,6 +281,35 @@ REG_ELEMENTWISE_TYPED_KERNEL(Div, 14, uint32_t, Div);
 REG_ELEMENTWISE_TYPED_KERNEL(Div, 14, uint64_t, Div);
 REG_ELEMENTWISE_TYPED_KERNEL(Div, 14, MLFloat16, Div);
 
+REG_ELEMENTWISE_TYPED_KERNEL(DivNoNan, 1, float, DivNoNan);
+REG_ELEMENTWISE_TYPED_KERNEL(DivNoNan, 1, double, DivNoNan);
+REG_ELEMENTWISE_TYPED_KERNEL(DivNoNan, 1, MLFloat16, DivNoNan);
+
+REG_ELEMENTWISE_TYPED_KERNEL(SquaredDifference, 1, float, SquaredDifference);
+REG_ELEMENTWISE_TYPED_KERNEL(SquaredDifference, 1, double, SquaredDifference);
+REG_ELEMENTWISE_TYPED_KERNEL(SquaredDifference, 1, int32_t, SquaredDifference);
+REG_ELEMENTWISE_TYPED_KERNEL(SquaredDifference, 1, int64_t, SquaredDifference);
+REG_ELEMENTWISE_TYPED_KERNEL(SquaredDifference, 1, MLFloat16, SquaredDifference);
+
+REG_ELEMENTWISE_TYPED_KERNEL(FloorDiv, 1, float, FloorDiv);
+REG_ELEMENTWISE_TYPED_KERNEL(FloorDiv, 1, double, FloorDiv);
+REG_ELEMENTWISE_TYPED_KERNEL(FloorDiv, 1, int32_t, FloorDiv);
+REG_ELEMENTWISE_TYPED_KERNEL(FloorDiv, 1, int64_t, FloorDiv);
+REG_ELEMENTWISE_TYPED_KERNEL(FloorDiv, 1, MLFloat16, FloorDiv);
+
+REG_ELEMENTWISE_TYPED_KERNEL(FloorMod, 1, float, FloorMod);
+REG_ELEMENTWISE_TYPED_KERNEL(FloorMod, 1, double, FloorMod);
+REG_ELEMENTWISE_TYPED_KERNEL(FloorMod, 1, int32_t, FloorMod);
+REG_ELEMENTWISE_TYPED_KERNEL(FloorMod, 1, int64_t, FloorMod);
+REG_ELEMENTWISE_TYPED_KERNEL(FloorMod, 1, MLFloat16, FloorMod);
+
+REG_ELEMENTWISE_TYPED_KERNEL(ZerosLike, 1, bool, ZerosLike);
+REG_ELEMENTWISE_TYPED_KERNEL(ZerosLike, 1, float, ZerosLike);
+REG_ELEMENTWISE_TYPED_KERNEL(ZerosLike, 1, double, ZerosLike);
+REG_ELEMENTWISE_TYPED_KERNEL(ZerosLike, 1, int32_t, ZerosLike);
+REG_ELEMENTWISE_TYPED_KERNEL(ZerosLike, 1, int64_t, ZerosLike);
+REG_ELEMENTWISE_TYPED_KERNEL(ZerosLike, 1, MLFloat16, ZerosLike);
+
 REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(Abs, 6, 12, float, Abs);
 REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(Abs, 6, 12, double, Abs);
 REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(Abs, 6, 12, int8_t, Abs);
@@ -305,6 +365,13 @@ REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(Sqrt, 6, 12, double, Sqrt);
 REG_ELEMENTWISE_TYPED_KERNEL(Sqrt, 13, float, Sqrt);
 REG_ELEMENTWISE_TYPED_KERNEL(Sqrt, 13, double, Sqrt);
 
+REG_ELEMENTWISE_TYPED_KERNEL(Square, 1, float, Square);
+REG_ELEMENTWISE_TYPED_KERNEL(Square, 1, double, Square);
+REG_ELEMENTWISE_TYPED_KERNEL(Square, 1, int32_t, Square);
+REG_ELEMENTWISE_TYPED_KERNEL(Square, 1, int64_t, Square);
+REG_ELEMENTWISE_TYPED_KERNEL(Rsqrt, 1, float, Rsqrt);
+REG_ELEMENTWISE_TYPED_KERNEL(Rsqrt, 1, double, Rsqrt);
+
 REG_ELEMENTWISE_VERSIONED_KERNEL_NONT(Pow, 7, 11, Pow,
                                       BuildKernelDefConstraintsFromTypeList<EnabledPow7Types>());
 
@@ -350,6 +417,10 @@ REG_ELEMENTWISE_VERSIONED_KERNEL_NONT(Min, 8, 11, Min_8, BuildKernelDefConstrain
 REG_ELEMENTWISE_VERSIONED_KERNEL_NONT(Min, 12, 12, Min_8, BuildKernelDefConstraintsFromTypeList<EnabledMin12Types>());
 // Supposed to add BFloat16 but we are not supporting now, however, separate registration
 REG_ELEMENTWISE_KERNEL_NONT(Min, 13, Min_8, BuildKernelDefConstraintsFromTypeList<EnabledMin12Types>());
+
+// TensorFlow-converted binary min/max compatibility ops in the ONNX domain.
+REG_ELEMENTWISE_KERNEL_NONT(Maximum, 1, Maximum, BuildKernelDefConstraintsFromTypeList<EnabledMax12Types>());
+REG_ELEMENTWISE_KERNEL_NONT(Minimum, 1, Minimum, BuildKernelDefConstraintsFromTypeList<EnabledMin12Types>());
 
 REG_ELEMENTWISE_LOGICALOP_VERSIONED_TYPED_KERNEL(Less, 7, 8, float, Less);
 REG_ELEMENTWISE_LOGICALOP_VERSIONED_TYPED_KERNEL(Less, 7, 8, double, Less);
@@ -438,6 +509,24 @@ REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(Equal, 19, double, Equal);
 using string = std::string;
 REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(Equal, 19, string, Equal);
 
+// TensorFlow-converted comparison compatibility ops in the ONNX domain.
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(NotEqual, 1, bool, Equal);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(NotEqual, 1, int32_t, Equal);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(NotEqual, 1, int64_t, Equal);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(NotEqual, 1, MLFloat16, Equal);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(NotEqual, 1, float, Equal);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(NotEqual, 1, double, Equal);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(GreaterEqual, 1, int32_t, GreaterOrEqual);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(GreaterEqual, 1, int64_t, GreaterOrEqual);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(GreaterEqual, 1, MLFloat16, GreaterOrEqual);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(GreaterEqual, 1, float, GreaterOrEqual);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(GreaterEqual, 1, double, GreaterOrEqual);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(LessEqual, 1, int32_t, LessOrEqual);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(LessEqual, 1, int64_t, LessOrEqual);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(LessEqual, 1, MLFloat16, LessOrEqual);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(LessEqual, 1, float, LessOrEqual);
+REG_ELEMENTWISE_LOGICALOP_TYPED_KERNEL(LessEqual, 1, double, LessOrEqual);
+
 REG_ELEMENTWISE_LOGICALOP_VERSIONED_TYPED_KERNEL(LessOrEqual, 12, 15, float, LessOrEqual);
 REG_ELEMENTWISE_LOGICALOP_VERSIONED_TYPED_KERNEL(LessOrEqual, 12, 15, double, LessOrEqual);
 REG_ELEMENTWISE_LOGICALOP_VERSIONED_TYPED_KERNEL(LessOrEqual, 12, 15, int8_t, LessOrEqual);
@@ -494,6 +583,15 @@ REG_ELEMENTWISE_TYPED_KERNEL(BitShift, 11, uint8_t, BitShift);
 REG_ELEMENTWISE_TYPED_KERNEL(BitShift, 11, uint32_t, BitShift);
 REG_ELEMENTWISE_TYPED_KERNEL(BitShift, 11, uint64_t, BitShift);
 
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseAnd, 1, 17, int8_t, BitwiseAnd);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseAnd, 1, 17, int16_t, BitwiseAnd);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseAnd, 1, 17, int32_t, BitwiseAnd);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseAnd, 1, 17, int64_t, BitwiseAnd);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseAnd, 1, 17, uint8_t, BitwiseAnd);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseAnd, 1, 17, uint16_t, BitwiseAnd);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseAnd, 1, 17, uint32_t, BitwiseAnd);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseAnd, 1, 17, uint64_t, BitwiseAnd);
+
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseAnd, 18, int8_t, BitwiseAnd);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseAnd, 18, int16_t, BitwiseAnd);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseAnd, 18, int32_t, BitwiseAnd);
@@ -502,6 +600,15 @@ REG_ELEMENTWISE_TYPED_KERNEL(BitwiseAnd, 18, uint8_t, BitwiseAnd);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseAnd, 18, uint16_t, BitwiseAnd);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseAnd, 18, uint32_t, BitwiseAnd);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseAnd, 18, uint64_t, BitwiseAnd);
+
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseNot, 1, 17, int8_t, BitwiseNot);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseNot, 1, 17, int16_t, BitwiseNot);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseNot, 1, 17, int32_t, BitwiseNot);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseNot, 1, 17, int64_t, BitwiseNot);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseNot, 1, 17, uint8_t, BitwiseNot);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseNot, 1, 17, uint16_t, BitwiseNot);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseNot, 1, 17, uint32_t, BitwiseNot);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseNot, 1, 17, uint64_t, BitwiseNot);
 
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseNot, 18, int8_t, BitwiseNot);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseNot, 18, int16_t, BitwiseNot);
@@ -512,6 +619,15 @@ REG_ELEMENTWISE_TYPED_KERNEL(BitwiseNot, 18, uint16_t, BitwiseNot);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseNot, 18, uint32_t, BitwiseNot);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseNot, 18, uint64_t, BitwiseNot);
 
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseOr, 1, 17, int8_t, BitwiseOr);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseOr, 1, 17, int16_t, BitwiseOr);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseOr, 1, 17, int32_t, BitwiseOr);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseOr, 1, 17, int64_t, BitwiseOr);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseOr, 1, 17, uint8_t, BitwiseOr);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseOr, 1, 17, uint16_t, BitwiseOr);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseOr, 1, 17, uint32_t, BitwiseOr);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseOr, 1, 17, uint64_t, BitwiseOr);
+
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseOr, 18, int8_t, BitwiseOr);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseOr, 18, int16_t, BitwiseOr);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseOr, 18, int32_t, BitwiseOr);
@@ -520,6 +636,15 @@ REG_ELEMENTWISE_TYPED_KERNEL(BitwiseOr, 18, uint8_t, BitwiseOr);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseOr, 18, uint16_t, BitwiseOr);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseOr, 18, uint32_t, BitwiseOr);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseOr, 18, uint64_t, BitwiseOr);
+
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseXor, 1, 17, int8_t, BitwiseXor);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseXor, 1, 17, int16_t, BitwiseXor);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseXor, 1, 17, int32_t, BitwiseXor);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseXor, 1, 17, int64_t, BitwiseXor);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseXor, 1, 17, uint8_t, BitwiseXor);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseXor, 1, 17, uint16_t, BitwiseXor);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseXor, 1, 17, uint32_t, BitwiseXor);
+REG_ELEMENTWISE_VERSIONED_TYPED_KERNEL(BitwiseXor, 1, 17, uint64_t, BitwiseXor);
 
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseXor, 18, int8_t, BitwiseXor);
 REG_ELEMENTWISE_TYPED_KERNEL(BitwiseXor, 18, int16_t, BitwiseXor);
@@ -571,12 +696,146 @@ ONNX_CPU_OPERATOR_KERNEL(
         .TypeConstraint("T1", DataTypeImpl::GetTensorType<bool>()),
     Xor);
 
+ONNX_CPU_OPERATOR_KERNEL(
+    LogicalNot,
+    1,
+    KernelDefBuilder()
+        .TypeConstraint("T", DataTypeImpl::GetTensorType<bool>()),
+    Not);
+
+ONNX_CPU_OPERATOR_KERNEL(
+    LogicalAnd,
+    1,
+    KernelDefBuilder()
+        .TypeConstraint("T", DataTypeImpl::GetTensorType<bool>()),
+    And);
+
+ONNX_CPU_OPERATOR_KERNEL(
+    LogicalOr,
+    1,
+    KernelDefBuilder()
+        .TypeConstraint("T", DataTypeImpl::GetTensorType<bool>()),
+    Or);
+
 using AllocateTensorFunc = std::unique_ptr<Tensor> (*)(const TensorAllocator& tensor_allocator,
                                                        const TensorShape& shape);
 
 static void UntypedBroadcastVariadic(int input_count, OpKernelContext& context,
                                      AllocateTensorFunc allocate_tensor,
                                      const ProcessBroadcastSpanFuncs& funcs);
+
+namespace {
+
+template <typename T>
+T FloorDivValue(T lhs, T rhs) {
+  if constexpr (std::is_integral_v<T>) {
+    const T quot = lhs / rhs;
+    const T rem = lhs % rhs;
+    return (rem != T{} && ((rem > T{}) != (rhs > T{}))) ? static_cast<T>(quot - T{1}) : quot;
+  } else {
+    return static_cast<T>(std::floor(lhs / rhs));
+  }
+}
+
+Eigen::half FloorDivValue(Eigen::half lhs, Eigen::half rhs) {
+  return Eigen::half(std::floor(static_cast<float>(lhs) / static_cast<float>(rhs)));
+}
+
+template <typename T>
+T FloorModValue(T lhs, T rhs) {
+  return static_cast<T>(lhs - FloorDivValue(lhs, rhs) * rhs);
+}
+
+template <typename T>
+Status ValidateNoIntegerZeroDivisor(const Tensor& divisor, const char* op_name) {
+  if constexpr (std::is_integral_v<T>) {
+    const T* data = divisor.Data<T>();
+    const int64_t size = divisor.Shape().Size();
+    for (int64_t i = 0; i < size; ++i) {
+      ORT_RETURN_IF(data[i] == T{}, op_name, ": integer division by zero");
+    }
+  }
+  return Status::OK();
+}
+
+template <typename T>
+T BiasAddValue(T value, T bias) {
+  return value + bias;
+}
+
+template <>
+MLFloat16 BiasAddValue<MLFloat16>(MLFloat16 value, MLFloat16 bias) {
+  return MLFloat16(value.ToFloat() + bias.ToFloat());
+}
+
+Status GetBiasAddChannelDim(const TensorShape& value_shape,
+                            const TensorShape& bias_shape,
+                            const std::string& data_format,
+                            int64_t& channel_dim) {
+  ORT_RETURN_IF_NOT(bias_shape.NumDimensions() == 1,
+                    "BiasAdd bias must be 1D, got shape ", bias_shape.ToString());
+
+  const int64_t rank = static_cast<int64_t>(value_shape.NumDimensions());
+  if (rank == 0) {
+    channel_dim = 0;
+    ORT_RETURN_IF_NOT(bias_shape.Size() == 1,
+                      "BiasAdd scalar input requires bias with one element, got shape ",
+                      bias_shape.ToString());
+    return Status::OK();
+  }
+
+  if (data_format == "NCHW" && rank > 1) {
+    channel_dim = 1;
+  } else {
+    channel_dim = rank - 1;
+  }
+
+  ORT_RETURN_IF_NOT(bias_shape[0] == value_shape[channel_dim],
+                    "BiasAdd bias dimension ", bias_shape[0],
+                    " does not match channel dimension ", value_shape[channel_dim],
+                    " for input shape ", value_shape.ToString(),
+                    " and data_format ", data_format);
+  return Status::OK();
+}
+
+}  // namespace
+
+template <typename T>
+Status BiasAdd<T>::Compute(OpKernelContext* context) const {
+  const Tensor* value = context->Input<Tensor>(0);
+  const Tensor* bias = context->Input<Tensor>(1);
+  ORT_RETURN_IF_NOT(value != nullptr && bias != nullptr, "BiasAdd inputs must not be null");
+
+  int64_t channel_dim = 0;
+  ORT_RETURN_IF_ERROR(GetBiasAddChannelDim(value->Shape(), bias->Shape(), data_format_, channel_dim));
+
+  Tensor* output = context->Output(0, value->Shape());
+  ORT_RETURN_IF_NOT(output != nullptr, "BiasAdd failed to allocate output tensor");
+
+  const int64_t output_size = value->Shape().Size();
+  if (output_size == 0) {
+    return Status::OK();
+  }
+
+  const T* value_data = value->Data<T>();
+  const T* bias_data = bias->Data<T>();
+  T* output_data = output->MutableData<T>();
+  ORT_RETURN_IF_NOT(value_data != nullptr && bias_data != nullptr && output_data != nullptr,
+                    "BiasAdd tensor data pointers must not be null for non-empty tensors");
+
+  int64_t channel_stride = 1;
+  for (size_t dim = static_cast<size_t>(channel_dim) + 1; dim < value->Shape().NumDimensions(); ++dim) {
+    channel_stride *= value->Shape()[dim];
+  }
+
+  const int64_t channel_size = value->Shape().NumDimensions() == 0 ? 1 : value->Shape()[channel_dim];
+  for (int64_t i = 0; i < output_size; ++i) {
+    const int64_t channel_index = value->Shape().NumDimensions() == 0 ? 0 : (i / channel_stride) % channel_size;
+    output_data[i] = BiasAddValue<T>(value_data[i], bias_data[channel_index]);
+  }
+
+  return Status::OK();
+}
 
 template <typename T>
 Status Add<T>::Compute(OpKernelContext* context) const {
@@ -721,6 +980,329 @@ Status Div<MLFloat16>::Compute(OpKernelContext* context) const {
         per_iter_bh.OutputEigen<Eigen::half>() = per_iter_bh.EigenInput0<Eigen::half>().cwiseQuotient(per_iter_bh.EigenInput1<Eigen::half>());
       }};
   UntypedBroadcastTwo(*context, funcs, 1.0);
+  return Status::OK();
+}
+
+template <typename T>
+Status DivNoNan<T>::Compute(OpKernelContext* context) const {
+  ProcessBroadcastSpanFuncs funcs{
+      [](BroadcastHelper& per_iter_bh) {
+        auto denom = per_iter_bh.EigenInput1<T>().array();
+        per_iter_bh.OutputEigen<T>() =
+            (denom == static_cast<T>(0)).select(static_cast<T>(0), per_iter_bh.ScalarInput0<T>() / denom);
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        const T denom = per_iter_bh.ScalarInput1<T>();
+        if (denom == static_cast<T>(0)) {
+          per_iter_bh.OutputEigen<T>().setZero();
+        } else {
+          per_iter_bh.OutputEigen<T>() = per_iter_bh.EigenInput0<T>().array() / denom;
+        }
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        auto denom = per_iter_bh.EigenInput1<T>().array();
+        per_iter_bh.OutputEigen<T>() =
+            (denom == static_cast<T>(0)).select(static_cast<T>(0), per_iter_bh.EigenInput0<T>().array() / denom);
+      }};
+
+  UntypedBroadcastTwo(*context, funcs, 1.0);
+  return Status::OK();
+}
+
+template <>
+Status DivNoNan<MLFloat16>::Compute(OpKernelContext* context) const {
+  ProcessBroadcastSpanFuncs funcs{
+      [](BroadcastHelper& per_iter_bh) {
+        auto denom = per_iter_bh.EigenInput1<Eigen::half>().array();
+        per_iter_bh.OutputEigen<Eigen::half>() =
+            (denom == Eigen::half(0.0f)).select(Eigen::half(0.0f), per_iter_bh.ScalarInput0<Eigen::half>() / denom);
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        const Eigen::half denom = per_iter_bh.ScalarInput1<Eigen::half>();
+        if (denom == Eigen::half(0.0f)) {
+          per_iter_bh.OutputEigen<Eigen::half>().setZero();
+        } else {
+          per_iter_bh.OutputEigen<Eigen::half>() = per_iter_bh.EigenInput0<Eigen::half>().array() / denom;
+        }
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        auto denom = per_iter_bh.EigenInput1<Eigen::half>().array();
+        per_iter_bh.OutputEigen<Eigen::half>() =
+            (denom == Eigen::half(0.0f)).select(Eigen::half(0.0f), per_iter_bh.EigenInput0<Eigen::half>().array() / denom);
+      }};
+
+  UntypedBroadcastTwo(*context, funcs, 1.0);
+  return Status::OK();
+}
+
+template <typename T>
+struct Maximum::ComputeImpl {
+  Status operator()(const Maximum&, OpKernelContext* context) const {
+    ProcessBroadcastSpanFuncs funcs{
+        [](BroadcastHelper& per_iter_bh) {
+          per_iter_bh.OutputEigen<T>() =
+              per_iter_bh.EigenInput1<T>().array().template max<Eigen::PropagateNaN>(per_iter_bh.ScalarInput0<T>());
+        },
+        [](BroadcastHelper& per_iter_bh) {
+          per_iter_bh.OutputEigen<T>() =
+              per_iter_bh.EigenInput0<T>().array().template max<Eigen::PropagateNaN>(per_iter_bh.ScalarInput1<T>());
+        },
+        [](BroadcastHelper& per_iter_bh) {
+          per_iter_bh.OutputEigen<T>() =
+              per_iter_bh.EigenInput0<T>().array().template max<Eigen::PropagateNaN>(
+                  per_iter_bh.EigenInput1<T>().array());
+        }};
+
+    UntypedBroadcastTwo(*context, funcs, 1.0);
+    return Status::OK();
+  }
+};
+
+template <typename T>
+struct Minimum::ComputeImpl {
+  Status operator()(const Minimum&, OpKernelContext* context) const {
+    ProcessBroadcastSpanFuncs funcs{
+        [](BroadcastHelper& per_iter_bh) {
+          per_iter_bh.OutputEigen<T>() =
+              per_iter_bh.EigenInput1<T>().array().template min<Eigen::PropagateNaN>(per_iter_bh.ScalarInput0<T>());
+        },
+        [](BroadcastHelper& per_iter_bh) {
+          per_iter_bh.OutputEigen<T>() =
+              per_iter_bh.EigenInput0<T>().array().template min<Eigen::PropagateNaN>(per_iter_bh.ScalarInput1<T>());
+        },
+        [](BroadcastHelper& per_iter_bh) {
+          per_iter_bh.OutputEigen<T>() =
+              per_iter_bh.EigenInput0<T>().array().template min<Eigen::PropagateNaN>(
+                  per_iter_bh.EigenInput1<T>().array());
+        }};
+
+    UntypedBroadcastTwo(*context, funcs, 1.0);
+    return Status::OK();
+  }
+};
+
+template <bool is_min>
+static Status MinMaxMLFloat16Binary(OpKernelContext* context) {
+  ProcessBroadcastSpanFuncs funcs{
+      [](BroadcastHelper& per_iter_bh) {
+        auto num_elements = per_iter_bh.EigenInput1<MLFloat16>().rows();
+        const auto* input_1 = reinterpret_cast<const Eigen::half*>(per_iter_bh.EigenInput1<MLFloat16>().data());
+        ConstEigenVectorArrayMap<Eigen::half> input_1_vec_map(input_1, num_elements);
+        auto* output = reinterpret_cast<Eigen::half*>(per_iter_bh.OutputEigen<MLFloat16>().data());
+        EigenVectorArrayMap<Eigen::half> output_vec_map(output, num_elements);
+        if (is_min) {
+          output_vec_map = input_1_vec_map.template min<Eigen::PropagateNaN>(
+              static_cast<Eigen::half>(per_iter_bh.ScalarInput0<MLFloat16>()));
+        } else {
+          output_vec_map = input_1_vec_map.template max<Eigen::PropagateNaN>(
+              static_cast<Eigen::half>(per_iter_bh.ScalarInput0<MLFloat16>()));
+        }
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        auto num_elements = per_iter_bh.EigenInput0<MLFloat16>().rows();
+        const auto* input_0 = reinterpret_cast<const Eigen::half*>(per_iter_bh.EigenInput0<MLFloat16>().data());
+        ConstEigenVectorArrayMap<Eigen::half> input_0_vec_map(input_0, num_elements);
+        auto* output = reinterpret_cast<Eigen::half*>(per_iter_bh.OutputEigen<MLFloat16>().data());
+        EigenVectorArrayMap<Eigen::half> output_vec_map(output, num_elements);
+        if (is_min) {
+          output_vec_map = input_0_vec_map.template min<Eigen::PropagateNaN>(
+              static_cast<Eigen::half>(per_iter_bh.ScalarInput1<MLFloat16>()));
+        } else {
+          output_vec_map = input_0_vec_map.template max<Eigen::PropagateNaN>(
+              static_cast<Eigen::half>(per_iter_bh.ScalarInput1<MLFloat16>()));
+        }
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        auto num_elements = per_iter_bh.EigenInput0<MLFloat16>().rows();
+        const auto* input_0 = reinterpret_cast<const Eigen::half*>(per_iter_bh.EigenInput0<MLFloat16>().data());
+        ConstEigenVectorArrayMap<Eigen::half> input_0_vec_map(input_0, num_elements);
+        const auto* input_1 = reinterpret_cast<const Eigen::half*>(per_iter_bh.EigenInput1<MLFloat16>().data());
+        ConstEigenVectorArrayMap<Eigen::half> input_1_vec_map(input_1, num_elements);
+        auto* output = reinterpret_cast<Eigen::half*>(per_iter_bh.OutputEigen<MLFloat16>().data());
+        EigenVectorArrayMap<Eigen::half> output_vec_map(output, num_elements);
+        if (is_min) {
+          output_vec_map = input_0_vec_map.template min<Eigen::PropagateNaN>(input_1_vec_map);
+        } else {
+          output_vec_map = input_0_vec_map.template max<Eigen::PropagateNaN>(input_1_vec_map);
+        }
+      }};
+
+  UntypedBroadcastTwo(*context, funcs, 1.0);
+  return Status::OK();
+}
+
+Status Maximum::Compute(OpKernelContext* context) const {
+  auto dt_type = context->Input<Tensor>(0)->GetElementType();
+  if (dt_type == ONNX_NAMESPACE::TensorProto_DataType_FLOAT16) {
+    return MinMaxMLFloat16Binary<false>(context);
+  }
+
+  utils::MLTypeCallDispatcher<float, double, int8_t, int32_t, uint32_t,
+                              int64_t, uint8_t, uint64_t>
+      t_disp(dt_type);
+  return t_disp.InvokeRet<Status, ComputeImpl>(*this, context);
+}
+
+Status Minimum::Compute(OpKernelContext* context) const {
+  auto dt_type = context->Input<Tensor>(0)->GetElementType();
+  if (dt_type == ONNX_NAMESPACE::TensorProto_DataType_FLOAT16) {
+    return MinMaxMLFloat16Binary<true>(context);
+  }
+
+  utils::MLTypeCallDispatcher<float, double, int8_t, int32_t, uint32_t,
+                              int64_t, uint8_t, uint64_t>
+      t_disp(dt_type);
+  return t_disp.InvokeRet<Status, ComputeImpl>(*this, context);
+}
+
+template <typename T>
+Status SquaredDifference<T>::Compute(OpKernelContext* context) const {
+  ProcessBroadcastSpanFuncs funcs{
+      [](BroadcastHelper& per_iter_bh) {
+        auto diff = per_iter_bh.ScalarInput0<T>() - per_iter_bh.EigenInput1<T>().array();
+        per_iter_bh.OutputEigen<T>() = diff * diff;
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        auto diff = per_iter_bh.EigenInput0<T>().array() - per_iter_bh.ScalarInput1<T>();
+        per_iter_bh.OutputEigen<T>() = diff * diff;
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        auto diff = per_iter_bh.EigenInput0<T>().array() - per_iter_bh.EigenInput1<T>().array();
+        per_iter_bh.OutputEigen<T>() = diff * diff;
+      }};
+
+  UntypedBroadcastTwo(*context, funcs, 1.0);
+  return Status::OK();
+}
+
+template <>
+Status SquaredDifference<MLFloat16>::Compute(OpKernelContext* context) const {
+  ProcessBroadcastSpanFuncs funcs{
+      [](BroadcastHelper& per_iter_bh) {
+        auto diff = per_iter_bh.ScalarInput0<Eigen::half>() - per_iter_bh.EigenInput1<Eigen::half>().array();
+        per_iter_bh.OutputEigen<Eigen::half>() = diff * diff;
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        auto diff = per_iter_bh.EigenInput0<Eigen::half>().array() - per_iter_bh.ScalarInput1<Eigen::half>();
+        per_iter_bh.OutputEigen<Eigen::half>() = diff * diff;
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        auto diff = per_iter_bh.EigenInput0<Eigen::half>().array() - per_iter_bh.EigenInput1<Eigen::half>().array();
+        per_iter_bh.OutputEigen<Eigen::half>() = diff * diff;
+      }};
+
+  UntypedBroadcastTwo(*context, funcs, 1.0);
+  return Status::OK();
+}
+
+template <typename T>
+Status FloorDiv<T>::Compute(OpKernelContext* context) const {
+  ORT_RETURN_IF_ERROR(ValidateNoIntegerZeroDivisor<T>(*context->Input<Tensor>(1), "FloorDiv"));
+
+  ProcessBroadcastSpanFuncs funcs{
+      [](BroadcastHelper& per_iter_bh) {
+        const T lhs = per_iter_bh.ScalarInput0<T>();
+        per_iter_bh.OutputEigen<T>() = per_iter_bh.EigenInput1<T>().unaryExpr(
+            [lhs](T rhs) { return FloorDivValue(lhs, rhs); });
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        const T rhs = per_iter_bh.ScalarInput1<T>();
+        per_iter_bh.OutputEigen<T>() = per_iter_bh.EigenInput0<T>().unaryExpr(
+            [rhs](T lhs) { return FloorDivValue(lhs, rhs); });
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        per_iter_bh.OutputEigen<T>() = per_iter_bh.EigenInput0<T>().binaryExpr(
+            per_iter_bh.EigenInput1<T>(), [](T lhs, T rhs) { return FloorDivValue(lhs, rhs); });
+      }};
+
+  UntypedBroadcastTwo(*context, funcs, 1.0);
+  return Status::OK();
+}
+
+template <>
+Status FloorDiv<MLFloat16>::Compute(OpKernelContext* context) const {
+  ProcessBroadcastSpanFuncs funcs{
+      [](BroadcastHelper& per_iter_bh) {
+        const Eigen::half lhs = per_iter_bh.ScalarInput0<Eigen::half>();
+        per_iter_bh.OutputEigen<Eigen::half>() = per_iter_bh.EigenInput1<Eigen::half>().unaryExpr(
+            [lhs](Eigen::half rhs) { return FloorDivValue(lhs, rhs); });
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        const Eigen::half rhs = per_iter_bh.ScalarInput1<Eigen::half>();
+        per_iter_bh.OutputEigen<Eigen::half>() = per_iter_bh.EigenInput0<Eigen::half>().unaryExpr(
+            [rhs](Eigen::half lhs) { return FloorDivValue(lhs, rhs); });
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        per_iter_bh.OutputEigen<Eigen::half>() = per_iter_bh.EigenInput0<Eigen::half>().binaryExpr(
+            per_iter_bh.EigenInput1<Eigen::half>(),
+            [](Eigen::half lhs, Eigen::half rhs) { return FloorDivValue(lhs, rhs); });
+      }};
+
+  UntypedBroadcastTwo(*context, funcs, 1.0);
+  return Status::OK();
+}
+
+template <typename T>
+Status FloorMod<T>::Compute(OpKernelContext* context) const {
+  ORT_RETURN_IF_ERROR(ValidateNoIntegerZeroDivisor<T>(*context->Input<Tensor>(1), "FloorMod"));
+
+  ProcessBroadcastSpanFuncs funcs{
+      [](BroadcastHelper& per_iter_bh) {
+        const T lhs = per_iter_bh.ScalarInput0<T>();
+        per_iter_bh.OutputEigen<T>() = per_iter_bh.EigenInput1<T>().unaryExpr(
+            [lhs](T rhs) { return FloorModValue(lhs, rhs); });
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        const T rhs = per_iter_bh.ScalarInput1<T>();
+        per_iter_bh.OutputEigen<T>() = per_iter_bh.EigenInput0<T>().unaryExpr(
+            [rhs](T lhs) { return FloorModValue(lhs, rhs); });
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        per_iter_bh.OutputEigen<T>() = per_iter_bh.EigenInput0<T>().binaryExpr(
+            per_iter_bh.EigenInput1<T>(), [](T lhs, T rhs) { return FloorModValue(lhs, rhs); });
+      }};
+
+  UntypedBroadcastTwo(*context, funcs, 1.0);
+  return Status::OK();
+}
+
+template <>
+Status FloorMod<MLFloat16>::Compute(OpKernelContext* context) const {
+  ProcessBroadcastSpanFuncs funcs{
+      [](BroadcastHelper& per_iter_bh) {
+        const Eigen::half lhs = per_iter_bh.ScalarInput0<Eigen::half>();
+        per_iter_bh.OutputEigen<Eigen::half>() = per_iter_bh.EigenInput1<Eigen::half>().unaryExpr(
+            [lhs](Eigen::half rhs) { return FloorModValue(lhs, rhs); });
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        const Eigen::half rhs = per_iter_bh.ScalarInput1<Eigen::half>();
+        per_iter_bh.OutputEigen<Eigen::half>() = per_iter_bh.EigenInput0<Eigen::half>().unaryExpr(
+            [rhs](Eigen::half lhs) { return FloorModValue(lhs, rhs); });
+      },
+      [](BroadcastHelper& per_iter_bh) {
+        per_iter_bh.OutputEigen<Eigen::half>() = per_iter_bh.EigenInput0<Eigen::half>().binaryExpr(
+            per_iter_bh.EigenInput1<Eigen::half>(),
+            [](Eigen::half lhs, Eigen::half rhs) { return FloorModValue(lhs, rhs); });
+      }};
+
+  UntypedBroadcastTwo(*context, funcs, 1.0);
+  return Status::OK();
+}
+
+template <typename T>
+Status ZerosLike<T>::Compute(OpKernelContext* context) const {
+  const Tensor* X = context->Input<Tensor>(0);
+  ORT_RETURN_IF_NOT(X != nullptr, "ZerosLike input tensor is null");
+  Tensor* Y = context->Output(0, X->Shape());
+  ORT_RETURN_IF_NOT(Y != nullptr, "ZerosLike output tensor is null");
+
+  const int64_t count = Y->Shape().Size();
+  if (count == 0) {
+    return Status::OK();
+  }
+
+  T* output = Y->MutableData<T>();
+  std::fill(output, output + count, T{});
   return Status::OK();
 }
 
@@ -1175,6 +1757,23 @@ Status Xor::Compute(OpKernelContext* context) const {
 
 template <typename T>
 Status Equal<T>::Compute(OpKernelContext* context) const {
+  if (Node().OpType() == "NotEqual") {
+    ProcessBroadcastSpanFuncs not_equal_funcs{
+        [](BroadcastHelper& per_iter_bh) {
+          per_iter_bh.OutputEigen<bool>() = per_iter_bh.ScalarInput0<T>() != per_iter_bh.EigenInput1<T>().array();
+        },
+        [](BroadcastHelper& per_iter_bh) {
+          per_iter_bh.OutputEigen<bool>() = per_iter_bh.EigenInput0<T>().array() != per_iter_bh.ScalarInput1<T>();
+        },
+        [](BroadcastHelper& per_iter_bh) {
+          per_iter_bh.OutputEigen<bool>() =
+              per_iter_bh.EigenInput0<T>().array() != per_iter_bh.EigenInput1<T>().array();
+        }};
+
+    UntypedBroadcastTwo(*context, not_equal_funcs, 1.0);
+    return Status::OK();
+  }
+
   ProcessBroadcastSpanFuncs funcs{
       [](BroadcastHelper& per_iter_bh) {
         per_iter_bh.OutputEigen<bool>() = per_iter_bh.ScalarInput0<T>() == per_iter_bh.EigenInput1<T>().array();

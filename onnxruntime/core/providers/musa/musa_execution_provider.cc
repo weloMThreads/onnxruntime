@@ -245,12 +245,58 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, Softplus);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, BFloat16, Softplus);
 
+// TensorFlow-converted Log1p compatibility op (op 1+)
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Log1p);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, Log1p);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, Log1p);
+
+// TensorFlow-converted Expm1 compatibility op (op 1+)
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Expm1);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, Expm1);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, Expm1);
+
+// TensorFlow-converted Square/Rsqrt compatibility ops (op 1+)
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Square);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, Square);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, Square);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, Square);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, Square);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Rsqrt);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, Rsqrt);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, Rsqrt);
+
+// TensorFlow-converted ZerosLike compatibility op (op 1+)
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, bool, ZerosLike);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, ZerosLike);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, ZerosLike);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, ZerosLike);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, ZerosLike);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, ZerosLike);
+
 // Exp operations (op 6-12, 13)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Exp);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Exp);
 
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Exp);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Exp);
+
+// Floor operations (op 6-12, 13)
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Floor);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Floor);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, double, Floor);
+
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Floor);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Floor);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, double, Floor);
+
+// Ceil operations (op 6-12, 13)
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Ceil);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Ceil);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, double, Ceil);
+
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Ceil);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Ceil);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, double, Ceil);
 
 // Reciprocal operations (op 6-12, 13)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Reciprocal);
@@ -260,7 +306,6 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Reciprocal);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Reciprocal);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, double, Reciprocal);
-class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, BFloat16, Reciprocal);
 
 // Sqrt operations (op 6-12, 13)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Sqrt);
@@ -271,6 +316,22 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Sqrt);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, double, Sqrt);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, BFloat16, Sqrt);
+
+// IsNaN operations (op 9-12, 13-19, 20)
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 12, MLFloat16, IsNaN);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 12, float, IsNaN);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 12, double, IsNaN);
+
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 19, MLFloat16, IsNaN);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 19, float, IsNaN);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 19, double, IsNaN);
+
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 20, MLFloat16, IsNaN);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 20, float, IsNaN);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 20, double, IsNaN);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, IsNan);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, IsNan);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, IsNan);
 
 // Erf operations (op 9-12, 13)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 12, MLFloat16, Erf);
@@ -355,6 +416,25 @@ class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDom
 class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 12, 12, Clip);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, Clip);
 
+// Sign operations (op 13)
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Sign);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, double, Sign);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Sign);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, int32_t, Sign);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, int64_t, Sign);
+
+// TopK operations (op 11-23, 24)
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 23, float, TopK);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 23, double, TopK);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 23, MLFloat16, TopK);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 23, int32_t, TopK);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 23, int64_t, TopK);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 24, float, TopK);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 24, double, TopK);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 24, MLFloat16, TopK);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 24, int32_t, TopK);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 24, int64_t, TopK);
+
 // Neg operations (op 6-12, 13)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Neg);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Neg);
@@ -383,6 +463,18 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, int64_t, Add);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, MLFloat16, Add);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, float, Add);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, AddV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, AddV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, AddV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, AddV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, BiasAdd);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, BiasAdd);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, BiasAdd);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, BiasAdd);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, BiasAddV1);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, BiasAddV1);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, BiasAddV1);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, BiasAddV1);
 
 #ifdef ENABLE_MUSA_NHWC_OPS
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSInternalNHWCDomain, 7, 13, int32_t, Add);
@@ -395,6 +487,10 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, int64_t, Sub);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, MLFloat16, Sub);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, float, Sub);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, SubV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, SubV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, SubV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, SubV2);
 
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, int32_t, Mul);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, int64_t, Mul);
@@ -412,6 +508,36 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, int64_t, Div);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, MLFloat16, Div);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, float, Div);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, RealDiv);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, RealDiv);
+
+// TensorFlow compatibility binary math operations
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, DivNoNan);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, DivNoNan);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, DivNoNan);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, SquaredDifference);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, SquaredDifference);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, SquaredDifference);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, SquaredDifference);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, SquaredDifference);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, FloorDiv);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, FloorDiv);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, FloorDiv);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, FloorDiv);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, FloorDiv);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, FloorMod);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, FloorMod);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, FloorMod);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, FloorMod);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, FloorMod);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, Maximum);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, Maximum);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Maximum);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, Maximum);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, Minimum);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, Minimum);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Minimum);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, Minimum);
 
 // PRelu operations (opset 7-8, 9-15, 16+)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 8, float, PRelu);
@@ -468,6 +594,10 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, int64_t, Sum);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Sum);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Sum);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, AddN);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, AddN);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, AddN);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, AddN);
 
 // Pow operations - versioned (op 7-11)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 11, int32_t, Pow);
@@ -535,6 +665,21 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 // class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, uint64_t, Equal);  // MUDNN NOT_SUPPORTED
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, MLFloat16, Equal);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, float, Equal);
+
+// TensorFlow-converted comparison compatibility ops.
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, bool, NotEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, NotEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, NotEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, NotEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, NotEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, GreaterEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, GreaterEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, GreaterEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, GreaterEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, LessEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, LessEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, LessEqual);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, LessEqual);
 
 // Less operations - versioned
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 8, int8_t, Less);
@@ -642,8 +787,19 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, MatMul);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, MatMul);
 
+// Fill operations (op 1)
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, Fill);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, Fill);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Fill);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, Fill);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, Fill);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, bool, Fill);
+
 // ConstantOfShape operations (op 9)
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, ConstantOfShape);
+
+// Random generator operations
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, RandomUniformLike);
 
 // OneHot operations (op 9-10, 11)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 10, int32_t_float_int64_t, OneHot);
@@ -767,6 +923,42 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Mod);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Mod);
 
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int8_t, BitwiseAnd);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint8_t, BitwiseAnd);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int16_t, BitwiseAnd);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint16_t, BitwiseAnd);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int32_t, BitwiseAnd);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint32_t, BitwiseAnd);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int64_t, BitwiseAnd);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint64_t, BitwiseAnd);
+
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int8_t, BitwiseOr);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint8_t, BitwiseOr);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int16_t, BitwiseOr);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint16_t, BitwiseOr);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int32_t, BitwiseOr);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint32_t, BitwiseOr);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int64_t, BitwiseOr);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint64_t, BitwiseOr);
+
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int8_t, BitwiseXor);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint8_t, BitwiseXor);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int16_t, BitwiseXor);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint16_t, BitwiseXor);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int32_t, BitwiseXor);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint32_t, BitwiseXor);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int64_t, BitwiseXor);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint64_t, BitwiseXor);
+
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int8_t, BitwiseNot);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint8_t, BitwiseNot);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int16_t, BitwiseNot);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint16_t, BitwiseNot);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int32_t, BitwiseNot);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint32_t, BitwiseNot);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, int64_t, BitwiseNot);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, uint64_t, BitwiseNot);
+
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int8_t, BitwiseAnd);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint8_t, BitwiseAnd);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int16_t, BitwiseAnd);
@@ -775,6 +967,33 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint32_t, BitwiseAnd);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int64_t, BitwiseAnd);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint64_t, BitwiseAnd);
+
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int8_t, BitwiseOr);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint8_t, BitwiseOr);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int16_t, BitwiseOr);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint16_t, BitwiseOr);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int32_t, BitwiseOr);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint32_t, BitwiseOr);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int64_t, BitwiseOr);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint64_t, BitwiseOr);
+
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int8_t, BitwiseXor);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint8_t, BitwiseXor);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int16_t, BitwiseXor);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint16_t, BitwiseXor);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int32_t, BitwiseXor);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint32_t, BitwiseXor);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int64_t, BitwiseXor);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint64_t, BitwiseXor);
+
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int8_t, BitwiseNot);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint8_t, BitwiseNot);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int16_t, BitwiseNot);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint16_t, BitwiseNot);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int32_t, BitwiseNot);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint32_t, BitwiseNot);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, int64_t, BitwiseNot);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, uint64_t, BitwiseNot);
 
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 21, MLFloat16, Round);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 21, float, Round);
@@ -796,6 +1015,9 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, bool, And);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, bool, Or);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, bool, Xor);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, bool, LogicalNot);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, bool, LogicalAnd);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, bool, LogicalOr);
 
 // ReduceMax operations (op 1-17, 18)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, MLFloat16, ReduceMax);
@@ -896,6 +1118,8 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, uint8_t, ArgMin);
 
 // Transpose operations (op 1-12, 13+)
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, ReverseV2);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, InvertPermutation);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 12, uint8_t, Transpose);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 12, uint16_t, Transpose);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 12, uint32_t, Transpose);
@@ -972,6 +1196,7 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 
 // Split operations (op 2-10, 11-12, 13-17, 18)
 class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 2, 10, Split);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, SplitV);
 class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 12, Split);
 class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 17, Split);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, Split);
@@ -1001,6 +1226,11 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Gather);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, double, Gather);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, bool, Gather);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, GatherV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, GatherV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, GatherV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, GatherV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, GatherV2);
 
 // GatherElements operations (op 11+)
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, uint8_t, GatherElements);
@@ -1013,6 +1243,40 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, int64_t, GatherElements);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, MLFloat16, GatherElements);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, float, GatherElements);
+
+// GatherND operations (op 11, 12, 13+)
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 11, int64_t, GatherND);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 12, 12, int64_t, GatherND);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, int64_t, GatherND);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, GatherNd);
+
+// ScatterND operations (op 11-12, 13-15, 16-17, 18+)
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 12, ScatterND);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 15, ScatterND);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 16, 17, ScatterND);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, ScatterND);
+
+// NonZero operations (op 9-12, 13+)
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 12, bool, NonZero);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 12, uint8_t, NonZero);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 12, int32_t, NonZero);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 12, int64_t, NonZero);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 12, float, NonZero);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, bool, NonZero);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, uint8_t, NonZero);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, int32_t, NonZero);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, int64_t, NonZero);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, NonZero);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, double, NonZero);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, NonZero);
+
+// Unique operations (op 11+)
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, float, Unique);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, double, Unique);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, int8_t, Unique);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, int32_t, Unique);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, int64_t, Unique);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, MLFloat16, Unique);
 
 // Tile operations (op 6-12, 13)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Tile);
@@ -1061,6 +1325,11 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Unsqueeze);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, Unsqueeze);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, bool, Unsqueeze);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, ExpandDims);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, ExpandDims);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, ExpandDims);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, ExpandDims);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, bool, ExpandDims);
 
 // Squeeze operations (op 1-10, 11-12, 13)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 10, uint8_t, Squeeze);
@@ -1100,6 +1369,7 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, bool, Squeeze);
 
 // Concat operations (op 4-10, 11-12, and 13)
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, ConcatV2);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 4, 10, uint8_t, Concat);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 4, 10, uint16_t, Concat);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 4, 10, uint32_t, Concat);
@@ -1181,8 +1451,10 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 #endif
 
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 17, float, Pad);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 17, float, PadV2);
 #if defined(MUDNN_VERSION) && (MUDNN_VERSION >= 3100)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 17, MLFloat16, Pad);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 11, 17, MLFloat16, PadV2);
 #endif
 
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, float, Pad);
@@ -1201,25 +1473,31 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 4, int64_t, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 4, MLFloat16, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 4, float, Reshape);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 4, bool, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 5, 12, int32_t, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 5, 12, int64_t, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 5, 12, MLFloat16, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 5, 12, float, Reshape);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 5, 12, bool, Reshape);
 
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 13, int32_t, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 13, int64_t, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 13, MLFloat16, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 13, float, Reshape);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 13, bool, Reshape);
 
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 14, 18, int32_t, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 14, 18, int64_t, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 14, 18, MLFloat16, Reshape);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 14, 18, float, Reshape);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 14, 18, bool, Reshape);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 14, 18, string, Reshape);
 
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, int32_t, Reshape);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, int64_t, Reshape);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, MLFloat16, Reshape);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, float, Reshape);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, bool, Reshape);
 
 // Shape operations (multi-version support)
 class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 12, Shape);
@@ -1228,6 +1506,16 @@ class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDom
 class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, 20, Shape);
 class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 21, 22, Shape);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 23, Shape);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, ShapeN);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, BroadcastGradientArgs);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, ConcatOffset);
+
+// Size operations (multi-version support)
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 12, Size);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 20, Size);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 21, 22, Size);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 23, 24, Size);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 25, Size);
 
 // Where operations (op 9-15, 16)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 9, 15, float, Where);
@@ -1240,6 +1528,32 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 16, MLFloat16, Where);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 16, int32_t, Where);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 16, int64_t, Where);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, Select);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, Select);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Select);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, Select);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, Select);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, SelectV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, double, SelectV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, SelectV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, SelectV2);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, SelectV2);
+
+// Identity operations (tensor subset)
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 12, Identity);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, StopGradient);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, Snapshot);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 13, Identity);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 14, 18, Identity);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, 20, Identity);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 21, 22, Identity);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 23, 24, Identity);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 25, Identity);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, IdentityN);
+
+// Dropout inference no-op operations
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 9, Dropout);
+class ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 10, 11, Dropout);
 
 // Cast operations (version 6-8)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 8, int32_t, Cast);
@@ -1279,6 +1593,7 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 18, uint32_t, Cast);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 18, uint64_t, Cast);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 18, bool, Cast);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, 18, string, Cast);
 
 // Cast operations (version 19+)
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 19, int32_t, Cast);
@@ -1303,6 +1618,10 @@ class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, int32_t, Expand);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, int64_t, Expand);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Expand);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, float, BroadcastTo);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int32_t, BroadcastTo);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, int64_t, BroadcastTo);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, BroadcastTo);
 
 // Tile operations (op 6-12 and op 13)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Tile);
@@ -1575,6 +1894,54 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 1, BFloat16, Softplus)>,
 
+      // Register TensorFlow-converted Log1p compatibility operators
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Log1p)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, Log1p)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, Log1p)>,
+
+      // Register TensorFlow-converted Expm1 compatibility operators
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Expm1)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, Expm1)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, Expm1)>,
+
+      // Register TensorFlow-converted Square/Rsqrt compatibility operators
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Square)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, Square)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, Square)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, Square)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, Square)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Rsqrt)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, Rsqrt)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, Rsqrt)>,
+
+      // Register TensorFlow-converted ZerosLike compatibility operators
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, bool, ZerosLike)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, ZerosLike)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, ZerosLike)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, ZerosLike)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, ZerosLike)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, ZerosLike)>,
+
       // Register Exp operators (version 6-12)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Exp)>,
@@ -1586,6 +1953,38 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Exp)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, float, Exp)>,
+
+      // Register Floor operators (version 6-12)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Floor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Floor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 6, 12, double, Floor)>,
+
+      // Register Floor operators (version 13)
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Floor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, float, Floor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, double, Floor)>,
+
+      // Register Ceil operators (version 6-12)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 6, 12, MLFloat16, Ceil)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Ceil)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 6, 12, double, Ceil)>,
+
+      // Register Ceil operators (version 13)
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Ceil)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, float, Ceil)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, double, Ceil)>,
 
       // Register Reciprocal operators (version 6-12)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -1602,8 +2001,6 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, float, Reciprocal)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, double, Reciprocal)>,
-      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
-          kMusaExecutionProvider, kOnnxDomain, 13, BFloat16, Reciprocal)>,
 
       // Register Sqrt operators (version 6-12)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -1622,6 +2019,36 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, double, Sqrt)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, BFloat16, Sqrt)>,
+
+      // Register IsNaN operators (version 9-12)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 9, 12, MLFloat16, IsNaN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 9, 12, float, IsNaN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 9, 12, double, IsNaN)>,
+
+      // Register IsNaN operators (version 13-19)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, 19, MLFloat16, IsNaN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, 19, float, IsNaN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, 19, double, IsNaN)>,
+
+      // Register IsNaN operators (version 20)
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 20, MLFloat16, IsNaN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 20, float, IsNaN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 20, double, IsNaN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, IsNan)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, IsNan)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, IsNan)>,
 
       // Register Erf operators (version 9-12)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -1767,6 +2194,40 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
       BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, Clip)>,
 
+      // Register Sign operators (version 13)
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, float, Sign)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, double, Sign)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Sign)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, int32_t, Sign)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, int64_t, Sign)>,
+
+      // Register TopK operators (versions 11-23, 24)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, 23, float, TopK)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, 23, double, TopK)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, 23, MLFloat16, TopK)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, 23, int32_t, TopK)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, 23, int64_t, TopK)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 24, float, TopK)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 24, double, TopK)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 24, MLFloat16, TopK)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 24, int32_t, TopK)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 24, int64_t, TopK)>,
+
       // Register Neg operators (version 6-12)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 6, 12, float, Neg)>,
@@ -1823,9 +2284,27 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Gemm)>,
 
+      // Register Fill operators
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, Fill)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, Fill)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Fill)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, Fill)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, Fill)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, bool, Fill)>,
+
       // Register ConstantOfShape operator
       BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 9, ConstantOfShape)>,
+
+      // Register RandomUniformLike operator
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, RandomUniformLike)>,
 
       //   // Register OneHot operators
       //   BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -1885,6 +2364,30 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 7, 13, MLFloat16, Add)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 7, 13, float, Add)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, AddV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, AddV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, AddV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, AddV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, BiasAdd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, BiasAdd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, BiasAdd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, BiasAdd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, BiasAddV1)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, BiasAddV1)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, BiasAddV1)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, BiasAddV1)>,
 
 #ifdef ENABLE_MUSA_NHWC_OPS
       // Register versioned Add operators (NHWC, 7-13)
@@ -1907,6 +2410,14 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 7, 13, MLFloat16, Sub)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 7, 13, float, Sub)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, SubV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, SubV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, SubV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, SubV2)>,
 
       // Register versioned Mul operators (7-13)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -2040,6 +2551,14 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Sum)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, float, Sum)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, AddN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, AddN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, AddN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, AddN)>,
 
       // Register versioned Pow operators (7-11)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -2170,6 +2689,34 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 19, MLFloat16, Equal)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 19, float, Equal)>,
+
+      // Register TensorFlow-converted comparison compatibility operators
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, bool, NotEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, NotEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, NotEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, NotEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, NotEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, GreaterEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, GreaterEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, GreaterEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, GreaterEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, LessEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, LessEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, LessEqual)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, LessEqual)>,
 
       // Register versioned Less operators (7-8)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -2381,6 +2928,75 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 14, float, Mul)>,
 
+      // Register Bitwise operators for model compatibility before official opset 18 schema.
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int8_t, BitwiseAnd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint8_t, BitwiseAnd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int16_t, BitwiseAnd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint16_t, BitwiseAnd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int32_t, BitwiseAnd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint32_t, BitwiseAnd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int64_t, BitwiseAnd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint64_t, BitwiseAnd)>,
+
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int8_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint8_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int16_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint16_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int32_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint32_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int64_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint64_t, BitwiseOr)>,
+
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int8_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint8_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int16_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint16_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int32_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint32_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int64_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint64_t, BitwiseXor)>,
+
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int8_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint8_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int16_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint16_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int32_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint32_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, int64_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, uint64_t, BitwiseNot)>,
+
       // Register BitwiseAnd operators for version 18+
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 18, int8_t, BitwiseAnd)>,
@@ -2398,6 +3014,60 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 18, int64_t, BitwiseAnd)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 18, uint64_t, BitwiseAnd)>,
+
+      // Register BitwiseOr operators for version 18+
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int8_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint8_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int16_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint16_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int32_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint32_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int64_t, BitwiseOr)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint64_t, BitwiseOr)>,
+
+      // Register BitwiseXor operators for version 18+
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int8_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint8_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int16_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint16_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int32_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint32_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int64_t, BitwiseXor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint64_t, BitwiseXor)>,
+
+      // Register BitwiseNot operators for version 18+
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int8_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint8_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int16_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint16_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int32_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint32_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, int64_t, BitwiseNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, uint64_t, BitwiseNot)>,
 
       // Register Round operators for versions 11-21
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -2432,6 +3102,64 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 14, MLFloat16, Div)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 14, float, Div)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, RealDiv)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, RealDiv)>,
+
+      // Register TensorFlow compatibility binary math operators
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, DivNoNan)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, DivNoNan)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, DivNoNan)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, SquaredDifference)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, SquaredDifference)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, SquaredDifference)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, SquaredDifference)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, SquaredDifference)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, FloorDiv)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, FloorDiv)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, FloorDiv)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, FloorDiv)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, FloorDiv)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, FloorMod)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, FloorMod)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, FloorMod)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, FloorMod)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, FloorMod)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, Maximum)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, Maximum)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Maximum)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, Maximum)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, Minimum)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, Minimum)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Minimum)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, Minimum)>,
 
       // Register Pow operators for version 12+
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
@@ -2519,6 +3247,12 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 7, bool, Or)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 7, bool, Xor)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, bool, LogicalNot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, bool, LogicalAnd)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, bool, LogicalOr)>,
 
       // Register MatMul operators - versioned (1-8) - Float types
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -2538,18 +3272,17 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, float, MatMul)>,
 
-      // TEMPORARILY DISABLED - ReduceMax/Min/Sum/Mean/Prod fallback to CPU due to new SDK issues
       // Register ReduceMax operators (version 1-17)
-      // BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
-      //     kMusaExecutionProvider, kOnnxDomain, 1, 17, MLFloat16, ReduceMax)>,
-      // BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
-      //     kMusaExecutionProvider, kOnnxDomain, 1, 17, float, ReduceMax)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, MLFloat16, ReduceMax)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, float, ReduceMax)>,
 
-      // // Register ReduceMax operators (version 18)
-      // BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
-      //     kMusaExecutionProvider, kOnnxDomain, 18, MLFloat16, ReduceMax)>,
-      // BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
-      //     kMusaExecutionProvider, kOnnxDomain, 18, float, ReduceMax)>,
+      // Register ReduceMax operators (version 18)
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, MLFloat16, ReduceMax)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, float, ReduceMax)>,
 
       // // Register ReduceMin operators (version 1-17)
       // BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -2716,6 +3449,10 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, uint8_t, ArgMin)>,
 
       // Register Transpose operators (version 1-12)
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, ReverseV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, InvertPermutation)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 1, 12, uint8_t, Transpose)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -2885,6 +3622,16 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, double, Gather)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, bool, Gather)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, GatherV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, GatherV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, GatherV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, GatherV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, GatherV2)>,
 
       // Register GatherElements operators (version 11+)
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
@@ -2907,6 +3654,66 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 11, MLFloat16, GatherElements)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 11, float, GatherElements)>,
+
+      // Register GatherND operators (versions 11, 12, 13+)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, 11, int64_t, GatherND)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 12, 12, int64_t, GatherND)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, int64_t, GatherND)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, GatherNd)>,
+
+      // Register ScatterND operators (versions 11-12, 13-15, 16-17, 18+)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, 12, ScatterND)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, 15, ScatterND)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 16, 17, ScatterND)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, ScatterND)>,
+
+      // Register NonZero operators (versions 9-12, 13+)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 9, 12, bool, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 9, 12, uint8_t, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 9, 12, int32_t, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 9, 12, int64_t, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 9, 12, float, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, bool, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, uint8_t, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, int32_t, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, int64_t, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, float, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, double, NonZero)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, NonZero)>,
+
+      // Register Unique operators (version 11+)
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, float, Unique)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, double, Unique)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, int8_t, Unique)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, int32_t, Unique)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, int64_t, Unique)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, MLFloat16, Unique)>,
 
       // Register Unsqueeze operators (version 1-10)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -2979,6 +3786,16 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, float, Unsqueeze)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, bool, Unsqueeze)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, ExpandDims)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, ExpandDims)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, ExpandDims)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, ExpandDims)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, bool, ExpandDims)>,
 
       // Register Squeeze operators (version 1-10)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -3095,6 +3912,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
       // Register Split operators (version 2-10, 11-12, 13-17, 18)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 2, 10, Split)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, SplitV)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 11, 12, Split)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
@@ -3122,6 +3941,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Tile)>,
 
       // Register Concat operators (version 4-10)
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, ConcatV2)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 4, 10, uint8_t, Concat)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -3285,9 +4106,13 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
       // Register Pad operators (version 11-17)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 11, 17, float, Pad)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, 17, float, PadV2)>,
 #if defined(MUDNN_VERSION) && (MUDNN_VERSION >= 3100)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 11, 17, MLFloat16, Pad)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 11, 17, MLFloat16, PadV2)>,
 #endif
 
       // Register Pad operators (version 18)
@@ -3317,6 +4142,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 1, 4, MLFloat16, Reshape)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 1, 4, float, Reshape)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 4, bool, Reshape)>,
 
       // Register Reshape operators (version 5-12)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -3327,6 +4154,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 5, 12, MLFloat16, Reshape)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 5, 12, float, Reshape)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 5, 12, bool, Reshape)>,
 
       // Register Reshape operators (version 13)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -3337,6 +4166,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, 13, MLFloat16, Reshape)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, 13, float, Reshape)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, 13, bool, Reshape)>,
 
       // Register Reshape operators (version 14-18)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -3347,6 +4178,10 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 14, 18, MLFloat16, Reshape)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 14, 18, float, Reshape)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 14, 18, bool, Reshape)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 14, 18, string, Reshape)>,
 
       // Register Reshape operators (version 19)
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
@@ -3357,6 +4192,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 19, MLFloat16, Reshape)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 19, float, Reshape)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 19, bool, Reshape)>,
 
       // Register Cast operators (version 6-8)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -3429,6 +4266,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, 18, uint64_t, Cast)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, 18, bool, Cast)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, 18, string, Cast)>,
 
       // Register Cast operators (version 19+)
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
@@ -3473,6 +4312,14 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, int64_t, Expand)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, Expand)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, BroadcastTo)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, BroadcastTo)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, BroadcastTo)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, BroadcastTo)>,
 
       // Register Shape operators (multi-version support with CPU reuse)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
@@ -3487,6 +4334,24 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 21, 22, Shape)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 23, Shape)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, ShapeN)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, BroadcastGradientArgs)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, ConcatOffset)>,
+
+      // Register Size operators (multi-version support with CPU output scalar)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 12, Size)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, 20, Size)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 21, 22, Size)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 23, 24, Size)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 25, Size)>,
 
       // Register Where operators (version 9-15) - All supported types
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
@@ -3507,6 +4372,56 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 16, int32_t, Where)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 16, int64_t, Where)>,
+
+      // Register TensorFlow Select compatibility operators
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, Select)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, Select)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, Select)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, Select)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, Select)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, float, SelectV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, double, SelectV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, MLFloat16, SelectV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int32_t, SelectV2)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, int64_t, SelectV2)>,
+
+      // Register Identity operators (tensor subset)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 12, Identity)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, StopGradient)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, Snapshot)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 13, 13, Identity)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 14, 18, Identity)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 19, 20, Identity)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 21, 22, Identity)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 23, 24, Identity)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 25, Identity)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, IdentityN)>,
+
+      // Register Dropout inference no-op operators
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 7, 9, Dropout)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 10, 11, Dropout)>,
 
       // Cast operators are now registered directly in cast_op.cc
 
@@ -3904,19 +4819,9 @@ MusaExecutionProvider::GetCapability(const onnxruntime::GraphViewer& graph_viewe
     candidates.push_back(node.Index());
   }
 
-  // 2. Core: Identify CPU-preferred nodes (Shape-related computation subgraphs)
-  auto cpu_nodes = GetCpuPreferredNodes(graph_viewer, kernel_lookup, candidates, *GetLogger());
-
-  // 3. Only claim non CPU-preferred nodes
+  // Claim all nodes that have MUSA kernels. Shape-related subgraphs can still be
+  // cheap on CPU, but this EP is being validated with CPU fallback disabled.
   for (auto& node_index : candidates) {
-    if (cpu_nodes.count(node_index) > 0) {
-      // Do not claim this node, let it fallback to CPU EP
-      const auto* node = graph_viewer.GetNode(node_index);
-      LOGS(*GetLogger(), INFO) << "MUSA EP: Let node [" << node->OpType()
-                               << "] " << node->Name() << " fallback to CPU for optimization";
-      continue;
-    }
-
     auto sub_graph = IndexedSubGraph::Create();
     sub_graph->Nodes().push_back(node_index);
     result.push_back(ComputeCapability::Create(std::move(sub_graph)));

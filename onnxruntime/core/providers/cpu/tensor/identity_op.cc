@@ -88,4 +88,22 @@ ONNX_CPU_OPERATOR_KERNEL(
     KernelDefBuilder().TypeConstraint("V", DataTypeImpl::AllTensorAndSequenceTensorAndOptionalTypesIRv9()).Alias(0, 0),
     IdentityOp<false>);
 
+ONNX_CPU_OPERATOR_KERNEL(
+    StopGradient,
+    1,
+    KernelDefBuilder().TypeConstraint("T", DataTypeImpl::AllTensorTypes()).Alias(0, 0),
+    IdentityOp<false>);
+
+ONNX_CPU_OPERATOR_KERNEL(
+    Snapshot,
+    1,
+    KernelDefBuilder().TypeConstraint("T", DataTypeImpl::AllTensorTypes()).Alias(0, 0),
+    IdentityOp<false>);
+
+ONNX_CPU_OPERATOR_KERNEL(
+    IdentityN,
+    1,
+    KernelDefBuilder().TypeConstraint("T", DataTypeImpl::AllTensorTypes()),
+    IdentityNOp);
+
 }  // namespace onnxruntime

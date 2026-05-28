@@ -281,6 +281,10 @@ Status Sum<T>::ComputeVariadicSum(OpKernelContext* ctx, MusaPreparation& prepare
     MusaPreparation prepare(ep);                                            \
     ORT_RETURN_IF_ERROR(Prepare(ctx, prepare));                             \
                                                                              \
+    if (prepare.output_size == 0) {                                          \
+      return Status::OK();                                                   \
+    }                                                                        \
+                                                                             \
     if (num_inputs == 1) {                                                   \
       return Status::OK();                                                   \
     } else if (num_inputs == 2) {                                            \
@@ -335,6 +339,19 @@ REGISTER_MUSA_SUM_TYPED_KERNEL_SINGLE(13, int32_t)
 REGISTER_MUSA_SUM_TYPED_KERNEL_SINGLE(13, int64_t)
 REGISTER_MUSA_SUM_TYPED_KERNEL_SINGLE(13, MLFloat16)
 REGISTER_MUSA_SUM_TYPED_KERNEL_SINGLE(13, float)
+
+#define REGISTER_MUSA_ADDN_TYPED_KERNEL(ver, T) \
+  ONNX_OPERATOR_TYPED_KERNEL_EX( \
+      AddN, kOnnxDomain, ver, T, kMusaExecutionProvider, \
+      (*KernelDefBuilder::Create()).TypeConstraint("T", DataTypeImpl::GetTensorType<T>()), \
+      Sum<T>);
+
+REGISTER_MUSA_ADDN_TYPED_KERNEL(1, int32_t)
+REGISTER_MUSA_ADDN_TYPED_KERNEL(1, int64_t)
+REGISTER_MUSA_ADDN_TYPED_KERNEL(1, MLFloat16)
+REGISTER_MUSA_ADDN_TYPED_KERNEL(1, float)
+
+#undef REGISTER_MUSA_ADDN_TYPED_KERNEL
 
 }  // namespace musa
 }  // namespace onnxruntime

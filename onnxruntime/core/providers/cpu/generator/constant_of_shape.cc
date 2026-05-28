@@ -4,6 +4,8 @@
 #include "core/providers/cpu/generator/constant_of_shape_base.h"
 #include "core/providers/op_kernel_type_control.h"
 
+#include <algorithm>
+
 namespace onnxruntime {
 
 namespace op_kernel_type_control {
@@ -107,7 +109,70 @@ Status ConstantOfShape::Compute(OpKernelContext* ctx) const {
   return Status::OK();
 }
 
+template <typename T>
+class Fill final : public OpKernel {
+ public:
+  explicit Fill(const OpKernelInfo& info) : OpKernel(info) {}
+
+  Status Compute(OpKernelContext* ctx) const override {
+    const Tensor* dims = ctx->Input<Tensor>(0);
+    const Tensor* value = ctx->Input<Tensor>(1);
+    ORT_RETURN_IF_NOT(dims != nullptr && value != nullptr, "Fill inputs must not be null");
+    ORT_RETURN_IF_NOT(dims->Shape().NumDimensions() <= 1,
+                      "Fill dims must be a scalar or 1D tensor, got shape ", dims->Shape().ToString());
+    ORT_RETURN_IF_NOT(value->Shape().Size() == 1,
+                      "Fill value must be a scalar or single-element tensor, got shape ",
+                      value->Shape().ToString());
+
+    const int64_t rank = dims->Shape().Size();
+    TensorShapeVector output_dims;
+    output_dims.reserve(onnxruntime::narrow<size_t>(rank));
+    if (dims->IsDataType<int32_t>()) {
+      const auto* dims_data = dims->Data<int32_t>();
+      for (int64_t i = 0; i < rank; ++i) {
+        ORT_RETURN_IF_NOT(dims_data[i] >= 0, "Fill dims must be non-negative, got ", dims_data[i]);
+        output_dims.push_back(static_cast<int64_t>(dims_data[i]));
+      }
+    } else if (dims->IsDataType<int64_t>()) {
+      const auto* dims_data = dims->Data<int64_t>();
+      for (int64_t i = 0; i < rank; ++i) {
+        ORT_RETURN_IF_NOT(dims_data[i] >= 0, "Fill dims must be non-negative, got ", dims_data[i]);
+        output_dims.push_back(dims_data[i]);
+      }
+    } else {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT, "Fill dims must be int32 or int64");
+    }
+
+    Tensor* output = ctx->Output(0, TensorShape(output_dims));
+    ORT_RETURN_IF_NOT(output != nullptr, "Fill failed to allocate output tensor");
+    const int64_t output_size = output->Shape().Size();
+    if (output_size == 0) {
+      return Status::OK();
+    }
+
+    std::fill_n(output->MutableData<T>(), onnxruntime::narrow<size_t>(output_size), value->Data<T>()[0]);
+    return Status::OK();
+  }
+};
+
 }  // namespace
+
+#define REGISTER_CPU_FILL_TYPED(T)                                              \
+  ONNX_OPERATOR_TYPED_KERNEL_EX(                                                \
+      Fill, kOnnxDomain, 1, T, kCpuExecutionProvider,                           \
+      KernelDefBuilder()                                                        \
+          .TypeConstraint("T", DataTypeImpl::GetTensorType<T>())               \
+          .TypeConstraint("index_type", BuildKernelDefConstraints<int32_t, int64_t>()), \
+      Fill<T>);
+
+REGISTER_CPU_FILL_TYPED(float)
+REGISTER_CPU_FILL_TYPED(double)
+REGISTER_CPU_FILL_TYPED(MLFloat16)
+REGISTER_CPU_FILL_TYPED(int32_t)
+REGISTER_CPU_FILL_TYPED(int64_t)
+REGISTER_CPU_FILL_TYPED(bool)
+
+#undef REGISTER_CPU_FILL_TYPED
 
 ONNX_CPU_OPERATOR_VERSIONED_KERNEL(
     ConstantOfShape,

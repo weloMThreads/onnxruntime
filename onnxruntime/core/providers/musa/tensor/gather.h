@@ -19,5 +19,18 @@ class Gather final : public MusaKernel, public GatherBase {
   Status ComputeInternal(OpKernelContext* ctx) const override;
 };
 
+template <typename T>
+class GatherV2 final : public MusaKernel {
+ public:
+  explicit GatherV2(const OpKernelInfo& info) : MusaKernel(info) {
+    info.GetAttrOrDefault<int64_t>("batch_dims", &batch_dims_, 0);
+  }
+
+  Status ComputeInternal(OpKernelContext* ctx) const override;
+
+ private:
+  int64_t batch_dims_ = 0;
+};
+
 }  // namespace musa
 }  // namespace onnxruntime

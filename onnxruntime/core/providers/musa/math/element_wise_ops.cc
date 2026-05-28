@@ -40,5 +40,15 @@ ONNX_OPERATOR_TYPED_KERNEL_EX(
         .TypeConstraint("T", DataTypeImpl::GetTensorType<bool>()),
     Not<bool>);
 
+ONNX_OPERATOR_TYPED_KERNEL_EX(
+    LogicalNot,
+    kOnnxDomain,
+    1,
+    bool,
+    kMusaExecutionProvider,
+    (*KernelDefBuilder::Create())
+        .TypeConstraint("T", DataTypeImpl::GetTensorType<bool>()),
+    Not<bool>);
+
 }  // namespace musa
 }  // namespace onnxruntime

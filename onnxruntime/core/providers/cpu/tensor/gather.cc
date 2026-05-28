@@ -10,6 +10,9 @@
 #include "core/platform/threadpool.h"
 #include "core/providers/op_kernel_type_control.h"
 
+#include <algorithm>
+#include <cstring>
+
 namespace onnxruntime {
 
 using DefaultIndexTypes = TypeList<int32_t, int64_t>;
@@ -27,6 +30,149 @@ ORT_SPECIFY_OP_KERNEL_ARG_REQUIRED_TYPES_ALL_OPSETS(
     kCpuExecutionProvider, kOnnxDomain, Gather, Input, 1, int32_t, int64_t);
 #endif
 }  // namespace op_kernel_type_control
+
+namespace {
+
+template <typename Dims>
+std::vector<int64_t> ComputeStridesForDims(const Dims& dims) {
+  std::vector<int64_t> strides(dims.size(), 1);
+  for (int64_t i = static_cast<int64_t>(dims.size()) - 2; i >= 0; --i) {
+    strides[static_cast<size_t>(i)] = strides[static_cast<size_t>(i + 1)] * dims[static_cast<size_t>(i + 1)];
+  }
+  return strides;
+}
+
+Status ReadScalarAxis(const Tensor& axis_tensor, int64_t& axis) {
+  ORT_RETURN_IF_NOT(axis_tensor.Shape().Size() == 1,
+                    "GatherV2 axis must be a scalar, got shape ", axis_tensor.Shape().ToString());
+  if (axis_tensor.IsDataType<int32_t>()) {
+    axis = static_cast<int64_t>(*axis_tensor.Data<int32_t>());
+    return Status::OK();
+  }
+  if (axis_tensor.IsDataType<int64_t>()) {
+    axis = *axis_tensor.Data<int64_t>();
+    return Status::OK();
+  }
+  return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT, "GatherV2 axis must be int32 or int64");
+}
+
+Status PrepareGatherV2(const Tensor& params,
+                       const Tensor& indices,
+                       const Tensor& axis_tensor,
+                       int64_t batch_dims_attr,
+                       int64_t& axis,
+                       int64_t& batch_dims,
+                       TensorShape& output_shape) {
+  ORT_RETURN_IF_ERROR(ReadScalarAxis(axis_tensor, axis));
+
+  const auto& params_shape = params.Shape();
+  const auto& indices_shape = indices.Shape();
+  const int64_t params_rank = static_cast<int64_t>(params_shape.NumDimensions());
+  const int64_t indices_rank = static_cast<int64_t>(indices_shape.NumDimensions());
+  ORT_RETURN_IF_NOT(params_rank > 0, "GatherV2 params must have rank >= 1");
+
+  axis = HandleNegativeAxis(axis, params_rank);
+  batch_dims = batch_dims_attr;
+  if (batch_dims < 0) {
+    batch_dims += indices_rank;
+  }
+
+  ORT_RETURN_IF_NOT(batch_dims >= 0 && batch_dims <= std::min(axis, indices_rank),
+                    "GatherV2 batch_dims must be in [0, min(axis, indices rank)], got batch_dims=",
+                    batch_dims, ", axis=", axis, ", indices rank=", indices_rank);
+
+  for (int64_t i = 0; i < batch_dims; ++i) {
+    ORT_RETURN_IF_NOT(params_shape[static_cast<size_t>(i)] == indices_shape[static_cast<size_t>(i)],
+                      "GatherV2 batch dimension ", i, " mismatch: params=",
+                      params_shape[static_cast<size_t>(i)], ", indices=",
+                      indices_shape[static_cast<size_t>(i)]);
+  }
+
+  TensorShapeVector output_dims;
+  output_dims.reserve(static_cast<size_t>(params_rank + indices_rank - batch_dims - 1));
+  for (int64_t i = 0; i < axis; ++i) {
+    output_dims.push_back(params_shape[static_cast<size_t>(i)]);
+  }
+  for (int64_t i = batch_dims; i < indices_rank; ++i) {
+    output_dims.push_back(indices_shape[static_cast<size_t>(i)]);
+  }
+  for (int64_t i = axis + 1; i < params_rank; ++i) {
+    output_dims.push_back(params_shape[static_cast<size_t>(i)]);
+  }
+  output_shape = TensorShape(output_dims);
+  return Status::OK();
+}
+
+template <typename IndexT>
+Status GatherV2CopyData(const Tensor& params,
+                        const Tensor& indices,
+                        Tensor& output,
+                        int64_t axis,
+                        int64_t batch_dims) {
+  const int64_t output_size = output.Shape().Size();
+  if (output_size == 0) {
+    return Status::OK();
+  }
+
+  const auto params_dims = params.Shape().GetDims();
+  const auto indices_dims = indices.Shape().GetDims();
+  const auto output_dims = output.Shape().GetDims();
+  const auto params_strides = ComputeStridesForDims(params_dims);
+  const auto indices_strides = ComputeStridesForDims(indices_dims);
+  const auto output_strides = ComputeStridesForDims(output_dims);
+  const int64_t indices_tail_rank = static_cast<int64_t>(indices_dims.size()) - batch_dims;
+  const int64_t axis_dim_limit = params.Shape()[static_cast<size_t>(axis)];
+  ORT_RETURN_IF_NOT(axis_dim_limit > 0, "GatherV2 cannot gather from an empty axis with non-empty output");
+
+  const auto* indices_data = indices.Data<IndexT>();
+  const auto* src_base = static_cast<const uint8_t*>(params.DataRaw());
+  auto* dst_base = static_cast<uint8_t*>(output.MutableDataRaw());
+  const size_t element_bytes = params.DataType()->Size();
+
+  std::vector<int64_t> out_coord(output_dims.size(), 0);
+  for (int64_t out_flat = 0; out_flat < output_size; ++out_flat) {
+    int64_t remaining = out_flat;
+    for (size_t d = 0; d < output_dims.size(); ++d) {
+      out_coord[d] = output_strides.empty() ? 0 : remaining / output_strides[d];
+      remaining = output_strides.empty() ? 0 : remaining % output_strides[d];
+    }
+
+    int64_t indices_offset = 0;
+    for (int64_t d = 0; d < batch_dims; ++d) {
+      indices_offset += out_coord[static_cast<size_t>(d)] * indices_strides[static_cast<size_t>(d)];
+    }
+    for (int64_t d = 0; d < indices_tail_rank; ++d) {
+      indices_offset += out_coord[static_cast<size_t>(axis + d)] *
+                        indices_strides[static_cast<size_t>(batch_dims + d)];
+    }
+
+    IndexT idx = indices_data[indices_offset];
+    if (idx < -axis_dim_limit || idx >= axis_dim_limit) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, INVALID_ARGUMENT,
+                             "GatherV2 indices element out of data bounds, idx=", idx,
+                             " must be within [", -axis_dim_limit, ", ", axis_dim_limit - 1, "]");
+    }
+    const int64_t normalized_idx = idx < 0 ? static_cast<int64_t>(idx) + axis_dim_limit : static_cast<int64_t>(idx);
+
+    int64_t src_offset = 0;
+    for (int64_t d = 0; d < axis; ++d) {
+      src_offset += out_coord[static_cast<size_t>(d)] * params_strides[static_cast<size_t>(d)];
+    }
+    src_offset += normalized_idx * params_strides[static_cast<size_t>(axis)];
+    for (int64_t d = axis + 1; d < static_cast<int64_t>(params_dims.size()); ++d) {
+      const int64_t out_dim = axis + indices_tail_rank + (d - axis - 1);
+      src_offset += out_coord[static_cast<size_t>(out_dim)] * params_strides[static_cast<size_t>(d)];
+    }
+
+    memcpy(dst_base + static_cast<size_t>(out_flat) * element_bytes,
+           src_base + static_cast<size_t>(src_offset) * element_bytes,
+           element_bytes);
+  }
+
+  return Status::OK();
+}
+
+}  // namespace
 
 using EnabledIndexTypes = ORT_OP_KERNEL_ARG_ENABLED_TYPE_LIST_ALL_OPSETS(kCpuExecutionProvider, kOnnxDomain,
                                                                          Gather, Input, 1);
@@ -55,6 +201,16 @@ ONNX_CPU_OPERATOR_KERNEL(
         .TypeConstraint("T", DataTypeImpl::AllTensorTypes())
         .TypeConstraint("Tind", BuildKernelDefConstraintsFromTypeList<EnabledIndexTypes>()),
     Gather);
+
+ONNX_CPU_OPERATOR_KERNEL(
+    GatherV2,
+    1,
+    KernelDefBuilder()
+        .InputMemoryType(OrtMemTypeCPUInput, 2)
+        .TypeConstraint("Tparams", DataTypeImpl::AllTensorTypes())
+        .TypeConstraint("Tindices", BuildKernelDefConstraints<int32_t, int64_t>())
+        .TypeConstraint("Taxis", BuildKernelDefConstraints<int32_t, int64_t>()),
+    GatherV2);
 
 template <typename Tin>
 Status GatherCopyData(const Tensor* indices_tensor, const uint8_t* src_base, uint8_t* dst_base, bool is_string_type,
@@ -103,6 +259,31 @@ Status GatherCopyData(const Tensor* indices_tensor, const uint8_t* src_base, uin
       });
 
   return Status::OK();
+}
+
+Status GatherV2::Compute(OpKernelContext* context) const {
+  const Tensor* params = context->Input<Tensor>(0);
+  const Tensor* indices = context->Input<Tensor>(1);
+  const Tensor* axis_tensor = context->Input<Tensor>(2);
+  ORT_RETURN_IF_NOT(params != nullptr && indices != nullptr && axis_tensor != nullptr,
+                    "GatherV2 inputs must not be null");
+
+  int64_t axis = 0;
+  int64_t batch_dims = 0;
+  TensorShape output_shape;
+  ORT_RETURN_IF_ERROR(PrepareGatherV2(*params, *indices, *axis_tensor, batch_dims_, axis, batch_dims, output_shape));
+
+  Tensor* output = context->Output(0, output_shape);
+  ORT_RETURN_IF_NOT(output != nullptr, "GatherV2 failed to allocate output tensor");
+
+  if (utils::HasType<EnabledIndexTypes, int32_t>() && indices->IsDataType<int32_t>()) {
+    return GatherV2CopyData<int32_t>(*params, *indices, *output, axis, batch_dims);
+  }
+  if (utils::HasType<EnabledIndexTypes, int64_t>() && indices->IsDataType<int64_t>()) {
+    return GatherV2CopyData<int64_t>(*params, *indices, *output, axis, batch_dims);
+  }
+
+  return ORT_MAKE_STATUS(ONNXRUNTIME, NOT_IMPLEMENTED, "GatherV2 Tindices type not supported in this build.");
 }
 
 Status Gather::Compute(OpKernelContext* context) const {

@@ -8,7 +8,11 @@
 #include "core/providers/musa/musa_utils.h"
 #include "core/providers/musa/musa_fwd.h"
 #include "core/providers/musa/musa_execution_provider.h"
+#include "core/providers/musa/musa_call.h"
 #include "mudnn.h"
+
+#include <string>
+#include <vector>
 
 namespace onnxruntime {
 namespace musa {
@@ -103,6 +107,40 @@ Status Cast<SrcT>::ComputeInternal(OpKernelContext* context) const {
   return Status::OK();
 }
 
+Status CastStringToInt32::ComputeInternal(OpKernelContext* context) const {
+  const Tensor* input = context->Input<Tensor>(0);
+  ORT_RETURN_IF_NOT(input != nullptr, "CastStringToInt32: input tensor is null");
+
+  Tensor* output = context->Output(0, input->Shape());
+  ORT_RETURN_IF_NOT(output != nullptr, "CastStringToInt32: output tensor is null");
+
+  const int64_t count = input->Shape().Size();
+  if (count == 0) {
+    return Status::OK();
+  }
+
+  const auto* input_data = reinterpret_cast<const std::string*>(input->DataRaw());
+  std::vector<int32_t> host_output(static_cast<size_t>(count));
+  for (int64_t i = 0; i < count; ++i) {
+    try {
+      host_output[static_cast<size_t>(i)] = gsl::narrow_cast<int32_t>(std::stoll(input_data[i]));
+    } catch (const std::exception& e) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "CastStringToInt32: failed to parse input string: ",
+                             input_data[i], ", error: ", e.what());
+    }
+  }
+
+  auto stream = Stream(context);
+  MUSA_RETURN_IF_ERROR(musaMemcpyAsync(output->MutableData<int32_t>(),
+                                       host_output.data(),
+                                       host_output.size() * sizeof(int32_t),
+                                       musaMemcpyHostToDevice,
+                                       stream));
+  MUSA_RETURN_IF_ERROR(musaStreamSynchronize(stream));
+  return Status::OK();
+}
+
 // Helper function to get type constraints for Cast operation
 const std::vector<MLDataType>& CastOpTypeConstraints() {
   // Must be done as a local static for a shared provider
@@ -149,6 +187,14 @@ const std::vector<MLDataType>& CastOpTypeConstraints() {
           .TypeConstraint("T2", CastOpTypeConstraints()),          \
       Cast<T>);
 
+#define REGISTER_MUSA_CAST_STRING_TO_INT32_VERSIONED_KERNEL(ver_start, ver_end)              \
+  ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_EX(                                                   \
+      Cast, kOnnxDomain, ver_start, ver_end, string, kMusaExecutionProvider,                 \
+      (*KernelDefBuilder::Create())                                                         \
+          .TypeConstraint("T1", DataTypeImpl::GetTensorTypeFromOnnxType(ONNX_NAMESPACE::TensorProto_DataType_STRING))                \
+          .TypeConstraint("T2", DataTypeImpl::GetTensorType<int32_t>())                    \
+          .InputMemoryType(OrtMemTypeCPUInput, 0),                                          \
+      CastStringToInt32);
 // Register Cast operators (version 6-8)
 REGISTER_MUSA_CAST_VERSIONED_TYPED_KERNEL(6, 8, int32_t)
 REGISTER_MUSA_CAST_VERSIONED_TYPED_KERNEL(6, 8, int64_t)
@@ -187,6 +233,7 @@ REGISTER_MUSA_CAST_VERSIONED_TYPED_KERNEL(13, 18, uint16_t)
 REGISTER_MUSA_CAST_VERSIONED_TYPED_KERNEL(13, 18, uint32_t)
 REGISTER_MUSA_CAST_VERSIONED_TYPED_KERNEL(13, 18, uint64_t)
 REGISTER_MUSA_CAST_VERSIONED_TYPED_KERNEL(13, 18, bool)
+REGISTER_MUSA_CAST_STRING_TO_INT32_VERSIONED_KERNEL(13, 18)
 
 // Register Cast operators (version 19+)
 REGISTER_MUSA_CAST_TYPED_KERNEL(19, int32_t)
@@ -200,6 +247,8 @@ REGISTER_MUSA_CAST_TYPED_KERNEL(19, uint16_t)
 REGISTER_MUSA_CAST_TYPED_KERNEL(19, uint32_t)
 REGISTER_MUSA_CAST_TYPED_KERNEL(19, uint64_t)
 REGISTER_MUSA_CAST_TYPED_KERNEL(19, bool)
+
+#undef REGISTER_MUSA_CAST_STRING_TO_INT32_VERSIONED_KERNEL
 
 } // namespace musa
 } // namespace onnxruntime

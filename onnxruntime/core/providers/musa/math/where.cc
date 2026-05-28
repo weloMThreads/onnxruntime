@@ -779,6 +779,7 @@ Status Where<T>::ComputeInternal(OpKernelContext* ctx) const {
 
 // Explicit template instantiations
 template class Where<float>;
+template class Where<double>;
 template class Where<MLFloat16>;
 template class Where<int32_t>;
 template class Where<int64_t>;
@@ -811,6 +812,27 @@ REGISTER_MUSA_WHERE_TYPED_KERNEL(16, float)
 REGISTER_MUSA_WHERE_TYPED_KERNEL(16, MLFloat16)
 REGISTER_MUSA_WHERE_TYPED_KERNEL(16, int32_t)
 REGISTER_MUSA_WHERE_TYPED_KERNEL(16, int64_t)
+
+#define REGISTER_MUSA_SELECT_TYPED_KERNEL(OpName, T) \
+    ONNX_OPERATOR_TYPED_KERNEL_EX( \
+        OpName, kOnnxDomain, 1, T, kMusaExecutionProvider, \
+        (*KernelDefBuilder::Create()) \
+            .TypeConstraint("T", DataTypeImpl::GetTensorType<T>()) \
+            .TypeConstraint("B", DataTypeImpl::GetTensorType<bool>()), \
+        Where<T>);
+
+#define REGISTER_MUSA_SELECT_KERNELS(OpName) \
+    REGISTER_MUSA_SELECT_TYPED_KERNEL(OpName, float) \
+    REGISTER_MUSA_SELECT_TYPED_KERNEL(OpName, double) \
+    REGISTER_MUSA_SELECT_TYPED_KERNEL(OpName, MLFloat16) \
+    REGISTER_MUSA_SELECT_TYPED_KERNEL(OpName, int32_t) \
+    REGISTER_MUSA_SELECT_TYPED_KERNEL(OpName, int64_t)
+
+REGISTER_MUSA_SELECT_KERNELS(Select)
+REGISTER_MUSA_SELECT_KERNELS(SelectV2)
+
+#undef REGISTER_MUSA_SELECT_KERNELS
+#undef REGISTER_MUSA_SELECT_TYPED_KERNEL
 
 }  // namespace musa
 }  // namespace onnxruntime
