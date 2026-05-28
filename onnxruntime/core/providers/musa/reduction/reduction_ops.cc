@@ -311,6 +311,39 @@ Status PrepareReduceProdInt32Params(const TensorShape& input_shape,
   return Status::OK();
 }
 
+bool CanUseReduceMeanFastPath(const TensorShape& input_shape,
+                              const TensorShapeVector& axes) {
+  const size_t rank = input_shape.NumDimensions();
+  if (input_shape.Size() == 0 || axes.empty()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < rank; ++i) {
+    if (input_shape[i] <= 0) {
+      return false;
+    }
+  }
+
+  if (rank == 2 && axes.size() == 1 && axes[0] == 1) {
+    return input_shape[0] <= std::numeric_limits<int>::max();
+  }
+
+  if (rank == 3 && axes.size() == 1 && axes[0] == 1) {
+    return input_shape[0] <= std::numeric_limits<int>::max();
+  }
+
+  if (rank == 4 && axes.size() == 1 && axes[0] == 2) {
+    return input_shape[0] * input_shape[1] <= std::numeric_limits<int>::max();
+  }
+
+  if (rank == 4 && axes.size() == 3 &&
+      axes[0] == 0 && axes[1] == 2 && axes[2] == 3) {
+    return input_shape[1] <= std::numeric_limits<int>::max();
+  }
+
+  return false;
+}
+
 }  // namespace
 
 template <bool allow_multi_axes>
@@ -854,29 +887,10 @@ Status RunReduceSumTyped(const ReduceKernel<true>* reduce_kernel,
     return Status::OK();
   }
 
-  ORT_RETURN_IF_ERROR(RunMusaReduceStaged<T>(prepare, reduce_kernel, kernel, ctx,
-                                             X->DataRaw(), X->Shape(),
-                                             Y->MutableDataRaw(), Y->Shape(),
-                                             axes, ::musa::dnn::Reduce::Mode::MEAN));
-
-  const int64_t divisor = ComputeReductionElementCount(X->Shape(), axes);
-  if (divisor <= 1 || Y->Shape().Size() == 0) {
-    return Status::OK();
-  }
-
-  auto divisor_buffer = kernel->GetScratchBuffer<T>(Y->Shape().Size(), ctx->GetComputeStream());
-  if (!divisor_buffer) {
-    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to allocate ReduceSum multiplier scratch buffer");
-  }
-
-  ::musa::dnn::Tensor divisor_tensor;
-  ORT_RETURN_IF_ERROR(SetupReduceTensorFromBuffer<T>(divisor_tensor, divisor_buffer.get(), Y->Shape()));
-  ORT_RETURN_IF_ERROR(RunMusaFill<T>(prepare.GetHandle(), divisor_tensor, static_cast<T>(divisor)));
-  return RunMusaBinaryOp(prepare.GetHandle(),
-                         ::musa::dnn::Binary::Mode::MUL,
-                         prepare.outputTensors[0],
-                         prepare.outputTensors[0],
-                         divisor_tensor);
+  return RunMusaReduceStaged<T>(prepare, reduce_kernel, kernel, ctx,
+                                X->DataRaw(), X->Shape(),
+                                Y->MutableDataRaw(), Y->Shape(),
+                                axes, ::musa::dnn::Reduce::Mode::ADD);
 }
 
 template <>
@@ -897,28 +911,10 @@ Status RunReduceSumTyped<MLFloat16>(const ReduceKernel<true>* reduce_kernel,
     return Status::OK();
   }
 
-  ORT_RETURN_IF_ERROR(RunMusaReduceStaged<MLFloat16>(prepare, reduce_kernel, kernel, ctx,
-                                                     X->DataRaw(), X->Shape(),
-                                                     Y->MutableDataRaw(), Y->Shape(),
-                                                     axes, ::musa::dnn::Reduce::Mode::MEAN));
-  const int64_t divisor = ComputeReductionElementCount(X->Shape(), axes);
-  if (divisor > 1 && Y->Shape().Size() > 0) {
-    auto divisor_buffer = kernel->GetScratchBuffer<MLFloat16>(Y->Shape().Size(), ctx->GetComputeStream());
-    if (!divisor_buffer) {
-      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to allocate fp16 ReduceSum multiplier scratch buffer");
-    }
-
-    ::musa::dnn::Tensor divisor_tensor;
-    ORT_RETURN_IF_ERROR(SetupReduceTensorFromBuffer<MLFloat16>(divisor_tensor, divisor_buffer.get(), Y->Shape()));
-    ORT_RETURN_IF_ERROR(RunMusaFill<MLFloat16>(prepare.GetHandle(), divisor_tensor, MLFloat16(static_cast<float>(divisor))));
-    return RunMusaBinaryOp(prepare.GetHandle(),
-                           ::musa::dnn::Binary::Mode::MUL,
-                           prepare.outputTensors[0],
-                           prepare.outputTensors[0],
-                           divisor_tensor);
-  }
-
-  return Status::OK();
+  return RunMusaReduceStaged<MLFloat16>(prepare, reduce_kernel, kernel, ctx,
+                                        X->DataRaw(), X->Shape(),
+                                        Y->MutableDataRaw(), Y->Shape(),
+                                        axes, ::musa::dnn::Reduce::Mode::ADD);
 }
 
 template <typename T>
@@ -929,29 +925,40 @@ Status RunReduceMeanTyped(const ReduceKernel<true>* reduce_kernel,
                           const Tensor* X,
                           Tensor* Y,
                           const TensorShapeVector& axes) {
-  ORT_RETURN_IF_ERROR(RunReduceSumTyped<T>(reduce_kernel, kernel, ctx, prepare, X, Y, axes));
-  if (X->Shape().Size() == 0 || Y->Shape().Size() == 0) {
+  if (X->Shape().Size() == 0) {
+    if (Y->Shape().Size() > 0) {
+      musaError_t status = musaMemsetAsync(Y->MutableDataRaw(), 0, Y->SizeInBytes(), kernel->Stream(ctx));
+      if (status != musaSuccess) {
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to zero empty ReduceMean output tensor");
+      }
+    }
     return Status::OK();
   }
 
-  const int64_t divisor = ComputeReductionElementCount(X->Shape(), axes);
-  if (divisor <= 1) {
+  if (CanUseReduceMeanFastPath(X->Shape(), axes)) {
+    ReduceL2KeepDimsParams params{};
+    ORT_RETURN_IF_ERROR(PrepareReduceL2Params(X->Shape(),
+                                              Y->Shape(),
+                                              axes,
+                                              reduce_kernel->GetKeepDims(),
+                                              params));
+
+    musaError_t status = LaunchReduceMeanFloat(kernel->Stream(ctx),
+                                               static_cast<const float*>(X->DataRaw()),
+                                               static_cast<float*>(Y->MutableDataRaw()),
+                                               params);
+    if (status != musaSuccess) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "ReduceMean fast MUSA kernel launch failed, status: ",
+                             static_cast<int>(status));
+    }
     return Status::OK();
   }
 
-  auto divisor_buffer = kernel->GetScratchBuffer<T>(Y->Shape().Size(), ctx->GetComputeStream());
-  if (!divisor_buffer) {
-    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to allocate ReduceMean divisor scratch buffer");
-  }
-
-  ::musa::dnn::Tensor divisor_tensor;
-  ORT_RETURN_IF_ERROR(SetupReduceTensorFromBuffer<T>(divisor_tensor, divisor_buffer.get(), Y->Shape()));
-  ORT_RETURN_IF_ERROR(RunMusaFill<T>(prepare.GetHandle(), divisor_tensor, static_cast<T>(divisor)));
-  return RunMusaBinaryOp(prepare.GetHandle(),
-                         ::musa::dnn::Binary::Mode::DIV,
-                         prepare.outputTensors[0],
-                         prepare.outputTensors[0],
-                         divisor_tensor);
+  return RunMusaReduceStaged<T>(prepare, reduce_kernel, kernel, ctx,
+                                X->DataRaw(), X->Shape(),
+                                Y->MutableDataRaw(), Y->Shape(),
+                                axes, ::musa::dnn::Reduce::Mode::MEAN);
 }
 
 template <>
@@ -972,10 +979,29 @@ Status RunReduceMeanTyped<MLFloat16>(const ReduceKernel<true>* reduce_kernel,
     return Status::OK();
   }
 
+  if (CanUseReduceMeanFastPath(X->Shape(), axes)) {
+    ReduceL2KeepDimsParams params{};
+    ORT_RETURN_IF_ERROR(PrepareReduceL2Params(X->Shape(),
+                                              Y->Shape(),
+                                              axes,
+                                              reduce_kernel->GetKeepDims(),
+                                              params));
+
+    musaError_t status = LaunchReduceMeanHalf(kernel->Stream(ctx),
+                                              X->DataRaw(),
+                                              Y->MutableDataRaw(),
+                                              params);
+    if (status != musaSuccess) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "fp16 ReduceMean fast MUSA kernel launch failed, status: ",
+                             static_cast<int>(status));
+    }
+    return Status::OK();
+  }
+
   auto input_float = kernel->GetScratchBuffer<float>(X->Shape().Size(), ctx->GetComputeStream());
-  auto sum_float = kernel->GetScratchBuffer<float>(Y->Shape().Size(), ctx->GetComputeStream());
   auto mean_float = kernel->GetScratchBuffer<float>(Y->Shape().Size(), ctx->GetComputeStream());
-  if ((X->Shape().Size() > 0 && !input_float) || (Y->Shape().Size() > 0 && (!sum_float || !mean_float))) {
+  if ((X->Shape().Size() > 0 && !input_float) || (Y->Shape().Size() > 0 && !mean_float)) {
     return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to allocate fp16 ReduceMean float scratch buffers");
   }
 
@@ -987,33 +1013,12 @@ Status RunReduceMeanTyped<MLFloat16>(const ReduceKernel<true>* reduce_kernel,
                                      input_float_tensor,
                                      prepare.inputTensors[0]));
 
+  ::musa::dnn::Tensor mean_float_tensor;
+  ORT_RETURN_IF_ERROR(SetupReduceTensorFromBuffer<float>(mean_float_tensor, mean_float.get(), Y->Shape()));
   ORT_RETURN_IF_ERROR(RunMusaReduceStaged<float>(prepare, reduce_kernel, kernel, ctx,
                                                  input_float.get(), X->Shape(),
-                                                 sum_float.get(), Y->Shape(),
-                                                 axes, ::musa::dnn::Reduce::Mode::ADD));
-
-  const int64_t divisor = ComputeReductionElementCount(X->Shape(), axes);
-  ::musa::dnn::Tensor mean_float_tensor;
-  if (divisor <= 1) {
-    ORT_RETURN_IF_ERROR(SetupReduceTensorFromBuffer<float>(mean_float_tensor, sum_float.get(), Y->Shape()));
-  } else {
-    auto divisor_buffer = kernel->GetScratchBuffer<float>(Y->Shape().Size(), ctx->GetComputeStream());
-    if (!divisor_buffer) {
-      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to allocate fp16 ReduceMean divisor scratch buffer");
-    }
-
-    ::musa::dnn::Tensor sum_float_tensor;
-    ::musa::dnn::Tensor divisor_tensor;
-    ORT_RETURN_IF_ERROR(SetupReduceTensorFromBuffer<float>(sum_float_tensor, sum_float.get(), Y->Shape()));
-    ORT_RETURN_IF_ERROR(SetupReduceTensorFromBuffer<float>(divisor_tensor, divisor_buffer.get(), Y->Shape()));
-    ORT_RETURN_IF_ERROR(SetupReduceTensorFromBuffer<float>(mean_float_tensor, mean_float.get(), Y->Shape()));
-    ORT_RETURN_IF_ERROR(RunMusaFill<float>(prepare.GetHandle(), divisor_tensor, static_cast<float>(divisor)));
-    ORT_RETURN_IF_ERROR(RunMusaBinaryOp(prepare.GetHandle(),
-                                        ::musa::dnn::Binary::Mode::DIV,
-                                        mean_float_tensor,
-                                        sum_float_tensor,
-                                        divisor_tensor));
-  }
+                                                 mean_float.get(), Y->Shape(),
+                                                 axes, ::musa::dnn::Reduce::Mode::MEAN));
 
   return RunMusaUnaryOp(prepare.GetHandle(),
                         ::musa::dnn::Unary::Mode::CAST,

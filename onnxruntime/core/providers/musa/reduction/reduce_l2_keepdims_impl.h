@@ -45,5 +45,15 @@ musaError_t LaunchReduceSumSquareHalf(musaStream_t stream,
                                       void* output_data,
                                       const ReduceL2KeepDimsParams& params);
 
+musaError_t LaunchReduceMeanFloat(musaStream_t stream,
+                                  const float* input_data,
+                                  float* output_data,
+                                  const ReduceL2KeepDimsParams& params);
+
+musaError_t LaunchReduceMeanHalf(musaStream_t stream,
+                                 const void* input_data,
+                                 void* output_data,
+                                 const ReduceL2KeepDimsParams& params);
+
 }  // namespace musa
 }  // namespace onnxruntime
