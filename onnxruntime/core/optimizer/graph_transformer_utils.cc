@@ -57,6 +57,7 @@
 #include "core/optimizer/matmul_add_fusion.h"
 #include "core/optimizer/matmul_bn_fusion.h"
 #include "core/optimizer/matmul_integer_to_float.h"
+#include "core/optimizer/musa_operator_fusion.h"
 #include "core/optimizer/matmul_scale_fusion.h"
 #include "core/optimizer/matmul_transpose_fusion.h"
 #include "core/optimizer/nchwc_transformer.h"
@@ -408,6 +409,11 @@ InlinedVector<std::unique_ptr<GraphTransformer>> GenerateTransformers(
       transformers.emplace_back(std::make_unique<AttentionFusion>(cpu_acl_cuda_dml_eps));
       transformers.emplace_back(std::make_unique<EmbedLayerNormFusion>(cpu_acl_cuda_dml_eps));
       transformers.emplace_back(std::make_unique<GatherSliceToSplitFusion>(cpu_cuda_eps));
+      // Mirror the initial TF plugin-style linear fusions on top of ORT's
+      // generic optimizer pipeline. This pass is MUSA-only and runs after
+      // partitioning, so it only targets residual MatMul+BiasAdd(+Relu)
+      // patterns that were not already handled by the generic ORT passes.
+      transformers.emplace_back(std::make_unique<MusaOperatorFusionTransformer>(musa_ep));
       transformers.emplace_back(std::make_unique<GatherToSliceFusion>(cpu_cuda_eps));
       transformers.emplace_back(std::make_unique<MatmulTransposeFusion>(cpu_cuda_dml_eps));
       transformers.emplace_back(std::make_unique<BiasGeluFusion>(cpu_acl_cuda_dml_eps));

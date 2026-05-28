@@ -61,6 +61,7 @@
 #include "core/optimizer/matmul_add_fusion.h"
 #include "core/optimizer/matmul_bn_fusion.h"
 #include "core/optimizer/matmul_nbits_fusion.h"
+#include "core/optimizer/musa_operator_fusion.h"
 #include "core/optimizer/matmul_integer_to_float.h"
 #include "core/optimizer/matmul_scale_fusion.h"
 #include "core/optimizer/matmul_transpose_fusion.h"
@@ -3813,6 +3814,107 @@ TEST_F(GraphTransformationTests, Gemm_LeakyRelu_Fusion) {
   ASSERT_TRUE(op_to_count["LeakyRelu"] == 0);
   ASSERT_TRUE(op_to_count["Gemm"] == 0);
   ASSERT_TRUE(op_to_count["com.microsoft.FusedGemm"] == 1);
+}
+
+TEST_F(GraphTransformationTests, MusaOperatorFusion_MatMulBiasAdd) {
+  auto build_test_case = [&](ModelTestBuilder& builder) {
+    auto* input_arg = builder.MakeInput<float>({{8, 32}});
+    auto* weight_arg = builder.MakeInput<float>({{32, 64}});
+    auto* bias_arg = builder.MakeInput<float>({{64}});
+    auto* matmul_out = builder.MakeIntermediate();
+    auto* output_arg = builder.MakeOutput();
+    builder.AddNode("MatMul", {input_arg, weight_arg}, {matmul_out});
+    builder.AddNode("Add", {matmul_out, bias_arg}, {output_arg});
+  };
+
+  auto pre_graph_checker = [&](Graph& graph) {
+    for (auto& node : graph.Nodes()) {
+      node.SetExecutionProviderType(kMusaExecutionProvider);
+    }
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["MatMul"] == 1);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["Add"] == 1);
+    return Status::OK();
+  };
+
+  auto post_graph_checker = [&](Graph& graph) {
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["MatMul"] == 0);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["Add"] == 0);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["com.microsoft.FusedGemm"] == 1);
+    return Status::OK();
+  };
+
+  std::unique_ptr<GraphTransformer> transformer =
+      std::make_unique<MusaOperatorFusionTransformer>(InlinedHashSet<std::string_view>{kMusaExecutionProvider});
+  ASSERT_STATUS_OK(TestGraphTransformer(build_test_case, 18, *logger_, std::move(transformer), TransformerLevel::Level2,
+                                        1, pre_graph_checker, post_graph_checker));
+}
+
+TEST_F(GraphTransformationTests, MusaOperatorFusion_LinearRelu) {
+  auto build_test_case = [&](ModelTestBuilder& builder) {
+    auto* input_arg = builder.MakeInput<float>({{8, 32}});
+    auto* weight_arg = builder.MakeInput<float>({{32, 64}});
+    auto* bias_arg = builder.MakeInput<float>({{1, 64}});
+    auto* matmul_out = builder.MakeIntermediate();
+    auto* add_out = builder.MakeIntermediate();
+    auto* output_arg = builder.MakeOutput();
+    builder.AddNode("MatMul", {input_arg, weight_arg}, {matmul_out});
+    builder.AddNode("Add", {matmul_out, bias_arg}, {add_out});
+    builder.AddNode("Relu", {add_out}, {output_arg});
+  };
+
+  auto pre_graph_checker = [&](Graph& graph) {
+    for (auto& node : graph.Nodes()) {
+      node.SetExecutionProviderType(kMusaExecutionProvider);
+    }
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["MatMul"] == 1);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["Add"] == 1);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["Relu"] == 1);
+    return Status::OK();
+  };
+
+  auto post_graph_checker = [&](Graph& graph) {
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["MatMul"] == 0);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["Add"] == 0);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["Relu"] == 0);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["com.microsoft.FusedGemm"] == 1);
+    return Status::OK();
+  };
+
+  std::unique_ptr<GraphTransformer> transformer =
+      std::make_unique<MusaOperatorFusionTransformer>(InlinedHashSet<std::string_view>{kMusaExecutionProvider});
+  ASSERT_STATUS_OK(TestGraphTransformer(build_test_case, 18, *logger_, std::move(transformer), TransformerLevel::Level2,
+                                        1, pre_graph_checker, post_graph_checker));
+}
+
+TEST_F(GraphTransformationTests, MusaOperatorFusion_SkipNonBiasBroadcast) {
+  auto build_test_case = [&](ModelTestBuilder& builder) {
+    auto* input_arg = builder.MakeInput<float>({{8, 32}});
+    auto* weight_arg = builder.MakeInput<float>({{32, 64}});
+    auto* bias_arg = builder.MakeInput<float>({{8, 1}});
+    auto* matmul_out = builder.MakeIntermediate();
+    auto* output_arg = builder.MakeOutput();
+    builder.AddNode("MatMul", {input_arg, weight_arg}, {matmul_out});
+    builder.AddNode("Add", {matmul_out, bias_arg}, {output_arg});
+  };
+
+  auto pre_graph_checker = [&](Graph& graph) {
+    for (auto& node : graph.Nodes()) {
+      node.SetExecutionProviderType(kMusaExecutionProvider);
+    }
+    return Status::OK();
+  };
+
+  auto post_graph_checker = [&](Graph& graph) {
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["MatMul"] == 1);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["Add"] == 1);
+    TEST_RETURN_IF_NOT(CountOpsInGraph(graph)["com.microsoft.FusedGemm"] == 0);
+    return Status::OK();
+  };
+
+  std::unique_ptr<GraphTransformer> transformer =
+      std::make_unique<MusaOperatorFusionTransformer>(InlinedHashSet<std::string_view>{kMusaExecutionProvider});
+  ASSERT_STATUS_OK(TestGraphTransformer(build_test_case, 18, *logger_, std::move(transformer), TransformerLevel::Level2,
+                                        1, pre_graph_checker, post_graph_checker));
 }
 #endif
 
