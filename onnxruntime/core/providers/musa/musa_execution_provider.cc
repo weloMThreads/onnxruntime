@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <unordered_set>
 #include <vector>
 
 namespace onnxruntime {
@@ -96,6 +97,7 @@ class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, Me
 // MUSA provider fusion kernels
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaTokenMixerResidual);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaReshapeMatMul);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaFeatureNorm);
 
 // Conv operations (op 1-10 and op 11) - NCHW
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 10, float, Conv);
@@ -1670,6 +1672,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kMSDomain, 1, MusaTokenMixerResidual)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kMSDomain, 1, MusaReshapeMatMul)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kMSDomain, 1, MusaFeatureNorm)>,
 
       // Register Conv operators with float type (NCHW)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
@@ -4829,6 +4833,7 @@ namespace {
 
 constexpr const char* kMusaTokenMixerResidualOpName = "MusaTokenMixerResidual";
 constexpr const char* kMusaReshapeMatMulOpName = "MusaReshapeMatMul";
+constexpr const char* kMusaFeatureNormOpName = "MusaFeatureNorm";
 
 bool ReadIntShapeInitializer(const GraphViewer& graph_viewer,
                              const std::string& name,
@@ -4980,6 +4985,282 @@ void AddIntAttribute(NodeAttributes& attributes,
   attr->set_type(ONNX_NAMESPACE::AttributeProto_AttributeType_INT);
   attr->set_i(value);
   attributes[name] = *attr;
+}
+
+void AddFloatAttribute(NodeAttributes& attributes,
+                       const std::string& name,
+                       float value) {
+  auto attr = ONNX_NAMESPACE::AttributeProto::Create();
+  attr->set_name(name);
+  attr->set_type(ONNX_NAMESPACE::AttributeProto_AttributeType_FLOAT);
+  attr->set_f(value);
+  attributes[name] = *attr;
+}
+
+bool GetFloatAttribute(const Node& node, const std::string& name, float& value) {
+  const auto& attrs = node.GetAttributes();
+  if (attrs.count(name) == 0 || attrs.at(name).type() != ONNX_NAMESPACE::AttributeProto_AttributeType_FLOAT) {
+    return false;
+  }
+  value = attrs.at(name).f();
+  return true;
+}
+
+bool HasIntListAttribute(const Node& node, const std::string& name, std::initializer_list<int64_t> expected) {
+  const auto& attrs = node.GetAttributes();
+  if (attrs.count(name) == 0 || attrs.at(name).type() != ONNX_NAMESPACE::AttributeProto_AttributeType_INTS) {
+    return false;
+  }
+  const auto& attr = attrs.at(name);
+  if (static_cast<size_t>(attr.ints_size()) != expected.size()) {
+    return false;
+  }
+  size_t i = 0;
+  for (int64_t value : expected) {
+    if (attr.ints(static_cast<int>(i++)) != value) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool HasIntAttributeValue(const Node& node, const std::string& name, int64_t expected) {
+  int64_t value = 0;
+  return GetIntAttribute(node, name, value) && value == expected;
+}
+
+bool IsFloatInitializer(const GraphViewer& graph_viewer, const std::string& name) {
+  const auto* tensor = graph_viewer.GetConstantInitializer(name, true);
+  return tensor != nullptr && tensor->data_type() == ONNX_NAMESPACE::TensorProto_DataType_FLOAT;
+}
+
+const Node* ProducerOfInput(const GraphViewer& graph_viewer, const Node& node, size_t input_index, std::string& input_name) {
+  if (!GetNodeInputName(node, input_index, input_name)) {
+    return nullptr;
+  }
+  return graph_viewer.GetProducerNode(input_name);
+}
+
+bool OutputHasExternalConsumer(const GraphViewer& graph_viewer,
+                               const std::string& value_name,
+                               const std::unordered_set<NodeIndex>& subgraph_nodes,
+                               const std::string& allowed_external_output) {
+  if (value_name == allowed_external_output) {
+    return false;
+  }
+  for (auto& node_index : graph_viewer.GetNodesInTopologicalOrder()) {
+    const auto* node = graph_viewer.GetNode(node_index);
+    if (node == nullptr || subgraph_nodes.count(node->Index()) != 0) {
+      continue;
+    }
+    for (const auto* input : node->InputDefs()) {
+      if (input != nullptr && input->Name() == value_name) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool CollectProducerSubgraph(const GraphViewer& graph_viewer,
+                             const std::string& value_name,
+                             const std::unordered_set<std::string>& boundary_inputs,
+                             std::unordered_set<NodeIndex>& node_indices) {
+  if (boundary_inputs.count(value_name) != 0 || graph_viewer.GetConstantInitializer(value_name, true) != nullptr) {
+    return true;
+  }
+  const Node* producer = graph_viewer.GetProducerNode(value_name);
+  if (producer == nullptr) {
+    return false;
+  }
+  if (node_indices.insert(producer->Index()).second) {
+    for (const auto* input : producer->InputDefs()) {
+      if (input != nullptr && !CollectProducerSubgraph(graph_viewer, input->Name(), boundary_inputs, node_indices)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool ValidateNoExternalConsumers(const GraphViewer& graph_viewer,
+                                 const std::unordered_set<NodeIndex>& node_indices,
+                                 const std::string& final_output) {
+  for (NodeIndex node_index : node_indices) {
+    const auto* node = graph_viewer.GetNode(node_index);
+    if (node == nullptr) {
+      return false;
+    }
+    for (const auto* output : node->OutputDefs()) {
+      if (output != nullptr && OutputHasExternalConsumer(graph_viewer, output->Name(), node_indices, final_output)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool IsFeatureNormMean(const Node& reduce_mean, const std::string& bn_input_name) {
+  if (reduce_mean.OpType() != "ReduceMean" || reduce_mean.InputDefs().empty()) {
+    return false;
+  }
+  std::string input_name;
+  return GetNodeInputName(reduce_mean, 0, input_name) && input_name == bn_input_name &&
+         HasIntListAttribute(reduce_mean, "axes", {0, 2, 3}) &&
+         HasIntAttributeValue(reduce_mean, "keepdims", 1);
+}
+
+bool IsFeatureNormVariance(const GraphViewer& graph_viewer,
+                           const Node& div,
+                           const std::string& bn_input_name,
+                           const std::string& reduce_mean_output) {
+  if (div.OpType() != "Div" || div.InputDefs().size() != 2) {
+    return false;
+  }
+  std::string sumsq_name;
+  const Node* sumsq = ProducerOfInput(graph_viewer, div, 0, sumsq_name);
+  if (sumsq == nullptr || sumsq->OpType() != "ReduceSumSquare" ||
+      !HasIntListAttribute(*sumsq, "axes", {0, 2, 3}) ||
+      !HasIntAttributeValue(*sumsq, "keepdims", 0)) {
+    return false;
+  }
+  std::string sub_name;
+  const Node* sub = ProducerOfInput(graph_viewer, *sumsq, 0, sub_name);
+  if (sub == nullptr || sub->OpType() != "Sub" || sub->InputDefs().size() != 2) {
+    return false;
+  }
+  std::string sub0;
+  std::string sub1;
+  return GetNodeInputName(*sub, 0, sub0) && GetNodeInputName(*sub, 1, sub1) &&
+         ((sub0 == bn_input_name && sub1 == reduce_mean_output) ||
+          (sub1 == bn_input_name && sub0 == reduce_mean_output));
+}
+
+std::unique_ptr<ComputeCapability> TryCreateFeatureNormCapability(
+    const GraphViewer& graph_viewer,
+    const Node& final_add) {
+  if (final_add.OpType() != "Add" || final_add.InputDefs().size() != 2 || final_add.OutputDefs().size() != 1) {
+    return nullptr;
+  }
+
+  std::string final_output;
+  if (!GetNodeOutputName(final_add, 0, final_output)) {
+    return nullptr;
+  }
+
+  std::string add_input0;
+  std::string add_input1;
+  if (!GetNodeInputName(final_add, 0, add_input0) || !GetNodeInputName(final_add, 1, add_input1)) {
+    return nullptr;
+  }
+
+  const Node* gamma_mul = nullptr;
+  std::string beta_name;
+  if (IsFloatInitializer(graph_viewer, add_input0)) {
+    beta_name = add_input0;
+    gamma_mul = graph_viewer.GetProducerNode(add_input1);
+  } else if (IsFloatInitializer(graph_viewer, add_input1)) {
+    beta_name = add_input1;
+    gamma_mul = graph_viewer.GetProducerNode(add_input0);
+  } else {
+    return nullptr;
+  }
+  if (gamma_mul == nullptr || gamma_mul->OpType() != "Mul" || gamma_mul->InputDefs().size() != 2) {
+    return nullptr;
+  }
+
+  std::string mul_input0;
+  std::string mul_input1;
+  if (!GetNodeInputName(*gamma_mul, 0, mul_input0) || !GetNodeInputName(*gamma_mul, 1, mul_input1)) {
+    return nullptr;
+  }
+
+  const Node* final_reshape = nullptr;
+  std::string gamma_name;
+  if (IsFloatInitializer(graph_viewer, mul_input0)) {
+    gamma_name = mul_input0;
+    final_reshape = graph_viewer.GetProducerNode(mul_input1);
+  } else if (IsFloatInitializer(graph_viewer, mul_input1)) {
+    gamma_name = mul_input1;
+    final_reshape = graph_viewer.GetProducerNode(mul_input0);
+  } else {
+    return nullptr;
+  }
+  if (final_reshape == nullptr || final_reshape->OpType() != "Reshape" || final_reshape->InputDefs().size() != 2) {
+    return nullptr;
+  }
+
+  std::string bn_output;
+  const Node* batch_norm = ProducerOfInput(graph_viewer, *final_reshape, 0, bn_output);
+  if (batch_norm == nullptr || batch_norm->OpType() != "BatchNormalization" || batch_norm->InputDefs().size() < 5) {
+    return nullptr;
+  }
+  int64_t training_mode = 0;
+  if (GetIntAttribute(*batch_norm, "training_mode", training_mode) && training_mode != 0) {
+    return nullptr;
+  }
+  float epsilon = 1e-5f;
+  (void)GetFloatAttribute(*batch_norm, "epsilon", epsilon);
+
+  std::string bn_input_name;
+  const Node* input_reshape = ProducerOfInput(graph_viewer, *batch_norm, 0, bn_input_name);
+  if (input_reshape == nullptr || input_reshape->OpType() != "Reshape" || input_reshape->InputDefs().size() != 2) {
+    return nullptr;
+  }
+
+  std::string original_input;
+  if (!GetNodeInputName(*input_reshape, 0, original_input)) {
+    return nullptr;
+  }
+
+  std::string mean_name;
+  const Node* squeeze_mean = ProducerOfInput(graph_viewer, *batch_norm, 3, mean_name);
+  if (squeeze_mean == nullptr || squeeze_mean->OpType() != "Squeeze" || squeeze_mean->InputDefs().empty()) {
+    return nullptr;
+  }
+  std::string reduce_mean_output;
+  const Node* reduce_mean = ProducerOfInput(graph_viewer, *squeeze_mean, 0, reduce_mean_output);
+  if (reduce_mean == nullptr || !IsFeatureNormMean(*reduce_mean, bn_input_name)) {
+    return nullptr;
+  }
+
+  std::string var_name;
+  const Node* var_div = ProducerOfInput(graph_viewer, *batch_norm, 4, var_name);
+  if (var_div == nullptr || !IsFeatureNormVariance(graph_viewer, *var_div, bn_input_name, reduce_mean_output)) {
+    return nullptr;
+  }
+
+  const auto input_type = GetElementType(input_reshape->InputDefs()[0]);
+  if (input_type != ONNX_NAMESPACE::TensorProto_DataType_FLOAT) {
+    return nullptr;
+  }
+
+  std::unordered_set<std::string> boundary_inputs = {original_input, gamma_name, beta_name};
+  std::unordered_set<NodeIndex> node_index_set;
+  if (!CollectProducerSubgraph(graph_viewer, final_output, boundary_inputs, node_index_set) ||
+      !ValidateNoExternalConsumers(graph_viewer, node_index_set, final_output)) {
+    return nullptr;
+  }
+
+  std::vector<NodeIndex> node_indices(node_index_set.begin(), node_index_set.end());
+  std::sort(node_indices.begin(), node_indices.end());
+
+  auto sub_graph = IndexedSubGraph::Create();
+  for (auto node_index : node_indices) {
+    sub_graph->Nodes().push_back(node_index);
+  }
+
+  auto meta_def = IndexedSubGraph_MetaDef::Create();
+  meta_def->name() = kMusaFeatureNormOpName;
+  meta_def->domain() = kMSDomain;
+  meta_def->since_version() = 1;
+  meta_def->inputs().push_back(original_input);
+  meta_def->inputs().push_back(gamma_name);
+  meta_def->inputs().push_back(beta_name);
+  meta_def->outputs().push_back(final_output);
+  AddFloatAttribute(meta_def->attributes(), "epsilon", epsilon);
+  sub_graph->SetMetaDef(std::move(meta_def));
+  return ComputeCapability::Create(std::move(sub_graph));
 }
 
 std::unique_ptr<ComputeCapability> TryCreateReshapeMatMulCapability(
@@ -5302,6 +5583,12 @@ MusaExecutionProvider::GetCapability(const onnxruntime::GraphViewer& graph_viewe
   for (auto& node_index : graph_viewer.GetNodesInTopologicalOrder()) {
     const auto* p_node = graph_viewer.GetNode(node_index);
     if (p_node == nullptr || !p_node->GetExecutionProviderType().empty()) {
+      continue;
+    }
+
+    if (auto fused_capability = TryCreateFeatureNormCapability(graph_viewer, *p_node)) {
+      LOGS(*GetLogger(), INFO) << "MUSA EP fused feature norm at node: " << p_node->Name();
+      result.push_back(std::move(fused_capability));
       continue;
     }
 
