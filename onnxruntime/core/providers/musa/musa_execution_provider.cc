@@ -125,6 +125,10 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, MLFloat16, InstanceNormalization);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 6, float, InstanceNormalization);
 
+// BatchNormalization operations (op 15+ inference)
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 15, MLFloat16, BatchNormalization);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 15, float, BatchNormalization);
+
 // LSTM operations (op 7-13, 14)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, float, LSTM);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 7, 13, MLFloat16, LSTM);
@@ -1040,6 +1044,13 @@ class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kO
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, ReduceSum);
 class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 13, float, ReduceSum);
 
+// ReduceSumSquare operations (op 1-17, 18)
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, MLFloat16, ReduceSumSquare);
+class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 17, float, ReduceSumSquare);
+
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, MLFloat16, ReduceSumSquare);
+class ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 18, float, ReduceSumSquare);
+
 // ReduceMean operations (op 1-12, 13)
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 12, MLFloat16, ReduceMean);
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 12, float, ReduceMean);
@@ -1693,6 +1704,12 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
                                                                   6, MLFloat16, InstanceNormalization)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
                                                                   6, float, InstanceNormalization)>,
+
+      // Register BatchNormalization operators
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
+                                                                  15, MLFloat16, BatchNormalization)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
+                                                                  15, float, BatchNormalization)>,
 
       // Register LSTM operators (temporarily disabled due to weight format issues)
       // BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
@@ -3307,6 +3324,18 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kOnnxDomain, 13, MLFloat16, ReduceSum)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kOnnxDomain, 13, float, ReduceSum)>,
+
+      // Register ReduceSumSquare operators (version 1-17)
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, MLFloat16, ReduceSumSquare)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 1, 17, float, ReduceSumSquare)>,
+
+      // Register ReduceSumSquare operators (version 18)
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, MLFloat16, ReduceSumSquare)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_TYPED_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kOnnxDomain, 18, float, ReduceSumSquare)>,
 
       // Register ReduceMean operators (version 1-12)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(

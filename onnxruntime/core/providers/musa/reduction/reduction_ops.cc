@@ -1213,6 +1213,105 @@ Status ReduceSum<T>::ComputeInternal(OpKernelContext* ctx) const {
 }
 
 template <typename T>
+Status ReduceSumSquare<T>::ComputeInternal(OpKernelContext* ctx) const {
+  const auto* ep = static_cast<const MusaExecutionProvider*>(
+      Info().GetExecutionProvider());
+  MusaPreparation prepare(ep);
+  ORT_RETURN_IF_ERROR(PrepareReduceOperation<T>(this, ctx, prepare));
+
+  TensorShapeVector processed_axes;
+  const Tensor* X = ctx->Input<Tensor>(0);
+  ORT_RETURN_IF_ERROR(PrepareAxesForReductionFromContext(this, ctx, X->Shape(), processed_axes));
+
+  if (processed_axes.empty() && GetNoopWithEmptyAxes()) {
+    Tensor* Y = ctx->Output(0, X->Shape());
+    return CopyReduceInputToOutput<T>(X, Y, this, ctx);
+  }
+
+  Tensor* Y = ctx->Output(0, prepare.output_shape);
+  ORT_RETURN_IF_NOT(Y != nullptr, "ReduceSumSquare output tensor is null");
+
+  if (X->Shape().Size() == 0) {
+    if (Y->Shape().Size() > 0) {
+      musaError_t status = musaMemsetAsync(Y->MutableDataRaw(), 0, Y->SizeInBytes(), Stream(ctx));
+      if (status != musaSuccess) {
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to zero empty ReduceSumSquare output tensor");
+      }
+    }
+    return Status::OK();
+  }
+
+  if (X->Shape().NumDimensions() <= static_cast<size_t>(kReduceL2KeepDimsMaxRank)) {
+    ReduceL2KeepDimsParams params{};
+    ORT_RETURN_IF_ERROR(PrepareReduceL2Params(X->Shape(),
+                                              prepare.output_shape,
+                                              processed_axes,
+                                              GetKeepDims(),
+                                              params));
+
+    musaError_t status = musaSuccess;
+    if constexpr (std::is_same_v<T, MLFloat16>) {
+      status = LaunchReduceSumSquareHalf(Stream(ctx), X->DataRaw(), Y->MutableDataRaw(), params);
+    } else {
+      status = LaunchReduceSumSquareFloat(Stream(ctx),
+                                          static_cast<const float*>(X->DataRaw()),
+                                          static_cast<float*>(Y->MutableDataRaw()),
+                                          params);
+    }
+
+    if (status != musaSuccess) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "ReduceSumSquare MUSA kernel launch failed, status: ",
+                             static_cast<int>(status));
+    }
+    return Status::OK();
+  }
+
+  auto squared_buffer = GetScratchBuffer<T>(X->Shape().Size(), ctx->GetComputeStream());
+  if (!squared_buffer) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to allocate ReduceSumSquare squared scratch buffer");
+  }
+
+  ::musa::dnn::Tensor squared_tensor;
+  ORT_RETURN_IF_ERROR(SetupReduceTensorFromBuffer<T>(squared_tensor, squared_buffer.get(), X->Shape()));
+  ORT_RETURN_IF_ERROR(RunMusaBinaryOp(prepare.GetHandle(),
+                                      ::musa::dnn::Binary::Mode::MUL,
+                                      squared_tensor,
+                                      prepare.inputTensors[0],
+                                      prepare.inputTensors[0]));
+
+  ORT_RETURN_IF_ERROR(RunMusaReduceStaged<T>(prepare,
+                                             this,
+                                             this,
+                                             ctx,
+                                             squared_buffer.get(),
+                                             X->Shape(),
+                                             Y->MutableDataRaw(),
+                                             Y->Shape(),
+                                             processed_axes,
+                                             ::musa::dnn::Reduce::Mode::MEAN));
+
+  const int64_t divisor = ComputeReductionElementCount(X->Shape(), processed_axes);
+  if (divisor <= 1 || Y->Shape().Size() == 0) {
+    return Status::OK();
+  }
+
+  auto divisor_buffer = GetScratchBuffer<T>(Y->Shape().Size(), ctx->GetComputeStream());
+  if (!divisor_buffer) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to allocate ReduceSumSquare multiplier scratch buffer");
+  }
+
+  ::musa::dnn::Tensor divisor_tensor;
+  ORT_RETURN_IF_ERROR(SetupReduceTensorFromBuffer<T>(divisor_tensor, divisor_buffer.get(), Y->Shape()));
+  ORT_RETURN_IF_ERROR(RunMusaFill<T>(prepare.GetHandle(), divisor_tensor, T(static_cast<float>(divisor))));
+  return RunMusaBinaryOp(prepare.GetHandle(),
+                         ::musa::dnn::Binary::Mode::MUL,
+                         prepare.outputTensors[0],
+                         prepare.outputTensors[0],
+                         divisor_tensor);
+}
+
+template <typename T>
 Status ReduceMean<T>::ComputeInternal(OpKernelContext* ctx) const {
   const auto* ep = static_cast<const MusaExecutionProvider*>(
       Info().GetExecutionProvider());
@@ -1882,6 +1981,10 @@ REGISTER_MUSA_REDUCE_HFD_AXES_INPUT(ReduceMin, 18)
 // Register ReduceSum operations following ONNX operator versions
 REGISTER_MUSA_REDUCE_VERSIONED_HFD_NO_CPU_INPUT(ReduceSum, 1, 12)
 REGISTER_MUSA_REDUCE_HFD_AXES_INPUT(ReduceSum, 13)
+
+// Register ReduceSumSquare operations following ONNX operator versions
+REGISTER_MUSA_REDUCE_VERSIONED_HFD_NO_CPU_INPUT(ReduceSumSquare, 1, 17)
+REGISTER_MUSA_REDUCE_HFD_AXES_INPUT(ReduceSumSquare, 18)
 
 // Register ReduceMean operations following ONNX operator versions
 REGISTER_MUSA_REDUCE_VERSIONED_HFD_NO_CPU_INPUT(ReduceMean, 1, 12)

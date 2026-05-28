@@ -8,6 +8,7 @@
 #include "test/providers/provider_test_utils.h"
 #include "test/util/include/default_providers.h"
 
+#include <cmath>
 #include <vector>
 
 namespace onnxruntime {
@@ -72,6 +73,31 @@ class ReduceProdAddLogTester : public CompareOpTester {
   }
 };
 
+
+class ReduceSumSquareAddLogTester : public CompareOpTester {
+ public:
+  ReduceSumSquareAddLogTester() : CompareOpTester("ReduceSumSquareAddLog", 17) {}
+
+  void AddNodes(onnxruntime::Graph& graph,
+                std::vector<onnxruntime::NodeArg*>& graph_input_defs,
+                std::vector<onnxruntime::NodeArg*>& graph_output_defs,
+                std::vector<std::function<void(onnxruntime::Node& node)>>& add_attribute_funcs) override {
+    (void)add_attribute_funcs;
+
+    auto reduced_tensor = MakeTensorType(ONNX_NAMESPACE::TensorProto_DataType_FLOAT, {2, 1});
+    auto& reduced_arg = graph.GetOrCreateNodeArg("ReducedSumSquare", &reduced_tensor);
+    auto& sum_arg = graph.GetOrCreateNodeArg("SumSquarePlusBias", &reduced_tensor);
+
+    auto& reduce_node = graph.AddNode("reducesumsquare_node", "ReduceSumSquare", "ReduceSumSquare node",
+                                      {graph_input_defs[0]}, {&reduced_arg});
+    reduce_node.AddAttribute("axes", std::vector<int64_t>{1});
+    reduce_node.AddAttribute("keepdims", int64_t{1});
+    graph.AddNode("add_node", "Add", "Add node",
+                  {&reduced_arg, graph_input_defs[1]}, {&sum_arg});
+    graph.AddNode("log_node", "Log", "Log node",
+                  {&sum_arg}, {graph_output_defs[0]});
+  }
+};
 
 class ReduceMaxAddLogTester : public CompareOpTester {
  public:
@@ -193,6 +219,52 @@ TEST(MusaReduceTest, ReduceL2AxesInputNoCpuFallback) {
            {},
            nullptr,
            &execution_providers);
+}
+
+
+TEST(MusaReduceTest, ReduceSumSquareFloatOpset17NoCpuFallback) {
+  CompareOpTester test("ReduceSumSquare", 17);
+  test.AddAttribute("axes", std::vector<int64_t>{0, 2, 3});
+  test.AddAttribute("keepdims", int64_t{0});
+  test.AddInput<float>("data", {1, 2, 3, 1}, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+  test.AddOutput<float>("reduced", {2}, {14.0f, 77.0f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaReduceTest, ReduceSumSquareFloat16Opset18NoCpuFallback) {
+  CompareOpTester test("ReduceSumSquare", 18);
+  test.AddAttribute("keepdims", int64_t{1});
+  test.AddInput<MLFloat16>("data", {2, 2}, ToFloat16({1.0f, 2.0f, 3.0f, 4.0f}));
+  test.AddInput<int64_t>("axes", {1}, {0});
+  test.AddOutput<MLFloat16>("reduced", {1, 2}, ToFloat16({10.0f, 20.0f}));
+  CompareWithMusaNoFallback(test, true, 1e-3, 1e-3);
+}
+
+TEST(MusaReduceTest, ReduceSumSquareEmptyInputNoCpuFallback) {
+  CompareOpTester test("ReduceSumSquare", 17);
+  test.AddAttribute("axes", std::vector<int64_t>{0});
+  test.AddAttribute("keepdims", int64_t{1});
+  test.AddInput<float>("data", {0, 2, 3}, {});
+  test.AddOutput<float>("reduced", {1, 2, 3}, {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaReduceTest, ReduceSumSquareDynamicShapeNoCpuFallback) {
+  CompareOpTester test("ReduceSumSquare", 17);
+  const std::vector<std::string> dim_params{"batch", "seq"};
+  test.AddAttribute("axes", std::vector<int64_t>{1});
+  test.AddAttribute("keepdims", int64_t{0});
+  test.AddInput<float>("data", {2, 3}, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f}, false, &dim_params);
+  test.AddOutput<float>("reduced", {2}, {14.0f, 77.0f});
+  CompareWithMusaNoFallback(test);
+}
+
+TEST(MusaReduceTest, ReduceSumSquareAddLogMultiOpNoCpuFallback) {
+  ReduceSumSquareAddLogTester test;
+  test.AddInput<float>("data", {2, 3}, {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f});
+  test.AddInput<float>("bias", {2, 1}, {1.0f, 2.0f});
+  test.AddOutput<float>("log_out", {2, 1}, {static_cast<float>(std::log(15.0f)), static_cast<float>(std::log(79.0f))});
+  CompareWithMusaNoFallback(test);
 }
 
 TEST(MusaPoolTest, GlobalAveragePool3DNoCpuFallback) {
