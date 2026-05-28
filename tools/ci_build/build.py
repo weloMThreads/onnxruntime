@@ -1955,6 +1955,7 @@ def build_python_wheel(
     use_dml,
     use_webgpu,
     use_cann,
+    use_musa,
     use_azure,
     use_qnn,
     qnn_home,
@@ -2007,6 +2008,8 @@ def build_python_wheel(
             args.append("--wheel_name_suffix=webgpu")
         elif use_cann:
             args.append("--use_cann")
+        elif use_musa:
+            args.append("--use_musa")
         elif use_qnn:
             args.append("--use_qnn")
             qnn_version = parse_qnn_version_from_sdk_yaml(qnn_home)
@@ -2622,6 +2625,7 @@ def main():
                 args.use_dml,
                 args.use_webgpu,
                 args.use_cann,
+                args.use_musa,
                 args.use_azure,
                 args.use_qnn,
                 args.qnn_home,

@@ -59,6 +59,7 @@ cuda_major_version = None
 is_migraphx = False
 is_openvino = False
 is_qnn = False
+is_musa = False
 qnn_version = None
 # The following arguments are mutually exclusive
 if wheel_name_suffix == "gpu":
@@ -81,6 +82,9 @@ elif parse_arg_remove_boolean(sys.argv, "--use_acl"):
     package_name = "onnxruntime-acl"
 elif parse_arg_remove_boolean(sys.argv, "--use_cann"):
     package_name = "onnxruntime-cann"
+elif parse_arg_remove_boolean(sys.argv, "--use_musa"):
+    is_musa = True
+    package_name = "onnxruntime-musa"
 elif parse_arg_remove_boolean(sys.argv, "--use_azure"):
     # keep the same name since AzureEP will release with CpuEP by default.
     pass
@@ -352,6 +356,7 @@ providers_nv_tensorrt_rtx = "onnxruntime_providers_nv_tensorrt_rtx"
 providers_openvino = "onnxruntime_providers_openvino"
 providers_cann = "onnxruntime_providers_cann"
 providers_qnn = "onnxruntime_providers_qnn"
+providers_musa = "onnxruntime_providers_musa"
 
 if platform.system() == "Linux":
     providers_cuda = "lib" + providers_cuda + ".so"
@@ -360,6 +365,7 @@ if platform.system() == "Linux":
     providers_openvino = "lib" + providers_openvino + ".so"
     providers_cann = "lib" + providers_cann + ".so"
     providers_qnn = "lib" + providers_qnn + ".so"
+    providers_musa = "lib" + providers_musa + ".so"
 elif platform.system() == "Windows":
     providers_cuda = providers_cuda + ".dll"
     providers_tensorrt_or_migraphx = providers_tensorrt_or_migraphx + ".dll"
@@ -367,6 +373,7 @@ elif platform.system() == "Windows":
     providers_openvino = providers_openvino + ".dll"
     providers_cann = providers_cann + ".dll"
     providers_qnn = providers_qnn + ".dll"
+    providers_musa = providers_musa + ".dll"
 
 # Additional binaries
 dl_libs = []
@@ -387,6 +394,7 @@ if platform.system() == "Linux" or platform.system() == "AIX":
     dl_libs.append(providers_tensorrt_or_migraphx)
     dl_libs.append(providers_cann)
     dl_libs.append(providers_qnn)
+    dl_libs.append(providers_musa)
     dl_libs.append("libonnxruntime.so*")
     # DNNL, TensorRT, OpenVINO, and QNN EPs are built as shared libs
     libs.extend(["libonnxruntime_providers_shared.so"])
@@ -398,6 +406,7 @@ if platform.system() == "Linux" or platform.system() == "AIX":
     libs.append(providers_tensorrt_or_migraphx)
     libs.append(providers_cann)
     libs.append(providers_qnn)
+    libs.append(providers_musa)
     # QNN
     qnn_deps = [
         "libQnnCpu.so",
@@ -456,6 +465,7 @@ else:
     libs.extend(["onnxruntime_providers_migraphx.dll"])
     libs.extend(["onnxruntime_providers_vitisai.dll"])
     libs.extend(["onnxruntime_providers_qnn.dll"])
+    libs.extend(["onnxruntime_providers_musa.dll"])
     # DirectML Libs
     libs.extend(["DirectML.dll"])
     # WebGPU/Dawn Libs

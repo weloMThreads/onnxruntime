@@ -1101,6 +1101,16 @@ if (onnxruntime_USE_CANN)
     )
 endif()
 
+if (onnxruntime_USE_MUSA)
+    add_custom_command(
+      TARGET onnxruntime_pybind11_state POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+          $<TARGET_FILE:onnxruntime_providers_musa>
+          $<TARGET_FILE:onnxruntime_providers_shared>
+          $<TARGET_FILE_DIR:${build_output_target}>/onnxruntime/capi/
+    )
+endif()
+
 if (onnxruntime_USE_DML)
   if (NOT onnxruntime_USE_CUSTOM_DIRECTML)
     set(dml_shared_lib_path ${DML_PACKAGE_DIR}/bin/${onnxruntime_target_platform}-win/${DML_SHARED_LIB})

@@ -74,6 +74,7 @@ with open(args.output_source, "w") as file:
             "winml",
             "cuda",
             "migraphx",
+            "musa",
             "qnn",
             "snpe",
             "xnnpack",
