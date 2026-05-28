@@ -137,6 +137,89 @@ static bool IsHostPointer(const void* ptr) {
          attr.type == musaMemoryTypeUnregistered;
 }
 
+bool SameShape(const TensorShape& lhs, const TensorShape& rhs) {
+  return lhs.GetDims() == rhs.GetDims();
+}
+
+bool IsLastDimBiasAddPattern(const TensorShape& lhs_shape,
+                             const TensorShape& rhs_shape,
+                             const TensorShape& output_shape,
+                             bool& lhs_is_bias) {
+  lhs_is_bias = false;
+  if (output_shape.NumDimensions() == 0 || output_shape.Size() == 0) {
+    return false;
+  }
+
+  const auto last_dim = output_shape[output_shape.NumDimensions() - 1];
+  if (rhs_shape.NumDimensions() == 1 &&
+      rhs_shape[0] == last_dim &&
+      SameShape(lhs_shape, output_shape)) {
+    return true;
+  }
+
+  if (lhs_shape.NumDimensions() == 1 &&
+      lhs_shape[0] == last_dim &&
+      SameShape(rhs_shape, output_shape)) {
+    lhs_is_bias = true;
+    return true;
+  }
+
+  return false;
+}
+
+template <typename T>
+Status LaunchLastDimBiasAddFast(const MusaPreparation& prepare,
+                                musaStream_t stream,
+                                bool lhs_is_bias) {
+  const TensorShape& value_shape = lhs_is_bias ? prepare.input_b_shape : prepare.input_a_shape;
+  const TensorShape& bias_shape = lhs_is_bias ? prepare.input_a_shape : prepare.input_b_shape;
+  const void* value_ptr = lhs_is_bias ? prepare.input_b_ptr : prepare.input_a_ptr;
+  const void* bias_ptr = lhs_is_bias ? prepare.input_a_ptr : prepare.input_b_ptr;
+  const int64_t channels = bias_shape[0];
+
+  if (channels <= 0 || value_shape.Size() != prepare.output_size) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Invalid last-dim BiasAdd fast path shape");
+  }
+
+  void* temp_bias = nullptr;
+  const void* device_bias = bias_ptr;
+  auto cleanup = [&]() {
+    if (temp_bias) {
+      musaFree(temp_bias);
+    }
+  };
+
+  if (IsHostPointer(bias_ptr)) {
+    const size_t bytes = static_cast<size_t>(bias_shape.Size()) * sizeof(T);
+    MUSA_RETURN_IF_ERROR(musaMalloc(&temp_bias, bytes));
+    MUSA_RETURN_IF_ERROR(musaMemcpyAsync(temp_bias, bias_ptr, bytes, musaMemcpyHostToDevice, stream));
+    device_bias = temp_bias;
+  }
+
+  if constexpr (std::is_same_v<T, MLFloat16>) {
+    LaunchLastDimBiasAddHalf(stream,
+                             value_ptr,
+                             device_bias,
+                             prepare.output_ptr,
+                             prepare.output_size,
+                             channels);
+  } else {
+    LaunchLastDimBiasAddFloat(stream,
+                              static_cast<const float*>(value_ptr),
+                              static_cast<const float*>(device_bias),
+                              static_cast<float*>(prepare.output_ptr),
+                              prepare.output_size,
+                              channels);
+  }
+
+  MUSA_RETURN_IF_ERROR(musaGetLastError());
+  if (temp_bias) {
+    MUSA_RETURN_IF_ERROR(musaStreamSynchronize(stream));
+  }
+  cleanup();
+  return Status::OK();
+}
+
 template <typename T>
 Status LaunchPowSameType(const MusaPreparation& prepare,
                          musaStream_t stream) {
@@ -680,6 +763,18 @@ Status SimpleMusaBinaryOp(const MusaPreparation &prepare, size_t size,
   }
   if (op_name == "FloorMod") {
     return LaunchFloorModSameType<T>(prepare, stream);
+  }
+
+  if (op_name == "Add") {
+    if constexpr (std::is_same_v<T, float> || std::is_same_v<T, MLFloat16>) {
+      bool lhs_is_bias = false;
+      if (IsLastDimBiasAddPattern(prepare.input_a_shape,
+                                  prepare.input_b_shape,
+                                  prepare.output_shape,
+                                  lhs_is_bias)) {
+        return LaunchLastDimBiasAddFast<T>(prepare, stream, lhs_is_bias);
+      }
+    }
   }
 
   // Use mudnn Binary class for device computation with broadcasting support

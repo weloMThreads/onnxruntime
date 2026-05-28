@@ -85,6 +85,20 @@ void LaunchFloorModSameTypeKernelHalf(musaStream_t stream,
                                       void* output_data,
                                       const PowSameTypeParams& params);
 
+void LaunchLastDimBiasAddFloat(musaStream_t stream,
+                               const float* value_data,
+                               const float* bias_data,
+                               float* output_data,
+                               int64_t total_elements,
+                               int64_t channels);
+
+void LaunchLastDimBiasAddHalf(musaStream_t stream,
+                              const void* value_data,
+                              const void* bias_data,
+                              void* output_data,
+                              int64_t total_elements,
+                              int64_t channels);
+
 extern template void LaunchPowSameTypeKernel<float>(musaStream_t,
                                                     const float*,
                                                     const float*,

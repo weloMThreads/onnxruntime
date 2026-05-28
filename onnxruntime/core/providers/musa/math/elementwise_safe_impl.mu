@@ -172,6 +172,20 @@ __global__ void FloorModSameTypeKernel(const T* lhs_data,
   }
 }
 
+template <typename T>
+__global__ void LastDimBiasAddKernel(const T* value_data,
+                                     const T* bias_data,
+                                     T* output_data,
+                                     int64_t total_elements,
+                                     int64_t channels) {
+  const int64_t thread_id = static_cast<int64_t>(blockIdx.x) * blockDim.x + threadIdx.x;
+  const int64_t total_threads = static_cast<int64_t>(gridDim.x) * blockDim.x;
+
+  for (int64_t index = thread_id; index < total_elements; index += total_threads) {
+    output_data[index] = value_data[index] + bias_data[index % channels];
+  }
+}
+
 }  // namespace
 
 inline int BlocksForBinaryCount(int64_t count) {
@@ -310,6 +324,38 @@ void LaunchFloorModSameTypeKernelHalf(musaStream_t stream,
                                      static_cast<const half*>(rhs_data),
                                      static_cast<half*>(output_data),
                                      params);
+}
+
+void LaunchLastDimBiasAddFloat(musaStream_t stream,
+                               const float* value_data,
+                               const float* bias_data,
+                               float* output_data,
+                               int64_t total_elements,
+                               int64_t channels) {
+  if (total_elements == 0) {
+    return;
+  }
+
+  LastDimBiasAddKernel<float><<<BlocksForBinaryCount(total_elements), kPowThreadsPerBlock, 0, stream>>>(
+      value_data, bias_data, output_data, total_elements, channels);
+}
+
+void LaunchLastDimBiasAddHalf(musaStream_t stream,
+                              const void* value_data,
+                              const void* bias_data,
+                              void* output_data,
+                              int64_t total_elements,
+                              int64_t channels) {
+  if (total_elements == 0) {
+    return;
+  }
+
+  LastDimBiasAddKernel<half><<<BlocksForBinaryCount(total_elements), kPowThreadsPerBlock, 0, stream>>>(
+      static_cast<const half*>(value_data),
+      static_cast<const half*>(bias_data),
+      static_cast<half*>(output_data),
+      total_elements,
+      channels);
 }
 
 template void LaunchPowSameTypeKernel<float>(musaStream_t,
