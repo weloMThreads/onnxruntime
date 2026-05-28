@@ -193,6 +193,28 @@ __global__ void ReduceMeanRank3Axis1Kernel(const T* input_data,
 }
 
 template <typename T>
+__global__ void ReduceSumRank3Axis1Kernel(const T* input_data,
+                                          T* output_data,
+                                          int64_t outer,
+                                          int64_t reduce_dim,
+                                          int64_t inner) {
+  const int64_t row = blockIdx.x;
+  if (row >= outer) {
+    return;
+  }
+
+  const T* row_data = input_data + row * reduce_dim * inner;
+  T* row_output = output_data + row * inner;
+  for (int64_t col = threadIdx.x; col < inner; col += blockDim.x) {
+    float sum = 0.0f;
+    for (int64_t r = 0; r < reduce_dim; ++r) {
+      sum += ReduceL2ToFloat<T>(row_data[r * inner + col]);
+    }
+    row_output[col] = ReduceL2FromFloat<T>(sum);
+  }
+}
+
+template <typename T>
 __global__ void ReduceMeanRank4Axis2Kernel(const T* input_data,
                                            T* output_data,
                                            int64_t dim0,
@@ -286,6 +308,25 @@ musaError_t LaunchReduceL2KeepDimsTyped(musaStream_t stream,
 }
 
 template <typename T>
+musaError_t LaunchReduceSumTyped(musaStream_t stream,
+                                 const T* input_data,
+                                 T* output_data,
+                                 const ReduceL2KeepDimsParams& params) {
+  if (params.output_size == 0) {
+    return musaSuccess;
+  }
+
+  if (params.rank == 3 && params.num_axes == 1 && params.axes[0] == 1) {
+    ReduceSumRank3Axis1Kernel<T><<<static_cast<int>(params.input_dims[0]),
+                                   kReduceL2ThreadsPerBlock, 0, stream>>>(
+        input_data, output_data, params.input_dims[0], params.input_dims[1], params.input_dims[2]);
+    return musaGetLastError();
+  }
+
+  return musaErrorInvalidValue;
+}
+
+template <typename T>
 musaError_t LaunchReduceMeanTyped(musaStream_t stream,
                                   const T* input_data,
                                   T* output_data,
@@ -363,6 +404,23 @@ musaError_t LaunchReduceSumSquareHalf(musaStream_t stream,
                                           static_cast<const half*>(input_data),
                                           static_cast<half*>(output_data),
                                           params);
+}
+
+musaError_t LaunchReduceSumFloat(musaStream_t stream,
+                                 const float* input_data,
+                                 float* output_data,
+                                 const ReduceL2KeepDimsParams& params) {
+  return LaunchReduceSumTyped<float>(stream, input_data, output_data, params);
+}
+
+musaError_t LaunchReduceSumHalf(musaStream_t stream,
+                                const void* input_data,
+                                void* output_data,
+                                const ReduceL2KeepDimsParams& params) {
+  return LaunchReduceSumTyped<half>(stream,
+                                    static_cast<const half*>(input_data),
+                                    static_cast<half*>(output_data),
+                                    params);
 }
 
 musaError_t LaunchReduceMeanFloat(musaStream_t stream,

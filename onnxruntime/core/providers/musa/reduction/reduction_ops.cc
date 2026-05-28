@@ -311,6 +311,20 @@ Status PrepareReduceProdInt32Params(const TensorShape& input_shape,
   return Status::OK();
 }
 
+bool CanUseReduceSumFastPath(const TensorShape& input_shape,
+                             const TensorShapeVector& axes) {
+  if (input_shape.Size() == 0 || axes.size() != 1 || axes[0] != 1) {
+    return false;
+  }
+
+  if (input_shape.NumDimensions() != 3) {
+    return false;
+  }
+
+  return input_shape[0] > 0 && input_shape[1] > 0 && input_shape[2] > 0 &&
+         input_shape[0] <= std::numeric_limits<int>::max();
+}
+
 bool CanUseReduceMeanFastPath(const TensorShape& input_shape,
                               const TensorShapeVector& axes) {
   const size_t rank = input_shape.NumDimensions();
@@ -887,6 +901,28 @@ Status RunReduceSumTyped(const ReduceKernel<true>* reduce_kernel,
     return Status::OK();
   }
 
+  if constexpr (std::is_same_v<T, float>) {
+    if (CanUseReduceSumFastPath(X->Shape(), axes)) {
+      ReduceL2KeepDimsParams params{};
+      ORT_RETURN_IF_ERROR(PrepareReduceL2Params(X->Shape(),
+                                                Y->Shape(),
+                                                axes,
+                                                reduce_kernel->GetKeepDims(),
+                                                params));
+
+      musaError_t status = LaunchReduceSumFloat(kernel->Stream(ctx),
+                                                static_cast<const float*>(X->DataRaw()),
+                                                static_cast<float*>(Y->MutableDataRaw()),
+                                                params);
+      if (status != musaSuccess) {
+        return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                               "ReduceSum fast MUSA kernel launch failed, status: ",
+                               static_cast<int>(status));
+      }
+      return Status::OK();
+    }
+  }
+
   return RunMusaReduceStaged<T>(prepare, reduce_kernel, kernel, ctx,
                                 X->DataRaw(), X->Shape(),
                                 Y->MutableDataRaw(), Y->Shape(),
@@ -907,6 +943,26 @@ Status RunReduceSumTyped<MLFloat16>(const ReduceKernel<true>* reduce_kernel,
       if (status != musaSuccess) {
         return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Failed to zero empty fp16 ReduceSum output tensor");
       }
+    }
+    return Status::OK();
+  }
+
+  if (CanUseReduceSumFastPath(X->Shape(), axes)) {
+    ReduceL2KeepDimsParams params{};
+    ORT_RETURN_IF_ERROR(PrepareReduceL2Params(X->Shape(),
+                                              Y->Shape(),
+                                              axes,
+                                              reduce_kernel->GetKeepDims(),
+                                              params));
+
+    musaError_t status = LaunchReduceSumHalf(kernel->Stream(ctx),
+                                             X->DataRaw(),
+                                             Y->MutableDataRaw(),
+                                             params);
+    if (status != musaSuccess) {
+      return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                             "fp16 ReduceSum fast MUSA kernel launch failed, status: ",
+                             static_cast<int>(status));
     }
     return Status::OK();
   }
