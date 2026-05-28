@@ -101,6 +101,7 @@ class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, Musa
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaFeatureNorm);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaGelu);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaPlnCascadeBlock);
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaLayerNormLastDim);
 
 // Conv operations (op 1-10 and op 11) - NCHW
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 10, float, Conv);
@@ -1681,6 +1682,8 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
           kMusaExecutionProvider, kMSDomain, 1, MusaGelu)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
           kMusaExecutionProvider, kMSDomain, 1, MusaPlnCascadeBlock)>,
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kMSDomain, 1, MusaLayerNormLastDim)>,
 
       // Register Conv operators with float type (NCHW)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
@@ -4843,6 +4846,7 @@ constexpr const char* kMusaReshapeMatMulOpName = "MusaReshapeMatMul";
 constexpr const char* kMusaFeatureNormOpName = "MusaFeatureNorm";
 constexpr const char* kMusaGeluOpName = "MusaGelu";
 constexpr const char* kMusaPlnCascadeBlockOpName = "MusaPlnCascadeBlock";
+constexpr const char* kMusaLayerNormLastDimOpName = "MusaLayerNormLastDim";
 
 
 bool ReadScalarFloatInitializer(const GraphViewer& graph_viewer,
@@ -5167,6 +5171,213 @@ bool IsFeatureNormVariance(const GraphViewer& graph_viewer,
   return GetNodeInputName(*sub, 0, sub0) && GetNodeInputName(*sub, 1, sub1) &&
          ((sub0 == bn_input_name && sub1 == reduce_mean_output) ||
           (sub1 == bn_input_name && sub0 == reduce_mean_output));
+}
+
+bool IsReduceMeanAxis1Keepdims0(const Node& reduce_mean) {
+  return reduce_mean.OpType() == "ReduceMean" &&
+         HasIntListAttribute(reduce_mean, "axes", {1}) &&
+         HasIntAttributeValue(reduce_mean, "keepdims", 0);
+}
+
+bool TryGetInitializerInput(const GraphViewer& graph_viewer,
+                            const Node& node,
+                            std::string& initializer_name,
+                            std::string& other_input_name) {
+  if (node.InputDefs().size() != 2) {
+    return false;
+  }
+  std::string input0;
+  std::string input1;
+  if (!GetNodeInputName(node, 0, input0) || !GetNodeInputName(node, 1, input1)) {
+    return false;
+  }
+  if (IsFloatInitializer(graph_viewer, input0)) {
+    initializer_name = input0;
+    other_input_name = input1;
+    return true;
+  }
+  if (IsFloatInitializer(graph_viewer, input1)) {
+    initializer_name = input1;
+    other_input_name = input0;
+    return true;
+  }
+  return false;
+}
+
+std::unique_ptr<ComputeCapability> TryCreateLayerNormLastDimCapability(
+    const GraphViewer& graph_viewer,
+    const Node& final_add) {
+  if (final_add.OpType() != "Add" || final_add.InputDefs().size() != 2 ||
+      final_add.OutputDefs().size() != 1) {
+    return nullptr;
+  }
+
+  std::string final_output;
+  if (!GetNodeOutputName(final_add, 0, final_output)) {
+    return nullptr;
+  }
+
+  std::string beta_name;
+  std::string gamma_mul_output;
+  if (!TryGetInitializerInput(graph_viewer, final_add, beta_name, gamma_mul_output)) {
+    return nullptr;
+  }
+
+  const Node* gamma_mul = graph_viewer.GetProducerNode(gamma_mul_output);
+  if (gamma_mul == nullptr || gamma_mul->OpType() != "Mul") {
+    return nullptr;
+  }
+
+  std::string gamma_name;
+  std::string div_output;
+  if (!TryGetInitializerInput(graph_viewer, *gamma_mul, gamma_name, div_output)) {
+    return nullptr;
+  }
+
+  const Node* div = graph_viewer.GetProducerNode(div_output);
+  if (div == nullptr || div->OpType() != "Div" || div->InputDefs().size() != 2) {
+    return nullptr;
+  }
+
+  std::string sub_output;
+  std::string clip_output;
+  if (!GetNodeInputName(*div, 0, sub_output) || !GetNodeInputName(*div, 1, clip_output)) {
+    return nullptr;
+  }
+
+  const Node* sub = graph_viewer.GetProducerNode(sub_output);
+  const Node* clip_max = graph_viewer.GetProducerNode(clip_output);
+  if (sub == nullptr || sub->OpType() != "Sub" || sub->InputDefs().size() != 2 ||
+      clip_max == nullptr || clip_max->OpType() != "Max") {
+    return nullptr;
+  }
+
+  std::string clip_min_output;
+  std::string clip_min_name;
+  if (!TryGetInitializerInput(graph_viewer, *clip_max, clip_min_name, clip_min_output)) {
+    return nullptr;
+  }
+  float clip_min_value = 0.0f;
+  if (!ReadScalarFloatInitializer(graph_viewer, clip_min_name, clip_min_value)) {
+    return nullptr;
+  }
+
+  const Node* clip_min = graph_viewer.GetProducerNode(clip_min_output);
+  if (clip_min == nullptr || clip_min->OpType() != "Min") {
+    return nullptr;
+  }
+
+  std::string sqrt_output;
+  std::string clip_max_name;
+  if (!TryGetInitializerInput(graph_viewer, *clip_min, clip_max_name, sqrt_output)) {
+    return nullptr;
+  }
+  float clip_max_value = 0.0f;
+  if (!ReadScalarFloatInitializer(graph_viewer, clip_max_name, clip_max_value)) {
+    return nullptr;
+  }
+
+  const Node* sqrt = graph_viewer.GetProducerNode(sqrt_output);
+  if (sqrt == nullptr || sqrt->OpType() != "Sqrt" || sqrt->InputDefs().size() != 1) {
+    return nullptr;
+  }
+
+  std::string var_unsqueeze_output;
+  if (!GetNodeInputName(*sqrt, 0, var_unsqueeze_output)) {
+    return nullptr;
+  }
+  const Node* var_unsqueeze = graph_viewer.GetProducerNode(var_unsqueeze_output);
+  if (var_unsqueeze == nullptr || var_unsqueeze->OpType() != "Unsqueeze" ||
+      var_unsqueeze->InputDefs().empty()) {
+    return nullptr;
+  }
+
+  std::string var_mean_output;
+  if (!GetNodeInputName(*var_unsqueeze, 0, var_mean_output)) {
+    return nullptr;
+  }
+  const Node* var_mean = graph_viewer.GetProducerNode(var_mean_output);
+  if (var_mean == nullptr || !IsReduceMeanAxis1Keepdims0(*var_mean) ||
+      var_mean->InputDefs().empty()) {
+    return nullptr;
+  }
+
+  std::string square_output;
+  if (!GetNodeInputName(*var_mean, 0, square_output)) {
+    return nullptr;
+  }
+  const Node* square = graph_viewer.GetProducerNode(square_output);
+  if (square == nullptr || square->OpType() != "Mul" || square->InputDefs().size() != 2) {
+    return nullptr;
+  }
+
+  std::string square_input0;
+  std::string square_input1;
+  if (!GetNodeInputName(*square, 0, square_input0) ||
+      !GetNodeInputName(*square, 1, square_input1) ||
+      square_input0 != sub_output || square_input1 != sub_output) {
+    return nullptr;
+  }
+
+  std::string sub_input0;
+  std::string sub_input1;
+  if (!GetNodeInputName(*sub, 0, sub_input0) || !GetNodeInputName(*sub, 1, sub_input1)) {
+    return nullptr;
+  }
+
+  const Node* mean_unsqueeze = graph_viewer.GetProducerNode(sub_input1);
+  if (mean_unsqueeze == nullptr || mean_unsqueeze->OpType() != "Unsqueeze" ||
+      mean_unsqueeze->InputDefs().empty()) {
+    return nullptr;
+  }
+
+  std::string mean_output;
+  if (!GetNodeInputName(*mean_unsqueeze, 0, mean_output)) {
+    return nullptr;
+  }
+  const Node* mean = graph_viewer.GetProducerNode(mean_output);
+  if (mean == nullptr || !IsReduceMeanAxis1Keepdims0(*mean) ||
+      mean->InputDefs().empty()) {
+    return nullptr;
+  }
+
+  std::string input_name;
+  if (!GetNodeInputName(*mean, 0, input_name) || input_name != sub_input0) {
+    return nullptr;
+  }
+
+  const auto input_type = GetElementType(mean->InputDefs()[0]);
+  if (input_type != ONNX_NAMESPACE::TensorProto_DataType_FLOAT) {
+    return nullptr;
+  }
+
+  std::unordered_set<std::string> boundary_inputs = {input_name, gamma_name, beta_name};
+  std::unordered_set<NodeIndex> node_index_set;
+  if (!CollectProducerSubgraph(graph_viewer, final_output, boundary_inputs, node_index_set) ||
+      !ValidateNoExternalConsumers(graph_viewer, node_index_set, final_output)) {
+    return nullptr;
+  }
+
+  std::vector<NodeIndex> node_indices(node_index_set.begin(), node_index_set.end());
+  std::sort(node_indices.begin(), node_indices.end());
+
+  auto sub_graph = IndexedSubGraph::Create();
+  for (auto node_index : node_indices) {
+    sub_graph->Nodes().push_back(node_index);
+  }
+
+  auto meta_def = IndexedSubGraph_MetaDef::Create();
+  meta_def->name() = kMusaLayerNormLastDimOpName;
+  meta_def->domain() = kMSDomain;
+  meta_def->since_version() = 1;
+  meta_def->inputs().push_back(input_name);
+  meta_def->inputs().push_back(gamma_name);
+  meta_def->inputs().push_back(beta_name);
+  meta_def->outputs().push_back(final_output);
+  AddFloatAttribute(meta_def->attributes(), "clip_min", clip_min_value);
+  AddFloatAttribute(meta_def->attributes(), "clip_max", clip_max_value);
+  sub_graph->SetMetaDef(std::move(meta_def));
+  return ComputeCapability::Create(std::move(sub_graph));
 }
 
 
@@ -6006,6 +6217,12 @@ MusaExecutionProvider::GetCapability(const onnxruntime::GraphViewer& graph_viewe
 
     if (auto fused_capability = TryCreatePlnCascadeBlockCapability(graph_viewer, *p_node)) {
       LOGS(*GetLogger(), INFO) << "MUSA EP fused PLN cascade block at node: " << p_node->Name();
+      result.push_back(std::move(fused_capability));
+      continue;
+    }
+
+    if (auto fused_capability = TryCreateLayerNormLastDimCapability(graph_viewer, *p_node)) {
+      LOGS(*GetLogger(), INFO) << "MUSA EP fused layer norm at node: " << p_node->Name();
       result.push_back(std::move(fused_capability));
       continue;
     }
