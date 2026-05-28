@@ -220,6 +220,109 @@ Status LaunchLastDimBiasAddFast(const MusaPreparation& prepare,
   return Status::OK();
 }
 
+bool IsBroadcastSubRank4Dim2Pattern(const TensorShape& lhs_shape,
+                                     const TensorShape& rhs_shape,
+                                     const TensorShape& output_shape) {
+  if (!SameShape(lhs_shape, output_shape) || lhs_shape.NumDimensions() != 4 ||
+      rhs_shape.NumDimensions() != 4 || output_shape.Size() == 0) {
+    return false;
+  }
+
+  return rhs_shape[0] == lhs_shape[0] && rhs_shape[1] == lhs_shape[1] &&
+         rhs_shape[2] == 1 && rhs_shape[3] == lhs_shape[3] &&
+         lhs_shape[2] > 1;
+}
+
+template <typename T>
+Status LaunchLastDimScaleMulFast(const MusaPreparation& prepare,
+                                 musaStream_t stream,
+                                 bool lhs_is_scale) {
+  const TensorShape& value_shape = lhs_is_scale ? prepare.input_b_shape : prepare.input_a_shape;
+  const TensorShape& scale_shape = lhs_is_scale ? prepare.input_a_shape : prepare.input_b_shape;
+  const void* value_ptr = lhs_is_scale ? prepare.input_b_ptr : prepare.input_a_ptr;
+  const void* scale_ptr = lhs_is_scale ? prepare.input_a_ptr : prepare.input_b_ptr;
+  const int64_t channels = scale_shape[0];
+
+  if (channels <= 0 || value_shape.Size() != prepare.output_size) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, "Invalid last-dim ScaleMul fast path shape");
+  }
+
+  void* temp_scale = nullptr;
+  const void* device_scale = scale_ptr;
+  auto cleanup = [&]() {
+    if (temp_scale) {
+      musaFree(temp_scale);
+    }
+  };
+
+  if (IsHostPointer(scale_ptr)) {
+    const size_t bytes = static_cast<size_t>(scale_shape.Size()) * sizeof(T);
+    MUSA_RETURN_IF_ERROR(musaMalloc(&temp_scale, bytes));
+    MUSA_RETURN_IF_ERROR(musaMemcpyAsync(temp_scale, scale_ptr, bytes, musaMemcpyHostToDevice, stream));
+    device_scale = temp_scale;
+  }
+
+  if constexpr (std::is_same_v<T, MLFloat16>) {
+    LaunchLastDimScaleMulHalf(stream,
+                              value_ptr,
+                              device_scale,
+                              prepare.output_ptr,
+                              prepare.output_size,
+                              channels);
+  } else {
+    LaunchLastDimScaleMulFloat(stream,
+                               static_cast<const float*>(value_ptr),
+                               static_cast<const float*>(device_scale),
+                               static_cast<float*>(prepare.output_ptr),
+                               prepare.output_size,
+                               channels);
+  }
+
+  MUSA_RETURN_IF_ERROR(musaGetLastError());
+  if (temp_scale) {
+    MUSA_RETURN_IF_ERROR(musaStreamSynchronize(stream));
+  }
+  cleanup();
+  return Status::OK();
+}
+
+template <typename T>
+Status LaunchBroadcastSubRank4Dim2Fast(const MusaPreparation& prepare,
+                                       musaStream_t stream) {
+  if (IsHostPointer(prepare.input_a_ptr) || IsHostPointer(prepare.input_b_ptr)) {
+    return ORT_MAKE_STATUS(ONNXRUNTIME, FAIL,
+                           "BroadcastSubRank4Dim2 fast path requires device inputs");
+  }
+
+  const int64_t dim0 = prepare.output_shape[0];
+  const int64_t dim1 = prepare.output_shape[1];
+  const int64_t dim2 = prepare.output_shape[2];
+  const int64_t dim3 = prepare.output_shape[3];
+
+  if constexpr (std::is_same_v<T, MLFloat16>) {
+    LaunchBroadcastSubRank4Dim2Half(stream,
+                                    prepare.input_a_ptr,
+                                    prepare.input_b_ptr,
+                                    prepare.output_ptr,
+                                    dim0,
+                                    dim1,
+                                    dim2,
+                                    dim3);
+  } else {
+    LaunchBroadcastSubRank4Dim2Float(stream,
+                                     static_cast<const float*>(prepare.input_a_ptr),
+                                     static_cast<const float*>(prepare.input_b_ptr),
+                                     static_cast<float*>(prepare.output_ptr),
+                                     dim0,
+                                     dim1,
+                                     dim2,
+                                     dim3);
+  }
+
+  MUSA_RETURN_IF_ERROR(musaGetLastError());
+  return Status::OK();
+}
+
 template <typename T>
 Status LaunchPowSameType(const MusaPreparation& prepare,
                          musaStream_t stream) {
@@ -773,6 +876,28 @@ Status SimpleMusaBinaryOp(const MusaPreparation &prepare, size_t size,
                                   prepare.output_shape,
                                   lhs_is_bias)) {
         return LaunchLastDimBiasAddFast<T>(prepare, stream, lhs_is_bias);
+      }
+    }
+  }
+
+  if (op_name == "Sub") {
+    if constexpr (std::is_same_v<T, float> || std::is_same_v<T, MLFloat16>) {
+      if (IsBroadcastSubRank4Dim2Pattern(prepare.input_a_shape,
+                                         prepare.input_b_shape,
+                                         prepare.output_shape)) {
+        return LaunchBroadcastSubRank4Dim2Fast<T>(prepare, stream);
+      }
+    }
+  }
+
+  if (op_name == "Mul") {
+    if constexpr (std::is_same_v<T, float> || std::is_same_v<T, MLFloat16>) {
+      bool lhs_is_scale = false;
+      if (IsLastDimBiasAddPattern(prepare.input_a_shape,
+                                  prepare.input_b_shape,
+                                  prepare.output_shape,
+                                  lhs_is_scale)) {
+        return LaunchLastDimScaleMulFast<T>(prepare, stream, lhs_is_scale);
       }
     }
   }

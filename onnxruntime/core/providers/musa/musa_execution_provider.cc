@@ -13,6 +13,10 @@
 #include "musa_fwd.h"
 #include <mudnn_version.h>
 
+#include <algorithm>
+#include <cstring>
+#include <vector>
+
 namespace onnxruntime {
 
 // Memcpy kernel implementation for MUSA EP
@@ -88,6 +92,9 @@ ONNX_OPERATOR_KERNEL_EX(
 // Memcpy operations (op 1)
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MemcpyFromHost);
 class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MemcpyToHost);
+
+// MUSA provider fusion kernels
+class ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kMSDomain, 1, MusaTokenMixerResidual);
 
 // Conv operations (op 1-10 and op 11) - NCHW
 class ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, 10, float, Conv);
@@ -1656,6 +1663,10 @@ Status RegisterMusaKernels(KernelRegistry& kernel_registry) {
       // Register Memcpy operations for data transfer
       BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MemcpyFromHost)>,
       BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain, 1, MemcpyToHost)>,
+
+      // Register MUSA EP fused kernels
+      BuildKernelCreateInfo<ONNX_OPERATOR_KERNEL_CLASS_NAME(
+          kMusaExecutionProvider, kMSDomain, 1, MusaTokenMixerResidual)>,
 
       // Register Conv operators with float type (NCHW)
       BuildKernelCreateInfo<ONNX_OPERATOR_VERSIONED_TYPED_KERNEL_CLASS_NAME(kMusaExecutionProvider, kOnnxDomain,
@@ -4810,6 +4821,267 @@ void MusaExecutionProvider::RegisterStreamHandlers(IStreamCommandHandleRegistry&
                             use_ep_level_unified_stream_);
 }
 
+
+namespace {
+
+constexpr const char* kMusaTokenMixerResidualOpName = "MusaTokenMixerResidual";
+
+bool ReadIntShapeInitializer(const GraphViewer& graph_viewer,
+                             const std::string& name,
+                             std::vector<int64_t>& values) {
+  const auto* tensor = graph_viewer.GetConstantInitializer(name, true);
+  if (tensor == nullptr) {
+    return false;
+  }
+
+  const auto data_type = tensor->data_type();
+  const auto& raw = tensor->raw_data();
+  if (raw.empty()) {
+    return false;
+  }
+
+  values.clear();
+  if (data_type == ONNX_NAMESPACE::TensorProto_DataType_INT64) {
+    if (raw.size() % sizeof(int64_t) != 0) {
+      return false;
+    }
+    values.resize(raw.size() / sizeof(int64_t));
+    std::memcpy(values.data(), raw.data(), raw.size());
+    return true;
+  }
+
+  if (data_type == ONNX_NAMESPACE::TensorProto_DataType_INT32) {
+    if (raw.size() % sizeof(int32_t) != 0) {
+      return false;
+    }
+    const size_t count = raw.size() / sizeof(int32_t);
+    values.resize(count);
+    for (size_t i = 0; i < count; ++i) {
+      int32_t value = 0;
+      std::memcpy(&value, raw.data() + i * sizeof(int32_t), sizeof(int32_t));
+      values[i] = static_cast<int64_t>(value);
+    }
+    return true;
+  }
+
+  return false;
+}
+
+bool GetNodeInputName(const Node& node, size_t index, std::string& name) {
+  const auto inputs = node.InputDefs();
+  if (index >= inputs.size() || inputs[index] == nullptr) {
+    return false;
+  }
+  name = inputs[index]->Name();
+  return true;
+}
+
+bool GetNodeOutputName(const Node& node, size_t index, std::string& name) {
+  const auto outputs = node.OutputDefs();
+  if (index >= outputs.size() || outputs[index] == nullptr) {
+    return false;
+  }
+  name = outputs[index]->Name();
+  return true;
+}
+
+int CountConsumers(const GraphViewer& graph_viewer, const std::string& value_name) {
+  int count = 0;
+  for (auto& node_index : graph_viewer.GetNodesInTopologicalOrder()) {
+    const auto* node = graph_viewer.GetNode(node_index);
+    if (node == nullptr) {
+      continue;
+    }
+
+    for (const auto* input : node->InputDefs()) {
+      if (input != nullptr && input->Name() == value_name) {
+        ++count;
+      }
+    }
+  }
+  return count;
+}
+
+bool HasSingleConsumer(const GraphViewer& graph_viewer, const std::string& value_name) {
+  return CountConsumers(graph_viewer, value_name) == 1;
+}
+
+bool HasElementType(const NodeArg* node_arg, int32_t elem_type) {
+  if (node_arg == nullptr) {
+    return false;
+  }
+  const auto* type_proto = node_arg->TypeAsProto();
+  return type_proto != nullptr && type_proto->has_tensor_type() &&
+         type_proto->tensor_type().has_elem_type() &&
+         type_proto->tensor_type().elem_type() == elem_type;
+}
+
+bool IsSupportedTokenMixerType(const NodeArg* node_arg) {
+  return HasElementType(node_arg, ONNX_NAMESPACE::TensorProto_DataType_FLOAT) ||
+         HasElementType(node_arg, ONNX_NAMESPACE::TensorProto_DataType_FLOAT16);
+}
+
+bool IsPermute0213(const Node& transpose) {
+  if (transpose.OpType() != "Transpose") {
+    return false;
+  }
+  const auto& attrs = transpose.GetAttributes();
+  if (attrs.count("perm") == 0) {
+    return false;
+  }
+  const auto& perm = attrs.at("perm");
+  return perm.ints_size() == 4 && perm.ints(0) == 0 && perm.ints(1) == 2 &&
+         perm.ints(2) == 1 && perm.ints(3) == 3;
+}
+
+void AddIntAttribute(NodeAttributes& attributes,
+                     const std::string& name,
+                     int64_t value) {
+  auto attr = ONNX_NAMESPACE::AttributeProto::Create();
+  attr->set_name(name);
+  attr->set_type(ONNX_NAMESPACE::AttributeProto_AttributeType_INT);
+  attr->set_i(value);
+  attributes[name] = *attr;
+}
+
+std::unique_ptr<ComputeCapability> TryCreateTokenMixerResidualCapability(
+    const GraphViewer& graph_viewer,
+    const Node& add_node,
+    size_t permuted_input_index,
+    size_t residual_input_index) {
+  std::string permuted_value;
+  std::string residual_value;
+  std::string add_output;
+  if (!GetNodeInputName(add_node, permuted_input_index, permuted_value) ||
+      !GetNodeInputName(add_node, residual_input_index, residual_value) ||
+      !GetNodeOutputName(add_node, 0, add_output)) {
+    return nullptr;
+  }
+
+  const Node* reshape2 = graph_viewer.GetProducerNode(permuted_value);
+  const Node* reshape0 = graph_viewer.GetProducerNode(residual_value);
+  if (reshape2 == nullptr || reshape0 == nullptr ||
+      reshape2->OpType() != "Reshape" || reshape0->OpType() != "Reshape") {
+    return nullptr;
+  }
+
+  std::string reshape2_data;
+  std::string reshape2_shape_name;
+  std::string reshape0_data;
+  std::string reshape0_shape_name;
+  std::string reshape0_output;
+  if (!GetNodeInputName(*reshape2, 0, reshape2_data) ||
+      !GetNodeInputName(*reshape2, 1, reshape2_shape_name) ||
+      !GetNodeInputName(*reshape0, 0, reshape0_data) ||
+      !GetNodeInputName(*reshape0, 1, reshape0_shape_name) ||
+      !GetNodeOutputName(*reshape0, 0, reshape0_output)) {
+    return nullptr;
+  }
+
+  const Node* transpose = graph_viewer.GetProducerNode(reshape2_data);
+  if (transpose == nullptr || !IsPermute0213(*transpose)) {
+    return nullptr;
+  }
+
+  std::string transpose_data;
+  std::string transpose_output;
+  if (!GetNodeInputName(*transpose, 0, transpose_data) ||
+      !GetNodeOutputName(*transpose, 0, transpose_output)) {
+    return nullptr;
+  }
+
+  const Node* reshape1 = graph_viewer.GetProducerNode(transpose_data);
+  if (reshape1 == nullptr || reshape1->OpType() != "Reshape") {
+    return nullptr;
+  }
+
+  std::string reshape1_data;
+  std::string reshape1_shape_name;
+  std::string reshape1_output;
+  if (!GetNodeInputName(*reshape1, 0, reshape1_data) ||
+      !GetNodeInputName(*reshape1, 1, reshape1_shape_name) ||
+      !GetNodeOutputName(*reshape1, 0, reshape1_output)) {
+    return nullptr;
+  }
+
+  if (reshape1_data != reshape0_output || reshape2_data != transpose_output ||
+      transpose_data != reshape1_output) {
+    return nullptr;
+  }
+
+  if (CountConsumers(graph_viewer, reshape0_output) != 2 ||
+      !HasSingleConsumer(graph_viewer, reshape1_output) ||
+      !HasSingleConsumer(graph_viewer, transpose_output) ||
+      !HasSingleConsumer(graph_viewer, permuted_value)) {
+    return nullptr;
+  }
+
+  std::vector<int64_t> shape0;
+  std::vector<int64_t> shape1;
+  std::vector<int64_t> shape2;
+  if (!ReadIntShapeInitializer(graph_viewer, reshape0_shape_name, shape0) ||
+      !ReadIntShapeInitializer(graph_viewer, reshape1_shape_name, shape1) ||
+      !ReadIntShapeInitializer(graph_viewer, reshape2_shape_name, shape2)) {
+    return nullptr;
+  }
+
+  if (shape0.size() != 3 || shape1.size() != 4 || shape2.size() != 3) {
+    return nullptr;
+  }
+
+  const int64_t num_t = shape1[1];
+  const int64_t num_h = shape1[2];
+  const int64_t d_k = shape1[3];
+  if (num_t <= 0 || num_h <= 0 || d_k <= 0 || num_t != num_h) {
+    return nullptr;
+  }
+
+  if (shape0[1] != num_t || shape0[2] != num_h * d_k ||
+      shape2[1] != num_h || shape2[2] != num_t * d_k) {
+    return nullptr;
+  }
+
+  const auto reshape0_inputs = reshape0->InputDefs();
+  if (reshape0_inputs.empty() || !IsSupportedTokenMixerType(reshape0_inputs[0])) {
+    return nullptr;
+  }
+
+  auto sub_graph = IndexedSubGraph::Create();
+  sub_graph->Nodes().push_back(reshape0->Index());
+  sub_graph->Nodes().push_back(reshape1->Index());
+  sub_graph->Nodes().push_back(transpose->Index());
+  sub_graph->Nodes().push_back(reshape2->Index());
+  sub_graph->Nodes().push_back(add_node.Index());
+
+  auto meta_def = IndexedSubGraph_MetaDef::Create();
+  meta_def->name() = kMusaTokenMixerResidualOpName;
+  meta_def->domain() = kMSDomain;
+  meta_def->since_version() = 1;
+  meta_def->inputs().push_back(reshape0_data);
+  meta_def->outputs().push_back(add_output);
+  AddIntAttribute(meta_def->attributes(), "num_T", num_t);
+  AddIntAttribute(meta_def->attributes(), "num_H", num_h);
+  AddIntAttribute(meta_def->attributes(), "d_k", d_k);
+  sub_graph->SetMetaDef(std::move(meta_def));
+  return ComputeCapability::Create(std::move(sub_graph));
+}
+
+std::unique_ptr<ComputeCapability> TryCreateTokenMixerResidualCapability(
+    const GraphViewer& graph_viewer,
+    const Node& add_node) {
+  if (add_node.OpType() != "Add" || add_node.InputDefs().size() != 2 ||
+      add_node.OutputDefs().size() != 1) {
+    return nullptr;
+  }
+
+  if (auto capability = TryCreateTokenMixerResidualCapability(graph_viewer, add_node, 0, 1)) {
+    return capability;
+  }
+  return TryCreateTokenMixerResidualCapability(graph_viewer, add_node, 1, 0);
+}
+
+}  // namespace
+
 // ============================================================================
 // GetCapability - Intelligent Device Placement
 // ============================================================================
@@ -4821,6 +5093,19 @@ MusaExecutionProvider::GetCapability(const onnxruntime::GraphViewer& graph_viewe
                                      IResourceAccountant* /* resource_accountant */) const {
   std::vector<std::unique_ptr<ComputeCapability>> result;
   std::vector<NodeIndex> candidates;
+
+  // Prefer provider-side fusion for the prunedGraph token mixer residual pattern.
+  for (auto& node_index : graph_viewer.GetNodesInTopologicalOrder()) {
+    const auto* p_node = graph_viewer.GetNode(node_index);
+    if (p_node == nullptr || !p_node->GetExecutionProviderType().empty()) {
+      continue;
+    }
+
+    if (auto fused_capability = TryCreateTokenMixerResidualCapability(graph_viewer, *p_node)) {
+      LOGS(*GetLogger(), INFO) << "MUSA EP fused token mixer residual at node: " << p_node->Name();
+      result.push_back(std::move(fused_capability));
+    }
+  }
 
   // 1. Collect all nodes that have MUSA kernel
   for (auto& node_index : graph_viewer.GetNodesInTopologicalOrder()) {

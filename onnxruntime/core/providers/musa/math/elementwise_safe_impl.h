@@ -99,6 +99,38 @@ void LaunchLastDimBiasAddHalf(musaStream_t stream,
                               int64_t total_elements,
                               int64_t channels);
 
+void LaunchLastDimScaleMulFloat(musaStream_t stream,
+                                const float* value_data,
+                                const float* scale_data,
+                                float* output_data,
+                                int64_t total_elements,
+                                int64_t channels);
+
+void LaunchLastDimScaleMulHalf(musaStream_t stream,
+                               const void* value_data,
+                               const void* scale_data,
+                               void* output_data,
+                               int64_t total_elements,
+                               int64_t channels);
+
+void LaunchBroadcastSubRank4Dim2Float(musaStream_t stream,
+                                      const float* lhs_data,
+                                      const float* rhs_data,
+                                      float* output_data,
+                                      int64_t dim0,
+                                      int64_t dim1,
+                                      int64_t dim2,
+                                      int64_t dim3);
+
+void LaunchBroadcastSubRank4Dim2Half(musaStream_t stream,
+                                     const void* lhs_data,
+                                     const void* rhs_data,
+                                     void* output_data,
+                                     int64_t dim0,
+                                     int64_t dim1,
+                                     int64_t dim2,
+                                     int64_t dim3);
+
 extern template void LaunchPowSameTypeKernel<float>(musaStream_t,
                                                     const float*,
                                                     const float*,

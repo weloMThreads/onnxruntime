@@ -186,6 +186,53 @@ __global__ void LastDimBiasAddKernel(const T* value_data,
   }
 }
 
+template <typename T>
+__global__ void LastDimScaleMulKernel(const T* value_data,
+                                      const T* scale_data,
+                                      T* output_data,
+                                      int64_t total_elements,
+                                      int64_t channels) {
+  const int64_t thread_id = static_cast<int64_t>(blockIdx.x) * blockDim.x + threadIdx.x;
+  const int64_t total_threads = static_cast<int64_t>(gridDim.x) * blockDim.x;
+
+  for (int64_t index = thread_id; index < total_elements; index += total_threads) {
+    output_data[index] = value_data[index] * scale_data[index % channels];
+  }
+}
+
+template <typename T>
+__device__ __forceinline__ T SubValue(T lhs, T rhs) {
+  return lhs - rhs;
+}
+
+template <>
+__device__ __forceinline__ half SubValue(half lhs, half rhs) {
+  return __float2half(__half2float(lhs) - __half2float(rhs));
+}
+
+template <typename T>
+__global__ void BroadcastSubRank4Dim2Kernel(const T* lhs_data,
+                                            const T* rhs_data,
+                                            T* output_data,
+                                            int64_t dim0,
+                                            int64_t dim1,
+                                            int64_t dim2,
+                                            int64_t dim3) {
+  const int64_t total_elements = dim0 * dim1 * dim2 * dim3;
+  const int64_t thread_id = static_cast<int64_t>(blockIdx.x) * blockDim.x + threadIdx.x;
+  const int64_t total_threads = static_cast<int64_t>(gridDim.x) * blockDim.x;
+
+  for (int64_t index = thread_id; index < total_elements; index += total_threads) {
+    const int64_t inner = index % dim3;
+    int64_t remaining = index / dim3;
+    remaining /= dim2;
+    const int64_t dim1_index = remaining % dim1;
+    const int64_t dim0_index = remaining / dim1;
+    const int64_t rhs_index = (dim0_index * dim1 + dim1_index) * dim3 + inner;
+    output_data[index] = SubValue(lhs_data[index], rhs_data[rhs_index]);
+  }
+}
+
 }  // namespace
 
 inline int BlocksForBinaryCount(int64_t count) {
@@ -356,6 +403,78 @@ void LaunchLastDimBiasAddHalf(musaStream_t stream,
       static_cast<half*>(output_data),
       total_elements,
       channels);
+}
+
+void LaunchLastDimScaleMulFloat(musaStream_t stream,
+                                const float* value_data,
+                                const float* scale_data,
+                                float* output_data,
+                                int64_t total_elements,
+                                int64_t channels) {
+  if (total_elements == 0) {
+    return;
+  }
+
+  LastDimScaleMulKernel<float><<<BlocksForBinaryCount(total_elements), kPowThreadsPerBlock, 0, stream>>>(
+      value_data, scale_data, output_data, total_elements, channels);
+}
+
+void LaunchLastDimScaleMulHalf(musaStream_t stream,
+                               const void* value_data,
+                               const void* scale_data,
+                               void* output_data,
+                               int64_t total_elements,
+                               int64_t channels) {
+  if (total_elements == 0) {
+    return;
+  }
+
+  LastDimScaleMulKernel<half><<<BlocksForBinaryCount(total_elements), kPowThreadsPerBlock, 0, stream>>>(
+      static_cast<const half*>(value_data),
+      static_cast<const half*>(scale_data),
+      static_cast<half*>(output_data),
+      total_elements,
+      channels);
+}
+
+void LaunchBroadcastSubRank4Dim2Float(musaStream_t stream,
+                                      const float* lhs_data,
+                                      const float* rhs_data,
+                                      float* output_data,
+                                      int64_t dim0,
+                                      int64_t dim1,
+                                      int64_t dim2,
+                                      int64_t dim3) {
+  const int64_t total_elements = dim0 * dim1 * dim2 * dim3;
+  if (total_elements == 0) {
+    return;
+  }
+
+  BroadcastSubRank4Dim2Kernel<float><<<BlocksForBinaryCount(total_elements), kPowThreadsPerBlock, 0, stream>>>(
+      lhs_data, rhs_data, output_data, dim0, dim1, dim2, dim3);
+}
+
+void LaunchBroadcastSubRank4Dim2Half(musaStream_t stream,
+                                     const void* lhs_data,
+                                     const void* rhs_data,
+                                     void* output_data,
+                                     int64_t dim0,
+                                     int64_t dim1,
+                                     int64_t dim2,
+                                     int64_t dim3) {
+  const int64_t total_elements = dim0 * dim1 * dim2 * dim3;
+  if (total_elements == 0) {
+    return;
+  }
+
+  BroadcastSubRank4Dim2Kernel<half><<<BlocksForBinaryCount(total_elements), kPowThreadsPerBlock, 0, stream>>>(
+      static_cast<const half*>(lhs_data),
+      static_cast<const half*>(rhs_data),
+      static_cast<half*>(output_data),
+      dim0,
+      dim1,
+      dim2,
+      dim3);
 }
 
 template void LaunchPowSameTypeKernel<float>(musaStream_t,
